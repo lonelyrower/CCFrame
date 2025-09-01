@@ -116,20 +116,31 @@ railway create && railway add postgresql && railway up
 - $5/月免费额度
 - 零配置部署
 
-### 3. Docker 部署
+### 3. Docker/VPS 部署（推荐用于带队列与图片处理）
 
-本地或服务器部署：
+在 VPS 上一键启动完整环境：
 
 ```bash
-# 完整环境一键启动
-docker-compose up -d
+cp .env.docker.example .env    # 按需修改变量
+docker-compose up -d --build
 ```
 
-**包含服务**:
-- CCFrame 应用
-- PostgreSQL 数据库
-- Redis 缓存
-- MinIO 对象存储
+包含服务：
+- Web（Next.js SSR）
+- Worker（BullMQ 队列常驻）
+- PostgreSQL（本地容器）
+- Redis（队列/会话）
+- MinIO（S3 兼容存储，内置初始化桶）
+- Nginx（80 端口反代至 Web）
+
+启动后：
+- 访问站点：http://<你的服务器IP>/
+- 管理后台：http://<你的服务器IP>/admin/login
+- MinIO 控制台：http://<你的服务器IP>:9001 （默认账号/密码见 .env）
+
+备注：
+- 首次启动会自动执行 `prisma db push` 与管理员创建脚本。
+- 如需 HEIC 支持，镜像已安装系统 libvips+heif，sharp 将优先使用系统库。
 
 ### 4. 手动部署
 

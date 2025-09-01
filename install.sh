@@ -261,11 +261,58 @@ deploy_docker() {
         install_docker
     fi
     
-    print_info "构建 Docker 镜像..."
-    docker-compose up -d --build
+    # 检查 docker compose 命令
+    if command -v docker-compose &> /dev/null; then
+        DOCKER_COMPOSE_CMD="docker-compose"
+    else
+        DOCKER_COMPOSE_CMD="docker compose"
+    fi
+
+    # 生成 .env（若不存在）并设置 NEXTAUTH_URL 为服务器 IP
+    if [ ! -f .env ]; then
+        if [ -f .env.docker.example ]; then
+            cp .env.docker.example .env
+            print_success ".env 已从 .env.docker.example 生成"
+        else
+            print_warning ".env.docker.example 不存在，创建最小化 .env"
+            cat > .env << 'EOF'
+NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || echo "change-me")
+ADMIN_EMAIL=admin@local.dev
+ADMIN_PASSWORD=admin123
+POSTGRES_USER=ccframe
+POSTGRES_PASSWORD=ccframe
+POSTGRES_DB=ccframe
+DATABASE_URL=postgresql://ccframe:ccframe@db:5432/ccframe
+REDIS_URL=redis://redis:6379
+S3_ACCESS_KEY_ID=minioadmin
+S3_SECRET_ACCESS_KEY=minioadmin
+S3_BUCKET_NAME=ccframe
+S3_REGION=us-east-1
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin
+EOF
+        fi
+    fi
+
+    # 获取服务器 IP, 优先本机 IP
+    SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    if [ -z "$SERVER_IP" ]; then
+        SERVER_IP=$(curl -fsSL https://api.ipify.org || echo "127.0.0.1")
+    fi
+
+    # 写入 NEXTAUTH_URL
+    if grep -q '^NEXTAUTH_URL=' .env; then
+        sed -i "s#^NEXTAUTH_URL=.*#NEXTAUTH_URL=http://$SERVER_IP#" .env
+    else
+        echo "NEXTAUTH_URL=http://$SERVER_IP" >> .env
+    fi
+    print_info "NEXTAUTH_URL 已设置为: http://$SERVER_IP"
+    
+    print_info "构建并启动容器..."
+    $DOCKER_COMPOSE_CMD up -d --build
     
     print_success "🎉 Docker 部署完成！"
-    show_docker_next_steps
+    show_docker_next_steps "$SERVER_IP"
 }
 
 # 安装 Docker (Linux)
@@ -317,22 +364,23 @@ show_railway_next_steps() {
 }
 
 show_docker_next_steps() {
+    SERVER_IP="$1"
     echo ""
     print_info "📋 Docker 部署完成！"
     echo ""
     echo "🌐 应用地址:"
-    echo "   主应用: http://localhost:3000"
-    echo "   管理后台: http://localhost:3000/admin/login"
-    echo "   MinIO控制台: http://localhost:9001"
+    echo "   主应用: http://$SERVER_IP/"
+    echo "   管理后台: http://$SERVER_IP/admin/login"
+    echo "   MinIO控制台: http://$SERVER_IP:9001"
     echo ""
     echo "🔑 默认账户:"
     echo "   邮箱: admin@local.dev"
     echo "   密码: admin123"
     echo ""
     echo "🛠️  管理命令:"
-    echo "   停止: docker-compose down"
-    echo "   重启: docker-compose restart"
-    echo "   查看日志: docker-compose logs -f"
+    echo "   停止: $DOCKER_COMPOSE_CMD down"
+    echo "   重启: $DOCKER_COMPOSE_CMD restart"
+    echo "   查看日志: $DOCKER_COMPOSE_CMD logs -f"
     echo ""
 }
 

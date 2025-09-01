@@ -1,0 +1,123 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: ccframe-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # Redis / S3
+      REDIS_URL: redis://redis:6379
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: http://minio:9000
+      CDN_BASE_URL: ${CDN_BASE_URL}
+    depends_on:
+      - db
+      - redis
+      - minio
+    command: sh -c "npx prisma db push && node scripts/create-admin.js && npm run start"
+    networks:
+      - ccframe
+
+  worker:
+    build: .
+    container_name: ccframe-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      REDIS_URL: redis://redis:6379
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: http://minio:9000
+    depends_on:
+      - db
+      - redis
+      - minio
+    command: sh -c "npx prisma db push && npm run worker"
+    networks:
+      - ccframe
+
+  db:
+    image: postgres:15-alpine
+    container_name: ccframe-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ccframe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ccframe}
+      POSTGRES_DB: ${POSTGRES_DB:-ccframe}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ccframe
+
+  redis:
+    image: redis:7-alpine
+    container_name: ccframe-redis
+    restart: unless-stopped
+    networks:
+      - ccframe
+
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: ccframe-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio:/data
+    networks:
+      - ccframe
+
+  minio-init:
+    image: minio/mc:RELEASE.2024-05-10T01-41-38Z
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+    entrypoint: ["/bin/sh","-c"]
+    command: >
+      set -e;
+      mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
+      mc mb -p local/"$S3_BUCKET_NAME" || true;
+    networks:
+      - ccframe
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: ccframe-nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - ccframe
+
+volumes:
+  pgdata:
+  minio:
+
+networks:
+  ccframe:
+    driver: bridge

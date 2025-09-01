@@ -1,8 +1,18 @@
 import { Photo, Album, PhotoVariant, Tag, User, Job, EditVersion } from '@prisma/client'
 
 export type Visibility = 'PUBLIC' | 'PRIVATE'
-export type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'  
-export type JobType = 'THUMBNAIL_GENERATION' | 'EXIF_EXTRACTION' | 'AI_ENHANCEMENT' | 'AI_UPSCALE' | 'AI_REMOVE_BACKGROUND' | 'AI_STYLE_TRANSFER' | 'FACE_DETECTION'
+export type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
+
+export const JobTypeValues = [
+  'THUMBNAIL_GENERATION',
+  'EXIF_EXTRACTION',
+  'AI_ENHANCEMENT',
+  'AI_UPSCALE',
+  'AI_REMOVE_BACKGROUND',
+  'AI_STYLE_TRANSFER',
+  'FACE_DETECTION',
+] as const
+export type JobType = typeof JobTypeValues[number]
 
 export interface PhotoWithDetails extends Photo {
   variants: PhotoVariant[]
