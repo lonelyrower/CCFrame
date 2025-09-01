@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         action: 'UPLOAD',
         targetType: 'photo',
         targetId: photoId,
-        meta: { fileKey }
+        meta: { fileKey } as any
       }
     })
 

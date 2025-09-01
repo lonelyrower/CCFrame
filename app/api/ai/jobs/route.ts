@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const job = await db.job.create({
       data: {
         type,
-        payloadJson: { photoId, ...params },
+        payloadJson: { photoId, ...params } as any,
         userId: session.user.id,
         status: 'PENDING',
         progress: 0
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       where.payloadJson = {
         path: ['photoId'],
         equals: photoId
-      }
+      } as any
     }
 
     if (status) {

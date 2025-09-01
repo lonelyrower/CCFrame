@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { getStorageManager } from '@/lib/storage-manager'
+import { getStorageManager, StorageManager } from '@/lib/storage-manager'
 import { AIImageProcessor } from '@/lib/ai-providers'
 import { z } from 'zod'
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
           taskType,
           params,
           provider
-        },
+        } as any,
         userId: session.user.id,
         status: 'PENDING'
       }
@@ -128,7 +128,7 @@ async function processAITask(
     })
 
     // 保存处理后的图片
-    const enhancedKey = storageManager.constructor.generateKey(
+    const enhancedKey = StorageManager.generateKey(
       'enhanced',
       `${photo.id}_${taskType}_${Date.now()}.jpg`
     )
@@ -156,7 +156,7 @@ async function processAITask(
           enhancedKey,
           taskType,
           params
-        }
+        } as any
       }
     })
 

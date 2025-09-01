@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PhotoWithDetails } from '@/types'
-import { getImageUrl, generateSrcSet } from '@/lib/utils'
+import { getImageUrl, generateSrcSet, toBase64 } from '@/lib/utils'
 import { PhotoModal } from './photo-modal'
 
 interface MasonryGalleryProps {
@@ -102,9 +102,9 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
                       sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                       className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
                       placeholder="blur"
-                      blurDataURL={`data:image/svg+xml;base64,${Buffer.from(
-                        `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#f3f4f6"/></svg>`
-                      ).toString('base64')}`}
+                      blurDataURL={`data:image/svg+xml;base64,${toBase64(
+                        `<svg width=\"400\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"400\" height=\"300\" fill=\"#f3f4f6\"/></svg>`
+                      )}`}
                     />
                     
                     {photo.tags.length > 0 && (

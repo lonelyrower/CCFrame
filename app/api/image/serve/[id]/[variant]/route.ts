@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { StorageService } from '@/lib/storage'
+import { getStorageManager } from '@/lib/storage-manager'
 
 interface Params {
   params: {
@@ -49,13 +49,14 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
 
     // For public photos, redirect to CDN
+    const storage = getStorageManager()
     if (photo.visibility === 'PUBLIC') {
-      const publicUrl = StorageService.getPublicUrl(photoVariant.fileKey)
+      const publicUrl = storage.getPublicUrl(photoVariant.fileKey)
       return NextResponse.redirect(publicUrl)
     }
 
     // For private photos, stream from S3 with signed URL
-    const downloadUrl = await StorageService.getPresignedDownloadUrl(photoVariant.fileKey)
+    const downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
     const response = await fetch(downloadUrl)
     
     if (!response.ok) {

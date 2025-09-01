@@ -24,9 +24,9 @@ export class GeminiAIProvider implements AIProvider {
   private client: GoogleGenerativeAI
 
   constructor() {
-    const apiKey = process.env.GOOGLE_AI_API_KEY
+    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_API_KEY
     if (!apiKey) {
-      throw new Error('GOOGLE_AI_API_KEY is not configured')
+      throw new Error('GOOGLE_AI_API_KEY/GOOGLE_API_KEY is not configured')
     }
     this.client = new GoogleGenerativeAI(apiKey)
   }
@@ -147,7 +147,7 @@ export class GeminiAIProvider implements AIProvider {
 // OpenAI DALL-E Provider (可选)
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI'
-  private client: OpenAI
+  private client: any
 
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY

@@ -94,6 +94,14 @@ export class StorageManager {
     return getSignedUrl(this.client, command, { expiresIn: 3600 })
   }
 
+  async getPresignedDownloadUrl(key: string): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+    })
+    return getSignedUrl(this.client, command, { expiresIn: 3600 })
+  }
+
   async deleteObject(key: string): Promise<void> {
     const command = new DeleteObjectCommand({
       Bucket: this.config.bucket,

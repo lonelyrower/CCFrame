@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
@@ -13,14 +14,14 @@ precacheAndRoute(__WB_MANIFEST || [])
 
 // Cache images with cache-first strategy
 registerRoute(
-  ({ request, url }) => {
+  ({ request, url }: any) => {
     return request.destination === 'image' || url.pathname.includes('/api/image/')
   },
   new CacheFirst({
     cacheName: 'images',
     plugins: [
       {
-        cacheKeyWillBeUsed: async ({ request }) => {
+        cacheKeyWillBeUsed: async ({ request }: any) => {
           // Normalize cache keys for image variants
           return request.url
         },
@@ -31,13 +32,13 @@ registerRoute(
 
 // Cache API calls with network-first strategy
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
+  ({ url }: any) => url.pathname.startsWith('/api/'),
   new NetworkFirst({
     cacheName: 'api',
     networkTimeoutSeconds: 3,
     plugins: [
       {
-        cacheWillUpdate: async ({ response }) => {
+        cacheWillUpdate: async ({ response }: any) => {
           // Only cache successful responses
           return response.status === 200 ? response : null
         },
@@ -48,7 +49,7 @@ registerRoute(
 
 // Cache pages with stale-while-revalidate
 registerRoute(
-  ({ request }) => request.mode === 'navigate',
+  ({ request }: any) => request.mode === 'navigate',
   new StaleWhileRevalidate({
     cacheName: 'pages',
   })
@@ -56,7 +57,7 @@ registerRoute(
 
 // Cache static assets (JS, CSS, fonts) with stale-while-revalidate
 registerRoute(
-  ({ request }) =>
+  ({ request }: any) =>
     request.destination === 'script' ||
     request.destination === 'style' ||
     request.destination === 'font',
