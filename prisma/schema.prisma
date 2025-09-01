@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -51,8 +51,8 @@ model Photo {
   width      Int
   height     Int
   takenAt    DateTime? @map("taken_at")
-  location   String?  @map("location") // JSON string: {lat, lng, address}
-  exifJson   String?  @map("exif_json") // JSON string
+  location   Json?    @map("location")
+  exifJson   Json?    @map("exif_json")
   visibility String   @default("PUBLIC") // "PUBLIC" or "PRIVATE"
   status     String   @default("UPLOADING") // "UPLOADING", "PROCESSING", "COMPLETED", "FAILED"
   blurhash   String?
@@ -131,10 +131,10 @@ model Face {
 model Job {
   id          String   @id @default(cuid())
   type        String   // "THUMBNAIL_GENERATION", "EXIF_EXTRACTION", "AI_ENHANCEMENT", etc.
-  payloadJson String   @map("payload_json") // JSON string
+  payloadJson Json     @map("payload_json")
   status      String   @default("PENDING") // "PENDING", "RUNNING", "COMPLETED", "FAILED"
   progress    Int      @default(0) // 0-100
-  resultJson  String?  @map("result_json") // JSON string
+  resultJson  Json?    @map("result_json")
   errorMsg    String?  @map("error_msg")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -163,7 +163,7 @@ model Audit {
   action     String   // "LOGIN", "UPLOAD", "DELETE", "EDIT", "EXPORT", "SHARE"
   targetType String   @map("target_type") // "photo", "album", etc.
   targetId   String   @map("target_id")
-  meta       String?  @map("meta") // JSON string: additional context
+  meta       Json?    @map("meta")
   createdAt  DateTime @default(now()) @map("created_at")
   
   userId String @map("user_id")

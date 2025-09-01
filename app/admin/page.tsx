@@ -8,7 +8,7 @@ import {
   Upload, 
   Clock,
   TrendingUp,
-  Hard Drive,
+  HardDrive,
   Eye,
   EyeOff
 } from 'lucide-react'

@@ -188,7 +188,7 @@ const aiWorker = new Worker(
         data: {
           status: 'COMPLETED',
           progress: 100,
-          resultJson: JSON.stringify(result)
+          resultJson: result
         }
       })
 

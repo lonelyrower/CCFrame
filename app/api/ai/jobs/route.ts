@@ -3,12 +3,12 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { aiProcessingQueue } from '@/jobs/queue'
-import { JobType } from '@/types'
+import { JobTypeValues } from '@/types'
 import { z } from 'zod'
 
 const createJobSchema = z.object({
   photoId: z.string(),
-  type: z.nativeEnum(JobType),
+  type: z.enum(JobTypeValues),
   params: z.record(z.any()).optional().default({})
 })
 
