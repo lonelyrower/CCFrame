@@ -60,7 +60,7 @@ services:
     command: >
       sh -c "
       for i in $(seq 1 30); do npx prisma db push && break || (echo 'DB not ready, retry...' && sleep 2); done &&
-      node --loader tsx -e \"import('./jobs/queue').then(m=>m.ensureWorkers())\"
+      npx tsx -e \"import('./jobs/queue').then(m=>m.ensureWorkers())\"
       "
     networks:
       - ccframe
