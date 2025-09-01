@@ -99,16 +99,25 @@ check_system() {
 
 clone_project() {
   print_step "获取项目代码..."
+  # 情况1：当前目录已经是仓库根目录
+  if [ -d .git ]; then
+    git pull --rebase --autostash || true
+    print_success "当前目录为仓库，已更新代码"
+    return
+  fi
+
+  # 情况2：上级目录存在 CCFrame 仓库
   PROJECT_DIR="CCFrame"
   if [ -d "$PROJECT_DIR/.git" ]; then
     cd "$PROJECT_DIR"
     git pull --rebase --autostash || true
-    print_success "代码已更新"
-  else
-    print_error "未检测到项目目录，请先使用 SSH/Deploy Key 克隆仓库后再运行本脚本。"
-    print_info  "例如：git clone git@github.com:lonelyrower/CCFrame.git"
-    exit 1
+    print_success "进入 $PROJECT_DIR 并更新代码"
+    return
   fi
+
+  print_error "未检测到项目目录，请先使用 SSH/Deploy Key 克隆仓库后再运行本脚本。"
+  print_info  "例如：git clone git@github.com:lonelyrower/CCFrame.git && cd CCFrame && bash install.sh install"
+  exit 1
 }
 
 ensure_env() {
