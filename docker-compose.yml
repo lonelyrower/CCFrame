@@ -77,6 +77,11 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - ccframe
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ccframe} -d ${POSTGRES_DB:-ccframe}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
 
   redis:
     image: redis:7-alpine
@@ -136,8 +141,3 @@ volumes:
 networks:
   ccframe:
     driver: bridge
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ccframe} -d ${POSTGRES_DB:-ccframe}"]
-      interval: 3s
-      timeout: 3s
-      retries: 20
