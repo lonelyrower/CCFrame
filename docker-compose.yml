@@ -41,11 +41,12 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       S3_REGION: ${S3_REGION}
       S3_ENDPOINT: http://minio:9000
+      START_WORKERS: 'true'
     depends_on:
       - db
       - redis
       - minio
-    command: sh -c "npx prisma db push && npm run worker"
+    command: sh -c "npx prisma db push && node --loader tsx -e \"import('./jobs/queue').then(m=>m.ensureWorkers())\""
     networks:
       - ccframe
 
