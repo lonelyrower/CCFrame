@@ -1,3 +1,5 @@
+'use client'
+
 import { Camera, Wifi, WifiOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -51,7 +53,3 @@ export default function OfflinePage() {
   )
 }
 
-export const metadata = {
-  title: 'Offline - Photo Gallery',
-  description: 'You are currently offline',
-}
