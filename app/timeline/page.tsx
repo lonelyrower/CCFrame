@@ -190,10 +190,10 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
             )}
             
             {/* 照片信息 */}
-            {mainPhoto.exif && (mainPhoto.exif as any).location && (
+            {mainPhoto.exifJson && (mainPhoto.exifJson as any).location && (
               <div className="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4" />
-                <span>{(mainPhoto.exif as any).location}</span>
+                <span>{(mainPhoto.exifJson as any).location}</span>
               </div>
             )}
             
