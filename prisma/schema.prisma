@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -25,20 +25,15 @@ model User {
   @@map("users")
 }
 
-enum Visibility {
-  PUBLIC
-  PRIVATE
-}
-
 model Album {
-  id           String     @id @default(cuid())
+  id           String  @id @default(cuid())
   title        String
   description  String?
-  coverPhotoId String?    @map("cover_photo_id")
-  visibility   Visibility @default(PUBLIC)
-  sortOrder    Int        @default(0) @map("sort_order")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  coverPhotoId String? @map("cover_photo_id")
+  visibility   String  @default("PUBLIC") // "PUBLIC" or "PRIVATE"
+  sortOrder    Int     @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
   
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -49,27 +44,20 @@ model Album {
   @@map("albums")
 }
 
-enum PhotoStatus {
-  UPLOADING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
 model Photo {
-  id         String      @id @default(cuid())
-  fileKey    String      @map("file_key")
-  hash       String      @unique
+  id         String   @id @default(cuid())
+  fileKey    String   @map("file_key")
+  hash       String   @unique
   width      Int
   height     Int
-  takenAt    DateTime?   @map("taken_at")
-  location   Json?       // {lat, lng, address}
-  exifJson   Json?       @map("exif_json")
-  visibility Visibility  @default(PUBLIC)
-  status     PhotoStatus @default(UPLOADING)
+  takenAt    DateTime? @map("taken_at")
+  location   String?  @map("location") // JSON string: {lat, lng, address}
+  exifJson   String?  @map("exif_json") // JSON string
+  visibility String   @default("PUBLIC") // "PUBLIC" or "PRIVATE"
+  status     String   @default("UPLOADING") // "UPLOADING", "PROCESSING", "COMPLETED", "FAILED"
   blurhash   String?
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
   
   userId  String  @map("user_id")
   albumId String? @map("album_id")
@@ -130,7 +118,7 @@ model PhotoTag {
 
 model Face {
   id        String  @id @default(cuid())
-  bbox      Json    // {x, y, width, height}
+  bbox      String  // JSON string: {x, y, width, height}
   personId  String? @map("person_id")
   embedding Bytes? // face embedding for similarity
   
@@ -140,40 +128,20 @@ model Face {
   @@map("faces")
 }
 
-enum JobType {
-  THUMBNAIL_GENERATION
-  EXIF_EXTRACTION
-  AI_ENHANCEMENT
-  AI_UPSCALE
-  AI_REMOVE_BACKGROUND
-  AI_STYLE_TRANSFER
-  FACE_DETECTION
-}
-
-enum JobStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-}
-
 model Job {
-  id          String    @id @default(cuid())
-  type        JobType
-  payloadJson Json      @map("payload_json")
-  status      JobStatus @default(PENDING)
-  progress    Int       @default(0) // 0-100
-  resultJson  Json?     @map("result_json")
-  errorMsg    String?   @map("error_msg")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  type        String   // "THUMBNAIL_GENERATION", "EXIF_EXTRACTION", "AI_ENHANCEMENT", etc.
+  payloadJson String   @map("payload_json") // JSON string
+  status      String   @default("PENDING") // "PENDING", "RUNNING", "COMPLETED", "FAILED"
+  progress    Int      @default(0) // 0-100
+  resultJson  String?  @map("result_json") // JSON string
+  errorMsg    String?  @map("error_msg")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
   
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  @@index([status])
-  @@index([type])
-  @@index([createdAt])
   @@map("jobs")
 }
 
@@ -181,7 +149,7 @@ model EditVersion {
   id        String   @id @default(cuid())
   name      String   // "Original", "Enhanced", "Upscaled", etc.
   fileKey   String   @map("file_key")
-  params    Json? // edit parameters for reproducibility
+  params    String?  @map("params") // JSON string: edit parameters for reproducibility
   createdAt DateTime @default(now()) @map("created_at")
   
   photoId String @map("photo_id")
@@ -190,28 +158,16 @@ model EditVersion {
   @@map("edit_versions")
 }
 
-enum AuditAction {
-  LOGIN
-  UPLOAD
-  DELETE
-  EDIT
-  EXPORT
-  SHARE
-}
-
 model Audit {
-  id         String      @id @default(cuid())
-  action     AuditAction
-  targetType String      @map("target_type") // "photo", "album", etc.
-  targetId   String      @map("target_id")
-  meta       Json? // additional context
-  createdAt  DateTime    @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  action     String   // "LOGIN", "UPLOAD", "DELETE", "EDIT", "EXPORT", "SHARE"
+  targetType String   @map("target_type") // "photo", "album", etc.
+  targetId   String   @map("target_id")
+  meta       String?  @map("meta") // JSON string: additional context
+  createdAt  DateTime @default(now()) @map("created_at")
   
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
   @@map("audits")
 }

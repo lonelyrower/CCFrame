@@ -1,6 +1,8 @@
-import { Photo, Album, PhotoVariant, Tag, User, Job, EditVersion, Visibility, JobStatus, JobType } from '@prisma/client'
+import { Photo, Album, PhotoVariant, Tag, User, Job, EditVersion } from '@prisma/client'
 
-export type { Visibility, JobStatus, JobType }
+export type Visibility = 'PUBLIC' | 'PRIVATE'
+export type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'  
+export type JobType = 'THUMBNAIL_GENERATION' | 'EXIF_EXTRACTION' | 'AI_ENHANCEMENT' | 'AI_UPSCALE' | 'AI_REMOVE_BACKGROUND' | 'AI_STYLE_TRANSFER' | 'FACE_DETECTION'
 
 export interface PhotoWithDetails extends Photo {
   variants: PhotoVariant[]

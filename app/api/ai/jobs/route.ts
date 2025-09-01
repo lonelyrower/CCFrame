@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { aiProcessingQueue } from '@/jobs/queue'
-import { JobType } from '@prisma/client'
+import { JobType } from '@/types'
 import { z } from 'zod'
 
 const createJobSchema = z.object({

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Wand2, Zap, Scissors, Image as ImageIcon, Play, Trash2, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { JobType, JobStatus } from '@prisma/client'
+import { JobType, JobStatus } from '@/types'
 import { AITask, PhotoWithDetails } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -21,7 +21,7 @@ interface AIJob {
 
 const AI_TASKS = [
   {
-    type: JobType.AI_ENHANCEMENT,
+    type: 'AI_ENHANCEMENT' as JobType,
     name: 'Auto Enhance',
     description: 'Automatically improve brightness, contrast, and color balance',
     icon: Wand2,
@@ -29,7 +29,7 @@ const AI_TASKS = [
     bgColor: 'bg-blue-100 dark:bg-blue-900/20'
   },
   {
-    type: JobType.AI_UPSCALE,
+    type: 'AI_UPSCALE' as JobType,
     name: 'AI Upscale',
     description: 'Increase image resolution using AI super-resolution',
     icon: Zap,
@@ -37,7 +37,7 @@ const AI_TASKS = [
     bgColor: 'bg-purple-100 dark:bg-purple-900/20'
   },
   {
-    type: JobType.AI_REMOVE_BACKGROUND,
+    type: 'AI_REMOVE_BACKGROUND' as JobType,
     name: 'Remove Background',
     description: 'Automatically remove or replace the background',
     icon: Scissors,
@@ -137,12 +137,12 @@ export default function AIStudioPage() {
 
   const getStatusIcon = (status: JobStatus) => {
     switch (status) {
-      case JobStatus.PENDING:
-      case JobStatus.RUNNING:
+      case 'PENDING':
+      case 'RUNNING':
         return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
-      case JobStatus.COMPLETED:
+      case 'COMPLETED':
         return <CheckCircle className="h-4 w-4 text-green-500" />
-      case JobStatus.FAILED:
+      case 'FAILED':
         return <XCircle className="h-4 w-4 text-red-500" />
     }
   }

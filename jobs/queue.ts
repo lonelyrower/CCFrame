@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { StorageService } from '@/lib/storage'
 import { ImageProcessor } from '@/lib/image-processing'
 import { ExifProcessor } from '@/lib/exif'
-import { JobType, JobStatus } from '@prisma/client'
+import { JobType, JobStatus } from '@/types'
 
 // Queue for processing uploaded images
 export const imageProcessingQueue = new Queue('image-processing', {
@@ -145,7 +145,7 @@ const aiWorker = new Worker(
       await db.job.update({
         where: { id: jobId },
         data: { 
-          status: JobStatus.RUNNING,
+          status: 'RUNNING',
           progress: 0
         }
       })
@@ -167,13 +167,13 @@ const aiWorker = new Worker(
       // Process based on task type
       let result: any = {}
       switch (taskType) {
-        case JobType.AI_ENHANCEMENT:
+        case 'AI_ENHANCEMENT':
           result = await processAIEnhancement(photo, params)
           break
-        case JobType.AI_UPSCALE:
+        case 'AI_UPSCALE':
           result = await processAIUpscale(photo, params)
           break
-        case JobType.AI_REMOVE_BACKGROUND:
+        case 'AI_REMOVE_BACKGROUND':
           result = await processBackgroundRemoval(photo, params)
           break
         default:
@@ -186,9 +186,9 @@ const aiWorker = new Worker(
       await db.job.update({
         where: { id: jobId },
         data: {
-          status: JobStatus.COMPLETED,
+          status: 'COMPLETED',
           progress: 100,
-          resultJson: result
+          resultJson: JSON.stringify(result)
         }
       })
 
@@ -200,7 +200,7 @@ const aiWorker = new Worker(
       await db.job.update({
         where: { id: jobId },
         data: {
-          status: JobStatus.FAILED,
+          status: 'FAILED',
           errorMsg: error instanceof Error ? error.message : 'Unknown error'
         }
       })
