@@ -1,7 +1,7 @@
 // Lazy-init queues to avoid Redis DNS during build
 import type { Queue, Worker, Job } from 'bullmq'
 import { db } from '@/lib/db'
-import { StorageService } from '@/lib/storage'
+import { getStorageManager } from '@/lib/storage-manager'
 import { ImageProcessor } from '@/lib/image-processing'
 import { ExifProcessor } from '@/lib/exif'
 import { JobType } from '@/types'
@@ -85,7 +85,8 @@ const startImageWorker = async () => {
       await job.updateProgress(10)
 
       // Download original image from S3
-      const downloadUrl = await StorageService.getPresignedDownloadUrl(fileKey)
+      const storage = getStorageManager()
+      const downloadUrl = await storage.getPresignedDownloadUrl(fileKey)
       const response = await fetch(downloadUrl)
       const buffer = Buffer.from(await response.arrayBuffer())
 
@@ -105,7 +106,7 @@ const startImageWorker = async () => {
       const variantRecords = []
       for (const variant of variants) {
         const variantKey = `variants/${photoId}/${variant.variant}.${variant.format}`
-        await StorageService.uploadBuffer(variantKey, variant.buffer, `image/${variant.format}`)
+        await storage.uploadBuffer(variantKey, variant.buffer, `image/${variant.format}`)
         
         variantRecords.push({
           variant: variant.variant,
@@ -248,31 +249,84 @@ const startAIWorker = async () => {
 
 // AI processing functions (placeholder implementations)
 async function processAIEnhancement(photo: any, params: any) {
-  // TODO: Integrate with AI APIs (OpenAI, Claude, etc.)
-  // This is a placeholder that would call external AI services
-  return {
-    status: 'completed',
-    enhancedImageKey: `enhanced/${photo.id}/enhanced.jpg`,
-    improvements: ['brightness', 'contrast', 'saturation']
-  }
+  const storage = getStorageManager()
+  // Download original
+  const originalUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
+  const res = await fetch(originalUrl)
+  const buf = Buffer.from(await res.arrayBuffer())
+
+  // Simple local enhancement via sharp as a placeholder
+  const sharp = (await import('sharp')).default
+  let pipeline = sharp(buf)
+  if (typeof params?.brightness === 'number') pipeline = pipeline.modulate({ brightness: 1 + params.brightness / 100 })
+  if (typeof params?.saturation === 'number') pipeline = pipeline.modulate({ saturation: 1 + params.saturation / 100 })
+  if (typeof params?.contrast === 'number') pipeline = pipeline.linear(1 + params.contrast / 100, 0)
+  if (typeof params?.sharpness === 'number') pipeline = pipeline.sharpen(params.sharpness)
+  const out = await pipeline.jpeg({ quality: 95 }).toBuffer()
+
+  const key = `enhanced/${photo.id}/${Date.now()}.jpg`
+  await storage.uploadBuffer(key, out, 'image/jpeg')
+
+  const edit = await db.editVersion.create({
+    data: {
+      photoId: photo.id,
+      name: 'AI增强',
+      fileKey: key,
+      params: JSON.stringify({ type: 'AI_ENHANCEMENT', params }),
+    },
+  })
+
+  return { status: 'completed', editVersionId: edit.id, enhancedImageKey: key }
 }
 
 async function processAIUpscale(photo: any, params: any) {
-  // TODO: Integrate with upscaling AI service
-  return {
-    status: 'completed',
-    upscaledImageKey: `upscaled/${photo.id}/upscaled.jpg`,
-    scaleFactor: params.scaleFactor || 2
-  }
+  const storage = getStorageManager()
+  const originalUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
+  const res = await fetch(originalUrl)
+  const buf = Buffer.from(await res.arrayBuffer())
+
+  const sharp = (await import('sharp')).default
+  const scale = Math.max(2, Math.min(4, Number(params?.scaleFactor) || 2))
+  const meta = await sharp(buf).metadata()
+  const width = meta.width ? Math.round(meta.width * scale) : undefined
+  const out = await sharp(buf).resize(width, null, { withoutEnlargement: false }).jpeg({ quality: 95 }).toBuffer()
+
+  const key = `upscaled/${photo.id}/${Date.now()}_${scale}x.jpg`
+  await storage.uploadBuffer(key, out, 'image/jpeg')
+
+  const edit = await db.editVersion.create({
+    data: {
+      photoId: photo.id,
+      name: `AI放大 ${scale}x`,
+      fileKey: key,
+      params: JSON.stringify({ type: 'AI_UPSCALE', scaleFactor: scale }),
+    },
+  })
+
+  return { status: 'completed', editVersionId: edit.id, upscaledImageKey: key, scaleFactor: scale }
 }
 
 async function processBackgroundRemoval(photo: any, params: any) {
-  // TODO: Integrate with background removal AI service
-  return {
-    status: 'completed',
-    processedImageKey: `no-bg/${photo.id}/no-background.png`,
-    maskKey: `masks/${photo.id}/mask.png`
-  }
+  const storage = getStorageManager()
+  // Placeholder: no real background removal; just convert to PNG
+  const originalUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
+  const res = await fetch(originalUrl)
+  const buf = Buffer.from(await res.arrayBuffer())
+  const sharp = (await import('sharp')).default
+  const out = await sharp(buf).png().toBuffer()
+  const key = `no-bg/${photo.id}/${Date.now()}.png`
+  await storage.uploadBuffer(key, out, 'image/png')
+
+  const edit = await db.editVersion.create({
+    data: {
+      photoId: photo.id,
+      name: 'AI去背景',
+      fileKey: key,
+      params: JSON.stringify({ type: 'AI_REMOVE_BACKGROUND' }),
+    },
+  })
+
+  return { status: 'completed', editVersionId: edit.id, processedImageKey: key }
 }
 
 // 启动 Worker 仅在明确标志下进行，避免构建期连接 Redis

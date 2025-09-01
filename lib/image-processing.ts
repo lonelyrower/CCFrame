@@ -78,16 +78,15 @@ export class ImageProcessor {
             break
         }
 
-        const buffer = await processedImage.toBuffer()
-        const info = await processedImage.toBuffer({ resolveWithObject: true })
+        const { data: outBuffer, info } = await processedImage.toBuffer({ resolveWithObject: true })
 
         variants.push({
           variant: variant.name,
           format,
-          buffer,
-          width: info.info.width,
-          height: info.info.height,
-          size: buffer.length
+          buffer: outBuffer,
+          width: info.width,
+          height: info.height,
+          size: outBuffer.length,
         })
       }
     }
@@ -118,15 +117,19 @@ export class ImageProcessor {
       .raw()
       .toBuffer({ resolveWithObject: true })
 
-    // Simple perceptual hash
+    // 64-bit perceptual hash packed into 8 bytes to avoid 32-bit overflow
     const average = data.reduce((sum, pixel) => sum + pixel, 0) / data.length
-    let hash = 0
+    const bytes = new Uint8Array(8)
     for (let i = 0; i < data.length; i++) {
       if (data[i] >= average) {
-        hash |= 1 << i
+        const byteIndex = Math.floor(i / 8)
+        const bitIndex = i % 8
+        bytes[byteIndex] |= 1 << bitIndex
       }
     }
 
-    return hash.toString(16)
+    return Array.from(bytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
   }
 }

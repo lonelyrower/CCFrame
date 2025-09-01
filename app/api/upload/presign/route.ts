@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { StorageService } from '@/lib/storage'
+import { getStorageManager, StorageManager } from '@/lib/storage-manager'
 import { db } from '@/lib/db'
 import { z } from 'zod'
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate file key
-    const fileKey = StorageService.generateKey('originals', filename)
+    const fileKey = StorageManager.generateKey('originals', filename)
 
     // Create photo record
     const photo = await db.photo.create({
@@ -54,7 +54,8 @@ export async function POST(request: NextRequest) {
     })
 
     // Get presigned URL
-    const uploadUrl = await StorageService.getPresignedUploadUrl(fileKey, contentType)
+    const storage = getStorageManager()
+    const uploadUrl = await storage.getPresignedUploadUrl(fileKey, contentType)
 
     return NextResponse.json({
       photoId: photo.id,

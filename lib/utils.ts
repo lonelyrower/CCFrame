@@ -75,6 +75,16 @@ export function generateSrcSet(photoId: string, format: string = 'webp'): string
     .join(', ')
 }
 
+export function toBase64(str: string): string {
+  if (typeof window === 'undefined') {
+    // Node.js
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return Buffer.from(str).toString('base64')
+  }
+  return window.btoa(str)
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number

@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import type { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react'
 import { PhotoWithDetails } from '@/types'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
+import { SeedDemoButton } from '@/components/admin/seed-demo-button'
 
 interface LibraryStats {
   total: number
@@ -35,29 +37,37 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
     return { photos: [], stats: { total: 0, public: 0, private: 0, processing: 0 }, hasMore: false }
   }
 
-  const [photos, stats] = await Promise.all([
-    db.photo.findMany({
-      include: {
-        variants: true,
-        tags: {
-          include: {
-            tag: true
-          }
-        },
-        album: true
-      },
-      where: filter ? {
+  const where: Prisma.PhotoWhereInput | undefined = filter
+    ? {
         OR: [
-          { album: { title: { contains: filter, mode: 'insensitive' } } },
-          { tags: { some: { tag: { name: { contains: filter, mode: 'insensitive' } } } } }
-        ]
-      } : undefined,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: limit,
-      skip: (page - 1) * limit
-    }),
+          // Match album title (case-insensitive not supported in current client types)
+          { album: { is: { title: { contains: filter } } } },
+          // Match tag name
+          { tags: { some: { tag: { is: { name: { contains: filter } } } } } },
+        ],
+      }
+    : undefined
+
+  const [photos, stats] = await Promise.all([
+    db.photo
+      .findMany({
+        include: {
+          variants: true,
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
+          album: true,
+        },
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+      })
+      .then((rows) => rows as unknown as PhotoWithDetails[]),
     Promise.all([
       db.photo.count({ where: { status: 'COMPLETED' } }),
       db.photo.count({ where: { visibility: 'PUBLIC', status: 'COMPLETED' } }),
@@ -251,8 +261,11 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
               {searchParams.filter ? '没有找到匹配的照片' : '还没有照片'}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {searchParams.filter ? '尝试修改搜索条件' : '上传一些照片开始使用'}
+              {searchParams.filter ? '尝试修改搜索条件' : '上传一些照片开始使用，或导入示例图片快速预览效果'}
             </p>
+            <div className="mt-6 flex justify-center">
+              <SeedDemoButton count={12} />
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
