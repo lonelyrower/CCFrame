@@ -103,9 +103,9 @@ const imageWorker = new Worker(
           width: metadata.width!,
           height: metadata.height!,
           blurhash,
-          exifJson: exifData,
+          exifJson: exifData || undefined,
           takenAt: exifData?.takenAt,
-          location: exifData?.location,
+          location: exifData?.location || undefined,
           status: 'COMPLETED',
           variants: {
             createMany: {
