@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   BarChart3,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ const adminNavItems = [
   { href: '/admin/library', label: '照片库', icon: Grid3X3 },
   { href: '/admin/albums', label: '相册', icon: FolderOpen },
   { href: '/admin/ai', label: 'AI 工作台', icon: Wand2 },
+  { href: '/admin/ai-enhance', label: 'AI修图', icon: Sparkles },
   { href: '/admin/settings', label: '设置', icon: Settings },
 ]
 
