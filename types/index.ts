@@ -1,7 +1,16 @@
 import { Photo, Album, PhotoVariant, Tag, User, Job, EditVersion } from '@prisma/client'
 
 export type Visibility = 'PUBLIC' | 'PRIVATE'
-export type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
+
+export const JobStatusValues = ['PENDING', 'RUNNING', 'COMPLETED', 'FAILED'] as const
+export type JobStatus = typeof JobStatusValues[number]
+
+export const JobStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING', 
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
 
 export const JobTypeValues = [
   'THUMBNAIL_GENERATION',
