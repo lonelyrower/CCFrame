@@ -1,38 +1,62 @@
-import { Queue, Worker, Job } from 'bullmq'
-import { redis } from '@/lib/redis'
+// Lazy-init queues to avoid Redis DNS during build
+import type { Queue, Worker, Job } from 'bullmq'
 import { db } from '@/lib/db'
 import { StorageService } from '@/lib/storage'
 import { ImageProcessor } from '@/lib/image-processing'
 import { ExifProcessor } from '@/lib/exif'
-import { JobType, JobStatus } from '@/types'
+import { JobType } from '@/types'
 
 // Queue for processing uploaded images
-export const imageProcessingQueue = new Queue('image-processing', {
-  connection: redis,
-  defaultJobOptions: {
-    removeOnComplete: 50,
-    removeOnFail: 50,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
+let _imageQueue: Queue | null = null
+async function getImageQueue(): Promise<Queue> {
+  if (_imageQueue) return _imageQueue
+  const { Queue } = await import('bullmq')
+  const { redis } = await import('@/lib/redis')
+  _imageQueue = new Queue('image-processing', {
+    connection: redis,
+    defaultJobOptions: {
+      removeOnComplete: 50,
+      removeOnFail: 50,
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 2000 },
     },
+  })
+  return _imageQueue
+}
+
+export const imageProcessingQueue = {
+  add: async (...args: Parameters<Queue['add']>) => {
+    const q = await getImageQueue()
+    // @ts-ignore - align to Queue.add signature
+    return q.add(...args)
   },
-})
+}
 
 // Queue for AI tasks
-export const aiProcessingQueue = new Queue('ai-processing', {
-  connection: redis,
-  defaultJobOptions: {
-    removeOnComplete: 50,
-    removeOnFail: 50,
-    attempts: 2,
-    backoff: {
-      type: 'exponential',
-      delay: 5000,
+let _aiQueue: Queue | null = null
+async function getAIQueue(): Promise<Queue> {
+  if (_aiQueue) return _aiQueue
+  const { Queue } = await import('bullmq')
+  const { redis } = await import('@/lib/redis')
+  _aiQueue = new Queue('ai-processing', {
+    connection: redis,
+    defaultJobOptions: {
+      removeOnComplete: 50,
+      removeOnFail: 50,
+      attempts: 2,
+      backoff: { type: 'exponential', delay: 5000 },
     },
+  })
+  return _aiQueue
+}
+
+export const aiProcessingQueue = {
+  add: async (...args: Parameters<Queue['add']>) => {
+    const q = await getAIQueue()
+    // @ts-ignore
+    return q.add(...args)
   },
-})
+}
 
 interface ImageProcessingJobData {
   photoId: string
@@ -48,8 +72,11 @@ interface AIProcessingJobData {
 }
 
 // Image processing worker
-const imageWorker = new Worker(
-  'image-processing',
+const startImageWorker = async () => {
+  const { Worker } = await import('bullmq')
+  const { redis } = await import('@/lib/redis')
+  return new Worker(
+    'image-processing',
   async (job: Job<ImageProcessingJobData>) => {
     const { photoId, fileKey, userId } = job.data
 
@@ -127,16 +154,20 @@ const imageWorker = new Worker(
 
       throw error
     }
-  },
-  {
-    connection: redis,
-    concurrency: 3,
-  }
-)
+    },
+    {
+      connection: redis,
+      concurrency: 3,
+    }
+  )
+}
 
 // AI processing worker
-const aiWorker = new Worker(
-  'ai-processing',
+const startAIWorker = async () => {
+  const { Worker } = await import('bullmq')
+  const { redis } = await import('@/lib/redis')
+  return new Worker(
+    'ai-processing',
   async (job: Job<AIProcessingJobData>) => {
     const { jobId, photoId, taskType, params } = job.data
 
@@ -207,12 +238,13 @@ const aiWorker = new Worker(
 
       throw error
     }
-  },
-  {
-    connection: redis,
-    concurrency: 1, // AI tasks are more resource intensive
-  }
-)
+    },
+    {
+      connection: redis,
+      concurrency: 1,
+    }
+  )
+}
 
 // AI processing functions (placeholder implementations)
 async function processAIEnhancement(photo: any, params: any) {
@@ -243,4 +275,15 @@ async function processBackgroundRemoval(photo: any, params: any) {
   }
 }
 
-export { imageWorker, aiWorker }
+// 启动 Worker 仅在明确标志下进行，避免构建期连接 Redis
+let workersStarted = false
+export async function ensureWorkers() {
+  if (workersStarted) return
+  if (process.env.START_WORKERS === 'true') {
+    await startImageWorker()
+    await startAIWorker()
+    workersStarted = true
+  }
+}
+
+export type { Queue }
