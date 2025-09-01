@@ -78,3 +78,4 @@ export default function HomePage() {
 }
 
 export const revalidate = 3600 // Revalidate every hour
+export const dynamic = 'force-dynamic' // Prevent static generation
