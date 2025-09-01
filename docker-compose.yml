@@ -20,10 +20,18 @@ services:
       S3_ENDPOINT: http://minio:9000
       CDN_BASE_URL: ${CDN_BASE_URL}
     depends_on:
-      - db
-      - redis
-      - minio
-    command: sh -c "npx prisma db push && node scripts/create-admin.js && npm run start"
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    command: >
+      sh -c "
+      for i in $(seq 1 30); do npx prisma db push && break || (echo 'DB not ready, retry...' && sleep 2); done &&
+      node scripts/create-admin.js || true &&
+      npm run start
+      "
     networks:
       - ccframe
 
@@ -43,10 +51,17 @@ services:
       S3_ENDPOINT: http://minio:9000
       START_WORKERS: 'true'
     depends_on:
-      - db
-      - redis
-      - minio
-    command: sh -c "npx prisma db push && node --loader tsx -e \"import('./jobs/queue').then(m=>m.ensureWorkers())\""
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    command: >
+      sh -c "
+      for i in $(seq 1 30); do npx prisma db push && break || (echo 'DB not ready, retry...' && sleep 2); done &&
+      node --loader tsx -e \"import('./jobs/queue').then(m=>m.ensureWorkers())\"
+      "
     networks:
       - ccframe
 
@@ -121,3 +136,8 @@ volumes:
 networks:
   ccframe:
     driver: bridge
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ccframe} -d ${POSTGRES_DB:-ccframe}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
