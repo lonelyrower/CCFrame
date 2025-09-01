@@ -1,9 +1,19 @@
 #!/bin/bash
+set -euo pipefail
 
-# 🚀 CCFrame 一键安装部署脚本
-# 使用方法: curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh | bash
-
-set -e
+# 🚀 CCFrame VPS 一键运维脚本（Docker 专用）
+# 非交互用法：
+#   bash install.sh install     # 安装/升级并启动（自动构建）
+#   bash install.sh update      # 拉取代码并重建启动
+#   bash install.sh start       # 启动容器
+#   bash install.sh stop        # 停止容器
+#   bash install.sh restart     # 重启容器
+#   bash install.sh status      # 查看容器状态
+#   bash install.sh logs [svc]  # 查看日志（可选 svc：web/worker/nginx/minio/db/redis）
+#   bash install.sh env         # 生成/修复 .env（不会覆盖已有值）
+#   bash install.sh health      # 健康检查
+# 交互用法：
+#   bash install.sh             # 弹出菜单
 
 # 颜色输出
 RED='\033[0;31m'
@@ -12,12 +22,11 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# 输出函数
 print_banner() {
-    echo -e "${PURPLE}"
-    cat << 'EOF'
+  echo -e "${PURPLE}"
+  cat << 'EOF'
     ╔══════════════════════════════════════════════════════════════╗
     ║                                                              ║
     ║    ██████╗ ██████╗███████╗██████╗  █████╗ ███╗   ███╗███████╗║
@@ -27,104 +36,256 @@ print_banner() {
     ║   ╚██████╗╚██████╗██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗║
     ║    ╚═════╝ ╚═════╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝║
     ║                                                              ║
-    ║           🎨 个人AI相册网站 - 一键部署安装器 🚀              ║
+    ║           🎨 个人AI相册网站 - VPS 一键运维脚本 🚀           ║
     ║                   by lonelyrower                             ║
     ╚══════════════════════════════════════════════════════════════╝
 EOF
-    echo -e "${NC}"
-    echo -e "${CYAN}✨ 功能特色:${NC}"
-    echo "   📸 智能相册管理      🤖 AI图片处理"
-    echo "   📱 响应式设计        🔒 权限控制"  
-    echo "   ⚡ PWA离线支持       🎨 暗黑模式"
-    echo ""
+  echo -e "${NC}"
+  echo -e "${CYAN}✨ 功能特色:${NC}"
+  echo "   📸 智能相册管理      🤖 AI图片处理"
+  echo "   📱 响应式设计        🔒 权限控制"
+  echo "   ⚡ PWA离线支持       🎨 暗黑模式"
+  echo
 }
 
 print_success() { echo -e "${GREEN}✅ $1${NC}"; }
-print_error() { echo -e "${RED}❌ $1${NC}"; }
+print_error()   { echo -e "${RED}❌ $1${NC}"; }
 print_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-print_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-print_step() { echo -e "${PURPLE}🚀 $1${NC}"; }
+print_info()    { echo -e "${BLUE}ℹ️  $1${NC}"; }
+print_step()    { echo -e "${PURPLE}🚀 $1${NC}"; }
 
-# 检查系统要求
+DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-}
+
 check_system() {
-    print_step "检查系统环境..."
-    
-    # 检查操作系统
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        OS="linux"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        OS="macos"
-    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        OS="windows"
+  print_step "检查系统环境..."
+  if [[ "${OSTYPE:-}" != linux* ]]; then
+    print_error "仅支持 Linux 服务器（VPS）"
+    exit 1
+  fi
+  print_success "操作系统: linux"
+
+  # git/curl
+  if ! command -v git >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
+    print_info "安装 git/curl..."
+    apt-get update -y >/dev/null 2>&1 || true
+    apt-get install -y git curl >/dev/null 2>&1 || true
+  fi
+  print_success "git/curl 已就绪"
+
+  # Docker
+  if ! command -v docker >/dev/null 2>&1; then
+    print_info "安装 Docker..."
+    curl -fsSL https://get.docker.com | sh
+  fi
+  print_success "Docker: $(docker --version)"
+
+  # Compose
+  if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+  elif command -v docker-compose >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+  else
+    print_info "安装 docker compose 插件..."
+    apt-get install -y docker-compose-plugin >/dev/null 2>&1 || true
+    if docker compose version >/dev/null 2>&1; then
+      DOCKER_COMPOSE_CMD="docker compose"
     else
-        print_error "不支持的操作系统: $OSTYPE"
-        exit 1
+      print_error "未找到 docker compose 命令，请手动安装 compose 插件"
+      exit 1
     fi
-    print_success "操作系统: $OS"
-    
-    # 检查必需命令
-    for cmd in curl git; do
-        if ! command -v $cmd &> /dev/null; then
-            print_error "$cmd 未安装，请先安装"
-            exit 1
-        fi
-        print_success "$cmd 已安装"
-    done
+  fi
+  print_success "Compose: $DOCKER_COMPOSE_CMD"
 }
 
-# 安装 Node.js
-install_nodejs() {
-    print_step "检查 Node.js..."
-    
-    if command -v node &> /dev/null; then
-        NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-        if [ "$NODE_VERSION" -ge 18 ]; then
-            print_success "Node.js $(node -v) 已安装"
-            return
-        else
-            print_warning "Node.js 版本过低 (需要 18+)，正在更新..."
-        fi
-    else
-        print_info "正在安装 Node.js..."
-    fi
-    
-    # 使用 NodeSource 安装最新 Node.js
-    if [[ "$OS" == "linux" ]]; then
-        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-        sudo apt-get install -y nodejs
-    elif [[ "$OS" == "macos" ]]; then
-        # 检查是否有 Homebrew
-        if command -v brew &> /dev/null; then
-            brew install node
-        else
-            print_error "请先安装 Homebrew 或手动安装 Node.js 18+"
-            print_info "Homebrew: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-            exit 1
-        fi
-    else
-        print_error "请手动安装 Node.js 18+: https://nodejs.org"
-        exit 1
-    fi
-    
-    print_success "Node.js 安装完成"
-}
-
-# 克隆项目
 clone_project() {
-    print_step "下载项目代码..."
-    
-    PROJECT_DIR="CCFrame"
-    if [ -d "$PROJECT_DIR" ]; then
-        print_warning "项目目录已存在，正在更新..."
-        cd "$PROJECT_DIR"
-        git pull origin main
-    else
-        git clone https://github.com/lonelyrower/CCFrame.git
-        cd "$PROJECT_DIR"
-    fi
-    
-    print_success "项目代码下载完成"
+  print_step "获取项目代码..."
+  PROJECT_DIR="CCFrame"
+  if [ -d "$PROJECT_DIR/.git" ]; then
+    cd "$PROJECT_DIR"
+    git pull --rebase --autostash || true
+    print_success "代码已更新"
+  else
+    print_error "未检测到项目目录，请先使用 SSH/Deploy Key 克隆仓库后再运行本脚本。"
+    print_info  "例如：git clone git@github.com:lonelyrower/CCFrame.git"
+    exit 1
+  fi
 }
+
+ensure_env() {
+  print_step "检查/生成环境变量..."
+  if [ ! -f .env ]; then
+    if [ -f .env.docker.example ]; then
+      cp .env.docker.example .env
+      print_success ".env 已从 .env.docker.example 生成"
+    else
+      print_warning ".env.docker.example 不存在，创建最小化 .env"
+      cat > .env << 'EOF'
+NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || echo "change-me")
+ADMIN_EMAIL=admin@local.dev
+ADMIN_PASSWORD=admin123
+POSTGRES_USER=ccframe
+POSTGRES_PASSWORD=ccframe
+POSTGRES_DB=ccframe
+DATABASE_URL=postgresql://ccframe:ccframe@db:5432/ccframe
+REDIS_URL=redis://redis:6379
+S3_ACCESS_KEY_ID=minioadmin
+S3_SECRET_ACCESS_KEY=minioadmin
+S3_BUCKET_NAME=ccframe
+S3_REGION=us-east-1
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin
+EOF
+    fi
+  fi
+
+  SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+  if [ -z "${SERVER_IP:-}" ]; then
+    SERVER_IP=$(curl -fsSL https://api.ipify.org || echo "127.0.0.1")
+  fi
+  if grep -q '^NEXTAUTH_URL=' .env; then
+    sed -i "s#^NEXTAUTH_URL=.*#NEXTAUTH_URL=http://$SERVER_IP#" .env
+  else
+    echo "NEXTAUTH_URL=http://$SERVER_IP" >> .env
+  fi
+  print_success "NEXTAUTH_URL 已设置为 http://$SERVER_IP"
+}
+
+docker_info() {
+  # 计算服务器 IP
+  SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+  if [ -z "${SERVER_IP:-}" ]; then
+    SERVER_IP=$(curl -fsSL https://api.ipify.org || echo "127.0.0.1")
+  fi
+  echo ""
+  print_info "📋 Docker 已启动"
+  echo ""
+  echo "🌐 应用地址:"
+  echo "   主应用: http://$SERVER_IP/"
+  echo "   管理后台: http://$SERVER_IP/admin/login"
+  echo "   MinIO控制台: http://$SERVER_IP:9001"
+  echo ""
+  echo "🔑 默认账户:"
+  echo "   邮箱: admin@local.dev"
+  echo "   密码: admin123"
+  echo ""
+  echo "🛠️  管理命令:"
+  echo "   停止: $DOCKER_COMPOSE_CMD down"
+  echo "   重启: $DOCKER_COMPOSE_CMD restart"
+  echo "   查看日志: $DOCKER_COMPOSE_CMD logs -f"
+  echo ""
+}
+
+cmd_install() {
+  check_system
+  clone_project
+  ensure_env
+  print_step "构建并启动容器..."
+  $DOCKER_COMPOSE_CMD up -d --build
+  docker_info
+}
+
+cmd_update() {
+  check_system
+  clone_project
+  ensure_env
+  print_step "更新代码并重建..."
+  $DOCKER_COMPOSE_CMD up -d --build
+  docker_info
+}
+
+cmd_start() {
+  check_system
+  $DOCKER_COMPOSE_CMD up -d
+  docker_info
+}
+
+cmd_stop() {
+  check_system
+  $DOCKER_COMPOSE_CMD down
+  print_success "已停止所有容器"
+}
+
+cmd_restart() {
+  check_system
+  $DOCKER_COMPOSE_CMD restart
+  docker_info
+}
+
+cmd_status() {
+  check_system
+  $DOCKER_COMPOSE_CMD ps
+}
+
+cmd_logs() {
+  check_system
+  svc=${1:-}
+  if [ -n "$svc" ]; then
+    $DOCKER_COMPOSE_CMD logs -f --tail=200 "$svc"
+  else
+    $DOCKER_COMPOSE_CMD logs -f --tail=200
+  fi
+}
+
+cmd_env() {
+  ensure_env
+}
+
+cmd_health() {
+  SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+  [ -n "${SERVER_IP:-}" ] || SERVER_IP=127.0.0.1
+  curl -fsSL http://$SERVER_IP/api/health || echo '{"ok":false}'
+}
+
+interactive_menu() {
+  echo ""
+  print_info "请选择操作："
+  echo "  1) 安装/升级并启动"
+  echo "  2) 更新代码并重启"
+  echo "  3) 启动"
+  echo "  4) 重启"
+  echo "  5) 停止"
+  echo "  6) 状态"
+  echo "  7) 查看日志"
+  echo "  8) 修复/生成 .env"
+  echo "  9) 健康检查"
+  echo "  0) 退出"
+  while true; do
+    read -rp "输入编号: " choice
+    case "$choice" in
+      1) cmd_install; break ;;
+      2) cmd_update; break ;;
+      3) cmd_start; break ;;
+      4) cmd_restart; break ;;
+      5) cmd_stop; break ;;
+      6) cmd_status; break ;;
+      7) read -rp "服务名(可留空): " svc; cmd_logs "$svc"; break ;;
+      8) cmd_env; break ;;
+      9) cmd_health; break ;;
+      0) exit 0 ;;
+      *) echo "请输入有效编号" ;;
+    esac
+  done
+}
+
+main() {
+  print_banner
+  case "${1:-}" in
+    install)  shift; cmd_install "$@" ;;
+    update)   shift; cmd_update  "$@" ;;
+    start)    shift; cmd_start   "$@" ;;
+    stop)     shift; cmd_stop    "$@" ;;
+    restart)  shift; cmd_restart "$@" ;;
+    status)   shift; cmd_status  "$@" ;;
+    logs)     shift; cmd_logs    "$@" ;;
+    env)      shift; cmd_env     "$@" ;;
+    health)   shift; cmd_health  "$@" ;;
+    *) interactive_menu ;;
+  esac
+}
+
+trap 'print_error "操作已中断"; exit 1' INT TERM
+
+main "$@"
 
 # 安装依赖
 install_dependencies() {
