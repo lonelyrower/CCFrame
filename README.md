@@ -1,254 +1,357 @@
-# Personal Photo Gallery
+# 🎨 CCFrame - AI驱动的个人相册网站
 
-A beautiful, private photo gallery with AI-powered features built with Next.js 14, TypeScript, and modern web technologies.
+<div align="center">
 
-## Features
+![CCFrame](https://img.shields.io/badge/CCFrame-AI%20Gallery-purple?style=for-the-badge)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=for-the-badge&logo=typescript)
+![Tailwind](https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=for-the-badge&logo=tailwindcss)
 
-### 🖼️ Photo Management
-- **Multiple Display Modes**: Masonry, Grid, Lightbox, Timeline views
-- **Smart Upload**: Drag & drop with automatic processing
-- **EXIF Support**: Automatic extraction and display of camera data
-- **Multiple Formats**: AVIF, WebP, JPEG with automatic optimization
-- **Private/Public**: Fine-grained visibility control
+一个现代化、智能化的个人相册网站，具有AI图片处理功能
 
-### 🤖 AI-Powered Enhancements
-- **Auto Enhancement**: Brightness, contrast, and color balance
-- **AI Upscaling**: Super-resolution for better quality
-- **Background Removal**: Automatic subject isolation
-- **Smart Descriptions**: AI-generated photo descriptions
-- **Multiple Providers**: OpenAI, Anthropic, Google support
+[📸 在线演示](#) | [🚀 一键部署](#-一键部署) | [📖 详细文档](#-详细文档)
 
-### 📱 Modern Web Experience
-- **Responsive Design**: Mobile-first approach
-- **Progressive Web App**: Install on any device
-- **Offline Support**: Cached content works offline
-- **Dark Mode**: System preference aware theming
-- **Fast Loading**: Image optimization and lazy loading
+</div>
 
-### 🔐 Security & Privacy
-- **Authentication**: Secure admin login with 2FA support
-- **Access Control**: Public/private photo visibility
-- **Audit Logging**: Track all important actions
-- **Secure Storage**: S3-compatible object storage
+## ⚡ 一键部署
 
-## Tech Stack
-
-### Frontend
-- **Next.js 14**: App Router with Server Components
-- **React 18**: Modern React with Suspense
-- **TypeScript**: Full type safety
-- **Tailwind CSS**: Utility-first styling
-- **Framer Motion**: Smooth animations
-- **Headless UI**: Accessible components
-
-### Backend
-- **Prisma**: Type-safe database ORM
-- **PostgreSQL**: Robust relational database
-- **Redis**: Caching and job queues
-- **BullMQ**: Background job processing
-- **NextAuth.js**: Authentication framework
-
-### Storage & Processing
-- **S3 Compatible**: AWS S3, MinIO, or similar
-- **Sharp**: High-performance image processing
-- **Multiple AI APIs**: OpenAI, Anthropic, Google
-- **CDN Ready**: Cloudflare, Akamai compatible
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 14+
-- Redis 6+
-- S3-compatible storage
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd personal-photo-gallery
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` with your configuration:
-   ```env
-   # Database
-   DATABASE_URL="postgresql://username:password@localhost:5432/photo_gallery"
-   
-   # NextAuth
-   NEXTAUTH_SECRET="your-secret-key"
-   NEXTAUTH_URL="http://localhost:3000"
-   
-   # Storage
-   S3_ACCESS_KEY_ID="your-access-key"
-   S3_SECRET_ACCESS_KEY="your-secret-key"
-   S3_BUCKET_NAME="your-bucket-name"
-   S3_REGION="us-east-1"
-   S3_ENDPOINT="https://s3.amazonaws.com"
-   
-   # Redis
-   REDIS_URL="redis://localhost:6379"
-   
-   # Admin Account
-   ADMIN_EMAIL="admin@example.com"
-   ADMIN_PASSWORD="secure-password"
-   
-   # AI APIs (Optional)
-   OPENAI_API_KEY="your-openai-key"
-   ANTHROPIC_API_KEY="your-anthropic-key"
-   GOOGLE_API_KEY="your-google-key"
-   ```
-
-4. **Set up the database**
-   ```bash
-   npm run db:migrate
-   npm run db:generate
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Start the job workers** (in another terminal)
-   ```bash
-   node -r ts-node/register jobs/worker.ts
-   ```
-
-### Production Deployment
-
-1. **Build the application**
-   ```bash
-   npm run build
-   ```
-
-2. **Start production server**
-   ```bash
-   npm start
-   ```
-
-## Project Structure
-
-```
-├── app/                    # Next.js App Router
-│   ├── (public)/          # Public pages
-│   ├── admin/             # Admin interface  
-│   └── api/               # API routes
-├── components/            # React components
-│   ├── ui/               # Base UI components
-│   ├── gallery/          # Gallery components
-│   └── admin/            # Admin components
-├── lib/                   # Utility libraries
-│   ├── auth.ts           # Authentication
-│   ├── db.ts             # Database client
-│   ├── storage.ts        # File storage
-│   ├── image-processing.ts # Image processing
-│   └── ai-services.ts    # AI integrations
-├── jobs/                  # Background jobs
-├── prisma/               # Database schema
-└── types/                # TypeScript types
-```
-
-## Configuration
-
-### Image Processing
-The app automatically generates multiple image variants:
-- **Thumbnail**: 300x300 (square crop)
-- **Small**: 600px width
-- **Medium**: 1200px width  
-- **Large**: 2400px width
-
-All variants are generated in AVIF, WebP, and JPEG formats for optimal delivery.
-
-### AI Services
-Configure AI providers in your environment:
-
-- **OpenAI**: GPT-4 Vision for descriptions
-- **Anthropic**: Claude Vision for descriptions
-- **Google**: Gemini Pro Vision for descriptions
-
-### Background Jobs
-Jobs are processed asynchronously:
-- **Image Processing**: Thumbnail generation, EXIF extraction
-- **AI Tasks**: Enhancement, upscaling, background removal
-
-## API Endpoints
-
-### Photos
-- `GET /api/photos` - List photos
-- `POST /api/upload/presign` - Get upload URL
-- `POST /api/upload/commit` - Complete upload
-
-### Images
-- `GET /api/image/[id]/[variant]` - Serve optimized images
-
-### AI
-- `POST /api/ai/jobs` - Create AI job
-- `GET /api/ai/jobs` - List AI jobs
-- `GET /api/ai/jobs/[id]` - Get job status
-
-## Development
-
-### Database Changes
 ```bash
-# After modifying prisma/schema.prisma
-npm run db:generate
-npm run db:migrate
+curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh | bash
 ```
 
-### Type Checking
-```bash
-npm run type-check
-```
+**就是这么简单！** 脚本会自动：
+- ✅ 检查系统环境
+- ✅ 安装必要依赖
+- ✅ 下载项目代码
+- ✅ 选择部署平台
+- ✅ 完成部署配置
 
-### Linting
-```bash
-npm run lint
-```
-
-## Deployment
-
-### Environment Setup
-- Set up PostgreSQL database
-- Configure Redis instance  
-- Set up S3-compatible storage
-- Configure CDN (optional)
-
-### Scaling Considerations
-- Use Redis for session storage
-- Scale background job workers
-- Configure CDN for static assets
-- Monitor storage usage
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For questions or issues:
-1. Check the documentation
-2. Search existing issues
-3. Create a new issue with detailed information
+支持 **Vercel**、**Railway**、**Docker** 三种部署方式。
 
 ---
 
-Built with ❤️ using modern web technologies
+## ✨ 功能特色
+
+### 📸 智能相册管理
+- **多种视图** - 瀑布流、网格、时间线、地图展示
+- **智能分类** - 自动按时间、地点、标签整理
+- **批量操作** - 上传、编辑、删除多张照片
+- **EXIF提取** - 自动读取拍摄信息和地理位置
+
+### 🤖 AI图片处理
+- **智能增强** - 一键改善照片亮度、对比度、色彩
+- **AI放大** - 无损放大图片分辨率
+- **背景移除** - 智能抠图和背景替换
+- **多AI支持** - OpenAI、Claude、Gemini可选
+
+### 🎨 现代化设计
+- **响应式设计** - 完美适配手机、平板、桌面
+- **暗黑模式** - 自动切换，保护夜间视力
+- **PWA支持** - 可安装到设备，离线浏览
+- **动效优化** - 流畅的过渡和微交互
+
+### 🔐 权限与安全
+- **双重权限** - 公开/私密照片分级管理
+- **安全认证** - NextAuth.js + 2FA支持
+- **审计日志** - 记录所有关键操作
+- **数据保护** - EXIF隐私清理，GPS可选显示
+
+---
+
+## 🏗️ 技术架构
+
+### 前端技术栈
+- **框架**: Next.js 14 (App Router + Server Components)
+- **样式**: Tailwind CSS + Headless UI
+- **动效**: Framer Motion
+- **状态**: SWR + React Hook Form
+- **类型**: TypeScript 全覆盖
+
+### 后端技术栈
+- **API**: Next.js Route Handlers + tRPC (可选)
+- **数据库**: PostgreSQL + Prisma ORM
+- **缓存**: Redis + BullMQ 任务队列
+- **存储**: S3兼容 (AWS/MinIO/阿里云)
+- **认证**: NextAuth.js + bcrypt
+
+### AI与图像处理
+- **图像处理**: Sharp + EXIF提取
+- **AI集成**: OpenAI/Claude/Gemini APIs
+- **格式优化**: AVIF/WebP/JPEG 多格式输出
+- **缓存策略**: CDN + 本地缓存
+
+---
+
+## 🚀 部署方案
+
+### 1. Vercel 部署 (推荐)
+
+最简单的部署方式，适合个人用户：
+
+```bash
+# 一键部署
+curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh | bash
+
+# 或者手动部署
+git clone https://github.com/lonelyrower/CCFrame.git
+cd CCFrame
+vercel --prod
+```
+
+**配置要求**:
+- 免费 PostgreSQL (Supabase/Neon)
+- Vercel 环境变量配置
+
+### 2. Railway 部署
+
+包含数据库的完整方案：
+
+```bash
+# 包含在一键脚本中
+railway create && railway add postgresql && railway up
+```
+
+**优势**:
+- 自动配置数据库
+- $5/月免费额度
+- 零配置部署
+
+### 3. Docker 部署
+
+本地或服务器部署：
+
+```bash
+# 完整环境一键启动
+docker-compose up -d
+```
+
+**包含服务**:
+- CCFrame 应用
+- PostgreSQL 数据库
+- Redis 缓存
+- MinIO 对象存储
+
+### 4. 手动部署
+
+完全自定义的部署方案：
+
+```bash
+npm install
+cp .env.example .env  # 编辑配置
+npx prisma db push
+npm run build
+npm start
+```
+
+---
+
+## 🔧 配置说明
+
+### 必需环境变量
+
+```env
+# 数据库连接
+DATABASE_URL="postgresql://username:password@host:5432/dbname"
+
+# 应用配置  
+NEXTAUTH_SECRET="your-32-character-secret-key"
+NEXTAUTH_URL="https://your-domain.com"
+
+# 管理员账户
+ADMIN_EMAIL="admin@yourdomain.com"
+ADMIN_PASSWORD="your-secure-password"
+```
+
+### 可选环境变量
+
+```env
+# AI功能 (可选)
+OPENAI_API_KEY="sk-your-openai-key"
+ANTHROPIC_API_KEY="sk-ant-your-claude-key"
+GOOGLE_API_KEY="your-google-key"
+
+# 存储配置
+S3_ACCESS_KEY_ID="your-access-key"
+S3_SECRET_ACCESS_KEY="your-secret-key"
+S3_BUCKET_NAME="your-bucket"
+
+# 缓存配置
+REDIS_URL="redis://localhost:6379"
+```
+
+### 免费服务推荐
+
+| 服务类型 | 推荐平台 | 免费额度 | 特色 |
+|---------|---------|---------|------|
+| **部署平台** | Vercel | 无限制 | 全球CDN + 自动SSL |
+| **数据库** | Supabase | 500MB | 实时功能 + 管理界面 |
+| **数据库** | Neon | 0.5GB | 无冷启动 + 分支管理 |
+| **存储** | Cloudflare R2 | 10GB | 零出站费用 |
+| **缓存** | Upstash Redis | 10k命令/天 | 无服务器架构 |
+
+---
+
+## 📱 功能预览
+
+### 🏠 主页展示
+- 瀑布流照片展示
+- 响应式多列布局
+- 懒加载 + 无限滚动
+- 快速搜索和筛选
+
+### 👨‍💼 管理后台
+- 拖拽上传照片
+- 批量编辑和标签
+- AI处理工作台
+- 数据统计面板
+
+### 📸 照片详情
+- 大图灯箱浏览
+- EXIF信息展示
+- 地理位置地图
+- 相关照片推荐
+
+### 🤖 AI工作台
+- 实时预览效果
+- 参数调节控制
+- 处理进度显示
+- 版本历史管理
+
+---
+
+## 🛠️ 本地开发
+
+### 环境要求
+
+- Node.js 18+
+- PostgreSQL 14+
+- Redis 6+ (可选)
+
+### 开发步骤
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/lonelyrower/CCFrame.git
+cd CCFrame
+
+# 2. 安装依赖
+npm install
+
+# 3. 配置环境
+cp .env.example .env
+# 编辑 .env 文件
+
+# 4. 初始化数据库
+npx prisma generate
+npx prisma db push
+node scripts/create-admin.js
+
+# 5. 启动开发服务
+npm run dev
+```
+
+### 项目结构
+
+```
+CCFrame/
+├── app/                    # Next.js App Router
+│   ├── (public)/          # 公开页面
+│   ├── admin/             # 管理后台
+│   └── api/               # API 路由
+├── components/            # React 组件
+│   ├── ui/               # 基础 UI 组件
+│   ├── gallery/          # 相册组件
+│   └── admin/            # 管理组件
+├── lib/                   # 核心库
+│   ├── auth.ts           # 认证逻辑
+│   ├── db.ts             # 数据库客户端
+│   ├── storage.ts        # 文件存储
+│   └── ai-services.ts    # AI 服务集成
+├── jobs/                  # 后台任务
+├── prisma/               # 数据库模型
+├── scripts/              # 工具脚本
+└── types/                # TypeScript 类型
+```
+
+---
+
+## 🎯 路线图
+
+### v1.0 (当前)
+- ✅ 基础相册功能
+- ✅ AI图片处理
+- ✅ 管理后台
+- ✅ PWA支持
+
+### v1.1 (规划中)
+- 🔄 人脸识别和分组
+- 🔄 智能相册推荐
+- 🔄 批量AI处理
+- 🔄 更多AI模型支持
+
+### v1.2 (未来)
+- 📋 移动端原生应用
+- 📋 社交分享功能
+- 📋 协作和评论
+- 📋 更多存储后端
+
+---
+
+## 🤝 贡献指南
+
+欢迎参与 CCFrame 的开发！
+
+### 如何贡献
+
+1. **Fork** 项目
+2. 创建 **feature** 分支
+3. 提交你的修改
+4. 推送到分支
+5. 创建 **Pull Request**
+
+### 开发规范
+
+- 使用 TypeScript 严格模式
+- 遵循 ESLint 配置
+- 添加必要的测试
+- 更新相关文档
+
+### 问题反馈
+
+- 🐛 **Bug报告**: [GitHub Issues](https://github.com/lonelyrower/CCFrame/issues)
+- 💡 **功能建议**: [GitHub Discussions](https://github.com/lonelyrower/CCFrame/discussions)
+- ❓ **使用问题**: [GitHub Discussions Q&A](https://github.com/lonelyrower/CCFrame/discussions/categories/q-a)
+
+---
+
+## 📄 开源协议
+
+本项目基于 [MIT License](LICENSE) 开源协议。
+
+## 🙏 致谢
+
+感谢以下开源项目和服务：
+
+- [Next.js](https://nextjs.org) - React 全栈框架
+- [Prisma](https://prisma.io) - 现代化数据库工具
+- [Tailwind CSS](https://tailwindcss.com) - 实用优先的CSS框架
+- [Vercel](https://vercel.com) - 最佳的部署平台
+- [Supabase](https://supabase.com) - 开源Firebase替代品
+
+---
+
+## 📞 联系方式
+
+- **作者**: lonelyrower
+- **邮箱**: lonelyrower99@gmail.com
+- **GitHub**: [@lonelyrower](https://github.com/lonelyrower)
+
+---
+
+<div align="center">
+
+**⭐ 如果这个项目对你有帮助，请给个Star支持一下！**
+
+Made with ❤️ by [lonelyrower](https://github.com/lonelyrower)
+
+</div>
