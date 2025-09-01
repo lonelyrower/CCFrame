@@ -364,7 +364,11 @@ show_railway_next_steps() {
 }
 
 show_docker_next_steps() {
-    SERVER_IP="$1"
+    # 计算服务器 IP
+    SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    if [ -z "$SERVER_IP" ]; then
+      SERVER_IP=$(curl -fsSL https://api.ipify.org || echo "127.0.0.1")
+    fi
     echo ""
     print_info "📋 Docker 部署完成！"
     echo ""
@@ -378,9 +382,9 @@ show_docker_next_steps() {
     echo "   密码: admin123"
     echo ""
     echo "🛠️  管理命令:"
-    echo "   停止: $DOCKER_COMPOSE_CMD down"
-    echo "   重启: $DOCKER_COMPOSE_CMD restart"
-    echo "   查看日志: $DOCKER_COMPOSE_CMD logs -f"
+    echo "   停止: ${DOCKER_COMPOSE_CMD:-docker compose} down"
+    echo "   重启: ${DOCKER_COMPOSE_CMD:-docker compose} restart"
+    echo "   查看日志: ${DOCKER_COMPOSE_CMD:-docker compose} logs -f"
     echo ""
 }
 

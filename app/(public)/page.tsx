@@ -45,10 +45,8 @@ async function GalleryContent() {
   if (photos.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to My Gallery</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          No photos have been shared yet. Check back soon!
-        </p>
+        <h1 className="text-4xl font-bold mb-4">欢迎来到我的相册</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-8">暂时还没有公开的照片，敬请期待～</p>
       </div>
     )
   }
@@ -56,10 +54,8 @@ async function GalleryContent() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">My Photo Gallery</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          A collection of moments captured and memories preserved
-        </p>
+        <h1 className="text-4xl font-bold mb-2">我的照片集</h1>
+        <p className="text-gray-600 dark:text-gray-400">用照片记录生活里的小确幸</p>
       </div>
       
       <MasonryGallery photos={photos} />
@@ -77,5 +73,6 @@ export default function HomePage() {
   )
 }
 
-export const revalidate = 3600 // Revalidate every hour
+// 避免在构建阶段访问数据库，强制运行时渲染
+export const dynamic = 'force-dynamic'
 export const dynamic = 'force-dynamic' // Prevent static generation

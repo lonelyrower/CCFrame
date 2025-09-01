@@ -20,10 +20,10 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 const publicNavItems = [
-  { href: '/', label: 'Home', icon: Camera },
-  { href: '/photos', label: 'Photos', icon: Grid3X3 },
-  { href: '/timeline', label: 'Timeline', icon: Calendar },
-  { href: '/tags', label: 'Tags', icon: Tag },
+  { href: '/', label: '首页', icon: Camera },
+  { href: '/photos', label: '照片', icon: Grid3X3 },
+  { href: '/timeline', label: '时间线', icon: Calendar },
+  { href: '/tags', label: '标签', icon: Tag },
 ]
 
 export function Navigation() {
@@ -51,7 +51,7 @@ export function Navigation() {
             className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white"
           >
             <Camera className="h-6 w-6" />
-            Gallery
+            相册
           </Link>
 
           {/* Desktop Navigation */}
@@ -96,13 +96,13 @@ export function Navigation() {
               <Link href="/admin">
                 <Button variant="outline" size="sm">
                   <Settings className="h-4 w-4 mr-2" />
-                  Admin
+                  管理后台
                 </Button>
               </Link>
             ) : (
               <Link href="/admin/login">
                 <Button variant="outline" size="sm">
-                  Login
+                  登录
                 </Button>
               </Link>
             )}
@@ -168,7 +168,7 @@ export function Navigation() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Settings className="h-4 w-4" />
-                    Admin
+                    管理后台
                   </Link>
                 ) : (
                   <Link
@@ -176,7 +176,7 @@ export function Navigation() {
                     className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Login
+                    登录
                   </Link>
                 )}
               </div>

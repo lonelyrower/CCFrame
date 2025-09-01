@@ -59,17 +59,15 @@ export default function LoginPage() {
             </div>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Admin Login
+            管理员登录
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Sign in to manage your photo gallery
-          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">登录后可管理你的相册</p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="sr-only">
-              Email address
+              邮箱
             </label>
             <input
               id="email"
@@ -78,7 +76,7 @@ export default function LoginPage() {
               autoComplete="email"
               required
               className="relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-white dark:bg-gray-800"
-              placeholder="Email address"
+              placeholder="邮箱"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -86,7 +84,7 @@ export default function LoginPage() {
 
           <div className="relative">
             <label htmlFor="password" className="sr-only">
-              Password
+              密码
             </label>
             <input
               id="password"
@@ -95,7 +93,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
               className="relative block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-white dark:bg-gray-800"
-              placeholder="Password"
+              placeholder="密码"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -120,10 +118,10 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing in...
+                登录中...
               </>
             ) : (
-              'Sign in'
+              '登录'
             )}
           </Button>
         </form>
@@ -133,7 +131,7 @@ export default function LoginPage() {
             onClick={() => router.push('/')}
             className="text-primary hover:text-primary/80 text-sm font-medium"
           >
-            ← Back to Gallery
+            ← 返回相册
           </button>
         </div>
       </div>

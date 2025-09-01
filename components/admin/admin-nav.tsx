@@ -23,12 +23,12 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 const adminNavItems = [
-  { href: '/admin', label: 'Dashboard', icon: BarChart3 },
-  { href: '/admin/upload', label: 'Upload', icon: Upload },
-  { href: '/admin/library', label: 'Library', icon: Grid3X3 },
-  { href: '/admin/albums', label: 'Albums', icon: FolderOpen },
-  { href: '/admin/ai', label: 'AI Studio', icon: Wand2 },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/admin', label: '控制台', icon: BarChart3 },
+  { href: '/admin/upload', label: '上传', icon: Upload },
+  { href: '/admin/library', label: '照片库', icon: Grid3X3 },
+  { href: '/admin/albums', label: '相册', icon: FolderOpen },
+  { href: '/admin/ai', label: 'AI 工作台', icon: Wand2 },
+  { href: '/admin/settings', label: '设置', icon: Settings },
 ]
 
 export function AdminNav() {
@@ -55,7 +55,7 @@ export function AdminNav() {
             className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white"
           >
             <Camera className="h-6 w-6" />
-            Admin
+            管理后台
           </Link>
 
           {/* Desktop Navigation */}
@@ -85,7 +85,7 @@ export function AdminNav() {
             {/* Public Gallery Link */}
             <Link href="/">
               <Button variant="ghost" size="sm">
-                View Gallery
+                查看前台
               </Button>
             </Link>
 
@@ -107,7 +107,7 @@ export function AdminNav() {
               variant="ghost"
               size="icon"
               onClick={() => signOut()}
-              title="Sign out"
+              title="退出登录"
             >
               <LogOut className="h-5 w-5" />
             </Button>
@@ -171,7 +171,7 @@ export function AdminNav() {
                   className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  View Gallery
+                  查看前台
                 </Link>
                 
                 <button
@@ -182,7 +182,7 @@ export function AdminNav() {
                   className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors w-full text-left"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  退出登录
                 </button>
               </div>
             </div>
