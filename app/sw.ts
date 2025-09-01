@@ -73,14 +73,4 @@ self.addEventListener('sync', (event: any) => {
   }
 })
 
-// Handle offline fallback
-self.addEventListener('fetch', (event: FetchEvent) => {
-  // Serve offline fallback for navigation requests when network fails
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/offline') || new Response('Offline')
-      })
-    )
-  }
-})
+// Note: Additional fetch handling is managed by workbox strategies above
