@@ -14,7 +14,9 @@ import {
   Grid3X3,
   Calendar,
   Tag,
-  Settings
+  Settings,
+  Aperture,
+  Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -48,10 +50,22 @@ export function Navigation() {
           {/* Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white"
+            className="flex items-center gap-3 font-bold text-xl text-gray-900 dark:text-white group"
           >
-            <Camera className="h-6 w-6" />
-            相册
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-sm opacity-20 group-hover:opacity-40 transition-opacity" />
+              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                <Aperture className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                CC Frame
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1 font-normal">
+                个人相册
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
