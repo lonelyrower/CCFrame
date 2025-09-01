@@ -203,14 +203,14 @@ export default async function AdminDashboard() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Dashboard
+          控制台
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Welcome back! Here's an overview of your photo gallery.
+          欢迎回来！这里是你的相册概览。
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* 统计卡片 */}
       <Suspense fallback={<LoadingStats />}>
         <StatsCards />
       </Suspense>
@@ -219,20 +219,20 @@ export default async function AdminDashboard() {
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Photo Visibility
+            照片可见性
           </h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">Public Photos</span>
+                <span className="text-sm font-medium">公开照片</span>
               </div>
               <span className="text-sm font-semibold">{stats.publicPhotos}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <EyeOff className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium">Private Photos</span>
+                <span className="text-sm font-medium">私密照片</span>
               </div>
               <span className="text-sm font-semibold">{stats.privatePhotos}</span>
             </div>
@@ -257,7 +257,7 @@ export default async function AdminDashboard() {
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Quick Actions
+            快捷操作
           </h2>
           <div className="space-y-3">
             <a
@@ -265,21 +265,21 @@ export default async function AdminDashboard() {
               className="flex items-center gap-3 p-3 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
             >
               <Upload className="h-5 w-5" />
-              <span className="font-medium">Upload Photos</span>
+              <span className="font-medium">上传照片</span>
             </a>
             <a
               href="/admin/albums"
               className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               <FolderOpen className="h-5 w-5" />
-              <span className="font-medium">Manage Albums</span>
+              <span className="font-medium">管理相册</span>
             </a>
             <a
               href="/admin/ai"
               className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               <Clock className="h-5 w-5" />
-              <span className="font-medium">AI Studio</span>
+              <span className="font-medium">AI 工作台</span>
             </a>
           </div>
         </div>
@@ -288,7 +288,7 @@ export default async function AdminDashboard() {
       {/* Recent Photos */}
       <div className="mt-8">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Recent Photos
+          最近上传
         </h2>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
           <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
