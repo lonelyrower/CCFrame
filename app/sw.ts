@@ -2,13 +2,14 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
 
-declare const self: ServiceWorkerGlobalScope
+declare const self: ServiceWorkerGlobalScope & typeof globalThis
+declare const __WB_MANIFEST: Array<{ url: string; revision?: string }>
 
 // Clean up old caches
 cleanupOutdatedCaches()
 
 // Precache static assets
-precacheAndRoute(self.__WB_MANIFEST)
+precacheAndRoute(__WB_MANIFEST || [])
 
 // Cache images with cache-first strategy
 registerRoute(
