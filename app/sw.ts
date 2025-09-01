@@ -66,7 +66,7 @@ registerRoute(
 )
 
 // Background sync for failed uploads (future enhancement)
-self.addEventListener('sync', (event) => {
+self.addEventListener('sync', (event: any) => {
   if (event.tag === 'upload-photos') {
     // Handle offline upload queue
     console.log('Background sync: upload-photos')
@@ -74,7 +74,7 @@ self.addEventListener('sync', (event) => {
 })
 
 // Handle offline fallback
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
   // Serve offline fallback for navigation requests when network fails
   if (event.request.mode === 'navigate') {
     event.respondWith(
