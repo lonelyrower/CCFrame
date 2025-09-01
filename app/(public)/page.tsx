@@ -75,4 +75,3 @@ export default function HomePage() {
 
 // 避免在构建阶段访问数据库，强制运行时渲染
 export const dynamic = 'force-dynamic'
-export const dynamic = 'force-dynamic' // Prevent static generation
