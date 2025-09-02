@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions'
-import prisma from '@/lib/prisma'
+import { authOptions } from '@/lib/auth'
+import { db } from '@/lib/db'
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     // 查找用户的API设置
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { email: session.user.email },
       select: { 
         id: true, 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const { pixabayApiKey } = await request.json()
 
     // 更新用户的API设置
-    const user = await prisma.user.update({
+    const user = await db.user.update({
       where: { email: session.user.email },
       data: { 
         pixabayApiKey: pixabayApiKey || null 
