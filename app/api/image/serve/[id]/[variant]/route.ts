@@ -20,14 +20,11 @@ export async function GET(request: NextRequest, { params }: Params) {
     // Get photo with variants
     const photo = await db.photo.findUnique({
       where: { id: photoId },
-      include: { 
+      include: {
         variants: {
-          where: {
-            variant,
-            format
-          }
-        }
-      }
+          where: { variant },
+        },
+      },
     })
 
     if (!photo) {
