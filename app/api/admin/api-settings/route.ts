@@ -6,13 +6,13 @@ import { db } from '@/lib/db'
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
     // 查找用户的API设置
     const user = await db.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: session.user.id },
       select: { 
         id: true, 
         pixabayApiKey: true 
@@ -35,7 +35,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // 更新用户的API设置
     const user = await db.user.update({
-      where: { email: session.user.email },
+      where: { id: session.user.id },
       data: { 
         pixabayApiKey: pixabayApiKey || null 
       },
