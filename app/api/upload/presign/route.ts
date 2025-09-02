@@ -5,6 +5,9 @@ import { getStorageManager, StorageManager } from '@/lib/storage-manager'
 import { db } from '@/lib/db'
 import { z } from 'zod'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 const uploadRequestSchema = z.object({
   filename: z.string(),
   contentType: z.string(),

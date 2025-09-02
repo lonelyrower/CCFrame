@@ -6,6 +6,9 @@ import { getStorageManager, StorageManager } from '@/lib/storage-manager'
 import { AIImageProcessor } from '@/lib/ai-providers'
 import { z } from 'zod'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 const enhanceRequestSchema = z.object({
   photoId: z.string(),
   taskType: z.enum(['enhance', 'upscale', 'remove-background', 'style-transfer']),

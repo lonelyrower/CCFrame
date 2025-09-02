@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { z } from 'zod'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 const createAlbumSchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().optional(),

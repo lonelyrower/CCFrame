@@ -5,6 +5,9 @@ import { z } from 'zod'
 import fs from 'fs/promises'
 import path from 'path'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 const storageSettingsSchema = z.object({
   provider: z.enum(['minio', 'aws', 'aliyun', 'qcloud']),
   config: z.object({

@@ -5,6 +5,9 @@ import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 const updateProfileSchema = z.object({
   email: z.string().email().optional(),
   currentPassword: z.string().min(1).optional(),
