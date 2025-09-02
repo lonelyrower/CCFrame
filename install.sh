@@ -336,36 +336,20 @@ interactive_menu() {
   echo "  8) 修复/生成 .env"
   echo "  9) 健康检查"
   echo "  0) 退出"
-  # 从 /dev/tty 读取输入，确保在被管道/curl 时也能交互
-  while true; do
-    read -rp "输入编号: " choice || exit 0
-    case "$choice" in
-      1) cmd_install ;;
-      2) cmd_update  ;;
-      3) cmd_start   ;;
-      4) cmd_restart ;;
-      5) cmd_stop    ;;
-      6) cmd_status  ;;
-      7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
-      8) cmd_env     ;;
-      9) cmd_health  ;;
-      0) exit 0 ;;
-      *) echo "请输入有效编号" ;;
-    esac
-    # 自动返回菜单（不再提示按回车）
-    echo ""
-    print_info "请选择操作："
-    echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
-    echo "  2) 更新代码并重建（保留数据卷）"
-    echo "  3) 启动"
-    echo "  4) 重启"
-    echo "  5) 停止"
-    echo "  6) 状态"
-    echo "  7) 查看日志"
-    echo "  8) 修复/生成 .env"
-    echo "  9) 健康检查"
-    echo "  0) 退出"
-  done
+  read -rp "输入编号: " choice || exit 0
+  case "$choice" in
+    1) cmd_install ;;
+    2) cmd_update  ;;
+    3) cmd_start   ;;
+    4) cmd_restart ;;
+    5) cmd_stop    ;;
+    6) cmd_status  ;;
+    7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
+    8) cmd_env     ;;
+    9) cmd_health  ;;
+    0) exit 0 ;;
+    *) echo "请输入有效编号" ;;
+  esac
 }
 
 main() {
