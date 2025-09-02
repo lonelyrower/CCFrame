@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { 
   User, 
@@ -11,7 +11,8 @@ import {
   Save,
   Eye,
   EyeOff,
-  Shield
+  Shield,
+  Key
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
@@ -33,6 +34,9 @@ interface Settings {
     autoDeleteFailed: boolean
     maxUploadSize: number
     compressionQuality: number
+  }
+  apis: {
+    pixabayApiKey: string
   }
 }
 
@@ -62,6 +66,9 @@ export default function SettingsPage() {
       autoDeleteFailed: true,
       maxUploadSize: 50, // MB
       compressionQuality: 85
+    },
+    apis: {
+      pixabayApiKey: ''
     }
   })
 
@@ -70,21 +77,65 @@ export default function SettingsPage() {
   const handleSave = async (section: keyof Settings) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success('设置已保存')
+      if (section === 'apis') {
+        const response = await fetch('/api/admin/api-settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pixabayApiKey: settings.apis.pixabayApiKey
+          }),
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || 'API设置保存失败')
+        }
+
+        toast.success('API设置已保存')
+      } else {
+        // Simulate API call for other sections
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        toast.success('设置已保存')
+      }
     } catch (error) {
-      toast.error('保存失败')
+      console.error('保存设置失败:', error)
+      toast.error(error instanceof Error ? error.message : '保存失败')
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Load API settings when component mounts
+  const loadApiSettings = async () => {
+    try {
+      const response = await fetch('/api/admin/api-settings')
+      if (response.ok) {
+        const data = await response.json()
+        setSettings(prev => ({
+          ...prev,
+          apis: {
+            pixabayApiKey: data.pixabayApiKey || ''
+          }
+        }))
+      }
+    } catch (error) {
+      console.error('加载API设置失败:', error)
+    }
+  }
+
+  // Load settings on component mount
+  useEffect(() => {
+    loadApiSettings()
+  }, [])
+
   const tabs = [
     { id: 'profile', name: '个人资料', icon: User },
     { id: 'security', name: '安全设置', icon: Shield },
     { id: 'site', name: '网站设置', icon: Globe },
-    { id: 'storage', name: '存储设置', icon: Database }
+    { id: 'storage', name: '存储设置', icon: Database },
+    { id: 'apis', name: 'API 配置', icon: Key }
   ]
 
   return (
@@ -385,6 +436,59 @@ export default function SettingsPage() {
                 <div className="flex justify-end pt-4">
                   <Button
                     onClick={() => handleSave('storage')}
+                    disabled={isLoading}
+                    className="px-6"
+                  >
+                    {isLoading ? '保存中...' : '保存更改'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'apis' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    第三方服务配置
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    配置第三方服务的 API Key，用于导入示例图片等功能。
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Pixabay API Key
+                  </label>
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={settings.apis.pixabayApiKey}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        apis: { ...prev.apis, pixabayApiKey: e.target.value }
+                      }))}
+                      placeholder="输入您的 Pixabay API Key"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      用于导入 Pixabay 示例图片。您可以在 
+                      <a 
+                        href="https://pixabay.com/api/docs/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-600 underline"
+                      >
+                        Pixabay API 文档
+                      </a> 
+                      中获取免费的 API Key。
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end pt-4">
+                  <Button
+                    onClick={() => handleSave('apis')}
                     disabled={isLoading}
                     className="px-6"
                   >
