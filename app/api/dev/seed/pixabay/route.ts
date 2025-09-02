@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}))
     const query = (body.query as string) || 'nature'
-    const count = Math.min(Number(body.count || 12), MAX_COUNT)
+    const count = Math.min(Number(body.count || 3), 5) // 降低默认数量避免超时
     const visibility = (body.visibility as 'PUBLIC' | 'PRIVATE') || 'PUBLIC'
 
     const searchUrl = new URL('https://pixabay.com/api/')
