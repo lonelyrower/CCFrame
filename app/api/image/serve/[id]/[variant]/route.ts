@@ -48,14 +48,8 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Variant not found' }, { status: 404 })
     }
 
-    // For public photos, redirect to CDN
+    // Stream from storage for both public and private to avoid exposing internal endpoints
     const storage = getStorageManager()
-    if (photo.visibility === 'PUBLIC') {
-      const publicUrl = storage.getPublicUrl(photoVariant.fileKey)
-      return NextResponse.redirect(publicUrl)
-    }
-
-    // For private photos, stream from S3 with signed URL
     const downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
     const response = await fetch(downloadUrl)
     
@@ -65,11 +59,16 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     const buffer = Buffer.from(await response.arrayBuffer())
 
+    // Public images can be cached longer; private images cached briefly
+    const cacheHeader = photo.visibility === 'PUBLIC'
+      ? 'public, max-age=86400, immutable'
+      : 'private, max-age=3600'
+
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': `image/${format}`,
         'Content-Length': buffer.length.toString(),
-        'Cache-Control': 'private, max-age=3600', // 1 hour for private images
+        'Cache-Control': cacheHeader,
       }
     })
   } catch (error) {
