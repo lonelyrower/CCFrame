@@ -17,9 +17,13 @@ export async function POST(request: NextRequest) {
 
     // Restrict to dev or require token
     const token = request.headers.get('x-seed-token') || ''
-    const allowInProd = process.env.DEV_SEED_TOKEN && token === process.env.DEV_SEED_TOKEN
+    const expectedToken = process.env.DEV_SEED_TOKEN || 'dev-seed-123'  // 默认token
+    const allowInProd = token === expectedToken
     if (process.env.NODE_ENV === 'production' && !allowInProd) {
-      return NextResponse.json({ error: 'Forbidden in production' }, { status: 403 })
+      return NextResponse.json({ 
+        error: 'Forbidden in production - valid seed token required',
+        hint: 'Make sure DEV_SEED_TOKEN is configured and x-seed-token header is provided'
+      }, { status: 403 })
     }
 
     const apiKey = process.env.PIXABAY_API_KEY

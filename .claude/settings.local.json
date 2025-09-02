@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(npm install)",
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(ss:*)",
+      "Bash(PORT=3001 node node_modules/next/dist/bin/next dev --port 3001)",
+      "Read(/root/**)",
+      "Bash(docker run:*)",
+      "WebFetch(domain:142.91.99.128)",
+      "Bash(docker system prune:*)",
+      "Bash(docker builder:*)",
+      "Bash(docker compose build:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git reset:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

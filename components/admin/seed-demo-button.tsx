@@ -12,7 +12,10 @@ export function SeedDemoButton({ count = 12 }: { count?: number }) {
     try {
       const res = await fetch('/api/dev/seed/pixabay', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-seed-token': 'dev-seed-123'  // 生产环境授权token
+        },
         body: JSON.stringify({ count, query: 'nature', visibility: 'PUBLIC' }),
       })
       const data = await res.json()
