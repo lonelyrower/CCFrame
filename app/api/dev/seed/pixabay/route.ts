@@ -26,9 +26,17 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const apiKey = process.env.PIXABAY_API_KEY
+    // Try to get API key from user's settings first, then fallback to environment variable
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { pixabayApiKey: true }
+    })
+
+    let apiKey = user?.pixabayApiKey || process.env.PIXABAY_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'PIXABAY_API_KEY is not set' }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Pixabay API Key 未设置。请在管理设置 > API 配置中配置您的 API Key，或者联系管理员设置环境变量。' 
+      }, { status: 400 })
     }
 
     const body = await request.json().catch(() => ({}))

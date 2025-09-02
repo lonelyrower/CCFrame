@@ -22,7 +22,8 @@
       "Bash(docker builder:*)",
       "Bash(docker compose build:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(npx prisma migrate dev:*)"
     ],
     "deny": [],
     "ask": []
