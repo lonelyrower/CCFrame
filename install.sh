@@ -115,9 +115,21 @@ clone_project() {
     return
   fi
 
-  print_error "未检测到项目目录，请先使用 SSH/Deploy Key 克隆仓库后再运行本脚本。"
-  print_info  "例如：git clone git@github.com:lonelyrower/CCFrame.git && cd CCFrame && bash install.sh install"
-  exit 1
+  # 情况3：自动克隆（公开仓库 HTTPS，或通过 REPO_URL 指定）
+  REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
+  BRANCH=${BRANCH:-main}
+  print_info "未检测到本地仓库，尝试自动克隆: $REPO_URL (分支: $BRANCH)"
+  if git ls-remote --heads "$REPO_URL" "$BRANCH" >/dev/null 2>&1; then
+    git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR"
+    cd "$PROJECT_DIR"
+    print_success "已克隆仓库并进入目录: $PROJECT_DIR"
+    return
+  else
+    print_error "无法克隆仓库：$REPO_URL (分支: $BRANCH)"
+    print_info  "可通过设置 REPO_URL/BRANCH 环境变量指定来源，例如："
+    echo "  REPO_URL=https://github.com/your/repo.git BRANCH=main bash install.sh install"
+    exit 1
+  fi
 }
 
 ensure_env() {
