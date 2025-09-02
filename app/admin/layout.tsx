@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { AdminNav } from '@/components/admin/admin-nav'
 
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayout({
   children,
 }: {
