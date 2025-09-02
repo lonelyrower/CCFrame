@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Camera, Eye, EyeOff, Loader2 } from 'lucide-react'
@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 // Force dynamic rendering to prevent prerender errors
 export const dynamic = 'force-dynamic'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -139,5 +139,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">加载中...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
