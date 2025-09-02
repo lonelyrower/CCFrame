@@ -287,8 +287,13 @@ interactive_menu() {
   echo "  8) 修复/生成 .env"
   echo "  9) 健康检查"
   echo "  0) 退出"
+  # 从 /dev/tty 读取输入，确保在被管道/curl 时也能交互
   while true; do
-    read -rp "输入编号: " choice || exit 0
+    if [ -r /dev/tty ]; then
+      read -rp "输入编号: " choice < /dev/tty || exit 0
+    else
+      read -rp "输入编号: " choice || exit 0
+    fi
     case "$choice" in
       1) cmd_install ;;
       2) cmd_update  ;;
@@ -303,7 +308,11 @@ interactive_menu() {
       *) echo "请输入有效编号" ;;
     esac
     echo ""
-    read -rp "按回车返回菜单（Ctrl+C 退出）" _ || exit 0
+    if [ -r /dev/tty ]; then
+      read -rp "按回车返回菜单（Ctrl+C 退出）" _ < /dev/tty || exit 0
+    else
+      read -rp "按回车返回菜单（Ctrl+C 退出）" _ || exit 0
+    fi
     echo ""
     print_info "请选择操作："
     echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
@@ -331,7 +340,16 @@ main() {
     logs)     shift; cmd_logs    "$@" ;;
     env)      shift; cmd_env     "$@" ;;
     health)   shift; cmd_health  "$@" ;;
-    *) interactive_menu ;;
+    *)
+      # 无参数时：若是非交互环境（无 TTY），给出用法并退出；否则进入交互菜单
+      if [ -t 0 ] || [ -r /dev/tty ]; then
+        interactive_menu
+      else
+        echo "用法: bash install.sh [install|update|start|stop|restart|status|logs|env|health]"
+        echo "示例: curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh | bash -s -- update"
+        exit 0
+      fi
+      ;;
   esac
 }
 
