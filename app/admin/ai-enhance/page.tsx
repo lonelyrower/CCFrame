@@ -161,7 +161,7 @@ export default function AIEnhancePage() {
           if (task.status === 'COMPLETED' && task.result) {
             // 获取对比图片
             const originalUrl = `/api/image/${selectedPhoto!.id}/medium`
-            const enhancedUrl = `/api/image/serve/${task.result.enhancedKey.split('/').pop()}/medium`
+            const enhancedUrl = `/api/image/${task.result.enhancedKey.split('/').pop()}/medium`
             
             setResultImages({
               original: originalUrl,
