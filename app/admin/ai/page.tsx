@@ -22,24 +22,24 @@ interface AIJob {
 const AI_TASKS = [
   {
     type: 'AI_ENHANCEMENT' as JobType,
-    name: 'Auto Enhance',
-    description: 'Automatically improve brightness, contrast, and color balance',
+    name: '智能增强',
+    description: '自动优化亮度、对比度和颜色平衡',
     icon: Wand2,
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900/20'
   },
   {
     type: 'AI_UPSCALE' as JobType,
-    name: 'AI Upscale',
-    description: 'Increase image resolution using AI super-resolution',
+    name: 'AI放大',
+    description: '使用AI超分辨率技术提高图像分辨率',
     icon: Zap,
     color: 'text-purple-600',
     bgColor: 'bg-purple-100 dark:bg-purple-900/20'
   },
   {
     type: 'AI_REMOVE_BACKGROUND' as JobType,
-    name: 'Remove Background',
-    description: 'Automatically remove or replace the background',
+    name: '删除背景',
+    description: '自动移除或替换背景',
     icon: Scissors,
     color: 'text-green-600',
     bgColor: 'bg-green-100 dark:bg-green-900/20'
@@ -83,7 +83,7 @@ export default function AIStudioPage() {
 
   const startAITask = async (taskType: JobType, params: any = {}) => {
     if (!selectedPhoto) {
-      toast.error('Please select a photo first')
+      toast.error('请先选择一张照片')
       return
     }
 
@@ -103,15 +103,15 @@ export default function AIStudioPage() {
 
       if (response.ok) {
         const data = await response.json()
-        toast.success('AI task started successfully')
+        toast.success('AI任务已成功启动')
         fetchJobs() // Refresh jobs list
       } else {
         const error = await response.json()
-        toast.error(error.message || 'Failed to start AI task')
+        toast.error(error.message || '启动AI任务失败')
       }
     } catch (error) {
       console.error('AI task error:', error)
-      toast.error('Failed to start AI task')
+      toast.error('启动AI任务失败')
     } finally {
       setIsLoading(false)
     }
@@ -124,10 +124,10 @@ export default function AIStudioPage() {
       })
 
       if (response.ok) {
-        toast.success('Job deleted')
+        toast.success('任务已删除')
         setJobs(jobs.filter(job => job.id !== jobId))
       } else {
-        toast.error('Failed to delete job')
+        toast.error('删除任务失败')
       }
     } catch (error) {
       console.error('Delete job error:', error)
@@ -155,10 +155,10 @@ export default function AIStudioPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          AI Studio
+          AI 工作台
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Enhance your photos with AI-powered tools
+          使用AI工具增强你的照片
         </p>
       </div>
 
@@ -166,7 +166,7 @@ export default function AIStudioPage() {
         {/* Photo Selection */}
         <div className="space-y-6">
           <div>
-            <h2 className="text-xl font-semibold mb-4">Select Photo</h2>
+            <h2 className="text-xl font-semibold mb-4">选择照片</h2>
             <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto">
               {recentPhotos.map((photo) => (
                 <button
@@ -197,7 +197,7 @@ export default function AIStudioPage() {
 
           {/* AI Tasks */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">AI Tools</h2>
+            <h2 className="text-xl font-semibold mb-4">AI 工具</h2>
             <div className="space-y-3">
               {AI_TASKS.map((task) => {
                 const Icon = task.icon
@@ -221,7 +221,7 @@ export default function AIStudioPage() {
                         disabled={!selectedPhoto || isLoading}
                       >
                         <Play className="h-4 w-4 mr-1" />
-                        Start
+                        启动
                       </Button>
                     </div>
                   </div>
@@ -234,13 +234,13 @@ export default function AIStudioPage() {
         {/* Job History */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Job History</h2>
+            <h2 className="text-xl font-semibold">任务历史</h2>
             <Button
               variant="outline"
               size="sm"
               onClick={fetchJobs}
             >
-              Refresh
+              刷新
             </Button>
           </div>
           
@@ -248,8 +248,8 @@ export default function AIStudioPage() {
             {jobs.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                 <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No AI jobs yet</p>
-                <p className="text-sm">Start processing photos with AI tools</p>
+                <p>暂无AI任务</p>
+                <p className="text-sm">开始使用AI工具处理照片</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">

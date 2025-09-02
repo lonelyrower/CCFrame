@@ -20,10 +20,10 @@ export default function OfflinePage() {
 
         <div className="space-y-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            You're Offline
+            网络已断开
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            It looks like you've lost your internet connection. Don't worry - you can still browse photos that you've viewed recently.
+            似乎你的网络连接中断了。别担心 - 你仍可以浏览最近查看过的照片。
           </p>
         </div>
 
@@ -33,7 +33,7 @@ export default function OfflinePage() {
             className="w-full"
           >
             <Wifi className="h-4 w-4 mr-2" />
-            Try Again
+            重试
           </Button>
           
           <Button
@@ -41,12 +41,12 @@ export default function OfflinePage() {
             onClick={() => window.history.back()}
             className="w-full"
           >
-            Go Back
+            返回
           </Button>
         </div>
 
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          <p>Cached photos and pages will work offline</p>
+          <p>缓存的照片和页面可离线使用</p>
         </div>
       </div>
     </div>
