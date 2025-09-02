@@ -31,9 +31,9 @@ function LoginForm() {
       })
 
       if (result?.error) {
-        toast.error('Invalid credentials')
+        toast.error('用户名或密码错误')
       } else {
-        toast.success('Login successful')
+        toast.success('登录成功')
         
         // Wait for session to be established
         await new Promise(resolve => setTimeout(resolve, 100))
@@ -46,7 +46,7 @@ function LoginForm() {
       }
     } catch (error) {
       console.error('Login error:', error)
-      toast.error('Login failed')
+      toast.error('登录失败')
     } finally {
       setIsLoading(false)
     }

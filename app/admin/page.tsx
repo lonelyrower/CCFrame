@@ -88,7 +88,7 @@ async function RecentPhotos() {
   if (recentPhotos.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-        No photos uploaded yet
+        暂无上传的照片
       </div>
     )
   }
@@ -140,28 +140,28 @@ async function StatsCards() {
 
   const statItems = [
     {
-      label: 'Total Photos',
+      label: '照片总数',
       value: stats.totalPhotos.toLocaleString(),
       icon: Camera,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100 dark:bg-blue-900/20'
     },
     {
-      label: 'Albums',
+      label: '相册数量',
       value: stats.totalAlbums.toString(),
       icon: FolderOpen,
       color: 'text-green-600',
       bgColor: 'bg-green-100 dark:bg-green-900/20'
     },
     {
-      label: 'Recent Uploads',
+      label: '近期上传',
       value: stats.recentUploads.toString(),
       icon: TrendingUp,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100 dark:bg-purple-900/20'
     },
     {
-      label: 'Storage Used',
+      label: '存储空间',
       value: formatBytes(stats.storageUsed),
       icon: HardDrive,
       color: 'text-orange-600',
@@ -291,7 +291,7 @@ export default async function AdminDashboard() {
           最近上传
         </h2>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-          <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
+          <Suspense fallback={<div className="text-center py-12">加载中...</div>}>
             <RecentPhotos />
           </Suspense>
         </div>

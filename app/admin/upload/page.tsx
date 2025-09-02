@@ -66,7 +66,7 @@ export default function UploadPage() {
       })
 
       if (!presignResponse.ok) {
-        throw new Error('Failed to get upload URL')
+        throw new Error('获取上传地址失败')
       }
 
       const { photoId, uploadUrl, fileKey } = await presignResponse.json()
@@ -89,7 +89,7 @@ export default function UploadPage() {
       })
 
       if (!uploadResponse.ok) {
-        throw new Error('Upload failed')
+        throw new Error('上传失败')
       }
 
       // Update progress
@@ -108,7 +108,7 @@ export default function UploadPage() {
       })
 
       if (!commitResponse.ok) {
-        throw new Error('Failed to process upload')
+        throw new Error('处理上传失败')
       }
 
       // Mark as completed
@@ -126,7 +126,7 @@ export default function UploadPage() {
         filename: file.name,
         progress: 0,
         status: 'failed',
-        error: error instanceof Error ? error.message : 'Upload failed'
+        error: error instanceof Error ? error.message : '上传失败'
       }))
     }
   }
@@ -182,13 +182,13 @@ export default function UploadPage() {
   const getStatusText = (upload: UploadProgress) => {
     switch (upload.status) {
       case 'uploading':
-        return `Uploading... ${upload.progress}%`
+        return `上传中... ${upload.progress}%`
       case 'processing':
-        return 'Processing...'
+        return '处理中...'
       case 'completed':
-        return 'Completed'
+        return '已完成'
       case 'failed':
-        return `Failed: ${upload.error}`
+        return `失败: ${upload.error}`
     }
   }
 
@@ -196,10 +196,10 @@ export default function UploadPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Upload Photos
+          上传照片
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Upload new photos to your gallery
+          上传新照片到你的相册
         </p>
       </div>
 
@@ -219,14 +219,14 @@ export default function UploadPage() {
           <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
           
           {isDragActive ? (
-            <p className="text-lg font-medium text-primary">Drop the files here...</p>
+            <p className="text-lg font-medium text-primary">将文件拖放到此处...</p>
           ) : (
             <div>
               <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Drag and drop photos here, or click to select
+                拖拽照片到此处，或点击选择文件
               </p>
               <p className="text-sm text-gray-500">
-                Supports JPEG, PNG, WebP, AVIF, and HEIC files up to 50MB each
+                支持 JPEG, PNG, WebP, AVIF 和 HEIC 格式，单个文件最大 50MB
               </p>
             </div>
           )}
@@ -238,7 +238,7 @@ export default function UploadPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">
-              Selected Files ({files.length})
+              已选文件 ({files.length})
             </h2>
             <div className="flex gap-2">
               <Button
@@ -246,7 +246,7 @@ export default function UploadPage() {
                 onClick={clearAll}
                 disabled={isUploading}
               >
-                Clear All
+                清空全部
               </Button>
               <Button
                 onClick={startUploads}
@@ -255,10 +255,10 @@ export default function UploadPage() {
                 {isUploading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Uploading...
+                    上传中...
                   </>
                 ) : (
-                  `Upload ${files.length} Files`
+                  `上传 ${files.length} 个文件`
                 )}
               </Button>
             </div>
@@ -335,25 +335,25 @@ export default function UploadPage() {
       {/* Upload Summary */}
       {uploads.size > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Upload Summary</h3>
+          <h3 className="text-lg font-semibold mb-4">上传统计</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {Array.from(uploads.values()).filter(u => u.status === 'completed').length}
               </div>
-              <div className="text-sm text-gray-500">Completed</div>
+              <div className="text-sm text-gray-500">已完成</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-blue-500">
                 {Array.from(uploads.values()).filter(u => u.status === 'uploading' || u.status === 'processing').length}
               </div>
-              <div className="text-sm text-gray-500">Processing</div>
+              <div className="text-sm text-gray-500">处理中</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-red-500">
                 {Array.from(uploads.values()).filter(u => u.status === 'failed').length}
               </div>
-              <div className="text-sm text-gray-500">Failed</div>
+              <div className="text-sm text-gray-500">失败</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-500">

@@ -1,5 +1,7 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import OpenAI from 'openai'
+// 说明：为避免在未安装可选依赖时构建失败，移除对
+// '@google/generative-ai' 与 'openai' 的静态导入，改为在
+// 方法内部进行惰性动态导入；若导入失败或未配置 API Key，
+// 则回退到本地基于 sharp 的占位实现。
 
 export interface AIProvider {
   name: string
@@ -21,45 +23,47 @@ export interface EnhanceOptions {
 // Gemini Vision API Provider
 export class GeminiAIProvider implements AIProvider {
   name = 'Gemini'
-  private client: GoogleGenerativeAI
+  private apiKey: string | undefined = process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_API_KEY
 
-  constructor() {
-    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_API_KEY
-    if (!apiKey) {
-      throw new Error('GOOGLE_AI_API_KEY/GOOGLE_API_KEY is not configured')
+  private async getClient(): Promise<any | null> {
+    try {
+      if (!this.apiKey) return null
+      const mod: any = await import('@google/generative-ai')
+      const Client = mod.GoogleGenerativeAI
+      return new Client(this.apiKey)
+    } catch {
+      return null
     }
-    this.client = new GoogleGenerativeAI(apiKey)
   }
 
   async enhance(imageBuffer: Buffer, options: EnhanceOptions): Promise<Buffer> {
+    // 若可选依赖或 Key 不可用，直接采用本地增强回退
+    const client = await this.getClient()
+    if (!client) {
+      return await this.applyEnhancements(imageBuffer, options, 'local-fallback')
+    }
+
     try {
-      const model = this.client.getGenerativeModel({ model: 'gemini-pro-vision' })
-      
-      // 构建增强提示
+      const model = client.getGenerativeModel({ model: 'gemini-pro-vision' })
       const prompt = this.buildEnhancePrompt(options)
-      
       const imagePart = {
         inlineData: {
           data: imageBuffer.toString('base64'),
           mimeType: 'image/jpeg'
         }
       }
-
-      // Gemini Vision主要用于分析，实际增强需要结合其他服务
       const result = await model.generateContent([prompt, imagePart])
       const response = result.response
       const analysis = response.text()
-
-      // 基于Gemini的分析结果，使用Sharp进行实际处理
       return await this.applyEnhancements(imageBuffer, options, analysis)
     } catch (error) {
-      console.error('Gemini enhance error:', error)
-      throw new Error('Gemini image enhancement failed')
+      console.warn('Gemini enhance failed, fallback to local:', error)
+      return await this.applyEnhancements(imageBuffer, options, 'local-fallback')
     }
   }
 
   async upscale(imageBuffer: Buffer, scale: number): Promise<Buffer> {
-    // Gemini本身不做图片生成，可以结合Real-ESRGAN等模型
+    // 本地放大占位实现
     const sharp = await import('sharp')
     return sharp.default(imageBuffer)
       .resize(undefined, undefined, {
@@ -76,21 +80,21 @@ export class GeminiAIProvider implements AIProvider {
   }
 
   async styleTransfer(imageBuffer: Buffer, style: string): Promise<Buffer> {
-    const model = this.client.getGenerativeModel({ model: 'gemini-pro-vision' })
-    
+    const client = await this.getClient()
+    if (!client) {
+      return await this.applyStyleTransfer(imageBuffer, 'local-fallback')
+    }
+
+    const model = client.getGenerativeModel({ model: 'gemini-pro-vision' })
     const prompt = `请分析这张图片的${style}风格转换建议，包括色调、对比度、饱和度等具体参数建议。`
-    
     const imagePart = {
       inlineData: {
         data: imageBuffer.toString('base64'),
         mimeType: 'image/jpeg'
       }
     }
-
     const result = await model.generateContent([prompt, imagePart])
     const suggestions = result.response.text()
-    
-    // 基于建议应用风格转换
     return await this.applyStyleTransfer(imageBuffer, suggestions)
   }
 
@@ -147,30 +151,41 @@ export class GeminiAIProvider implements AIProvider {
 // OpenAI DALL-E Provider (可选)
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI'
-  private client: any
+  private apiKey: string | undefined = process.env.OPENAI_API_KEY
 
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not configured')
+  private async getClient(): Promise<any | null> {
+    try {
+      if (!this.apiKey) return null
+      const mod: any = await import('openai')
+      const OpenAI = mod.default || mod
+      return new OpenAI({ apiKey: this.apiKey })
+    } catch {
+      return null
     }
-    this.client = new OpenAI({ apiKey })
   }
 
   async enhance(imageBuffer: Buffer, options: EnhanceOptions): Promise<Buffer> {
-    // OpenAI DALL-E 3 编辑功能
+    const client = await this.getClient()
+    if (!client) throw new Error('OpenAI not configured or dependency missing')
+    // 占位：未实现真实 OpenAI 图像编辑
     throw new Error('OpenAI image enhancement not implemented')
   }
 
   async upscale(imageBuffer: Buffer, scale: number): Promise<Buffer> {
+    const client = await this.getClient()
+    if (!client) throw new Error('OpenAI not configured or dependency missing')
     throw new Error('OpenAI image upscaling not implemented')
   }
 
   async removeBackground(imageBuffer: Buffer): Promise<Buffer> {
+    const client = await this.getClient()
+    if (!client) throw new Error('OpenAI not configured or dependency missing')
     throw new Error('OpenAI background removal not implemented')
   }
 
   async styleTransfer(imageBuffer: Buffer, style: string): Promise<Buffer> {
+    const client = await this.getClient()
+    if (!client) throw new Error('OpenAI not configured or dependency missing')
     throw new Error('OpenAI style transfer not implemented')
   }
 }
