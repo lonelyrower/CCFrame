@@ -277,6 +277,10 @@ cmd_health() {
 interactive_menu() {
   echo ""
   print_info "请选择操作："
+  # 如果存在 TTY，则将标准输入重定向到 /dev/tty，确保在管道/curl 下也能交互
+  if [ -r /dev/tty ]; then
+    exec </dev/tty
+  fi
   echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
   echo "  2) 更新代码并重建（保留数据卷）"
   echo "  3) 启动"
@@ -289,11 +293,7 @@ interactive_menu() {
   echo "  0) 退出"
   # 从 /dev/tty 读取输入，确保在被管道/curl 时也能交互
   while true; do
-    if [ -r /dev/tty ]; then
-      read -rp "输入编号: " choice < /dev/tty || exit 0
-    else
-      read -rp "输入编号: " choice || exit 0
-    fi
+    read -rp "输入编号: " choice || exit 0
     case "$choice" in
       1) cmd_install ;;
       2) cmd_update  ;;
@@ -308,11 +308,7 @@ interactive_menu() {
       *) echo "请输入有效编号" ;;
     esac
     echo ""
-    if [ -r /dev/tty ]; then
-      read -rp "按回车返回菜单（Ctrl+C 退出）" _ < /dev/tty || exit 0
-    else
-      read -rp "按回车返回菜单（Ctrl+C 退出）" _ || exit 0
-    fi
+    read -rp "按回车返回菜单（Ctrl+C 退出）" _ || exit 0
     echo ""
     print_info "请选择操作："
     echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
