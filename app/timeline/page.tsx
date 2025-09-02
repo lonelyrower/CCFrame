@@ -170,7 +170,7 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                   {additionalPhotos.slice(0, 5).map((photo, idx) => (
                     <div key={photo.id} className="relative aspect-square rounded overflow-hidden bg-gray-100 dark:bg-gray-700">
                       <Image
-                        src={getImageUrl(photo.id, 'thumbnail', 'webp')}
+                        src={getImageUrl(photo.id, 'thumb', 'webp')}
                         alt={photo.album?.title || 'Photo'}
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-200"
