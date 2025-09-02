@@ -121,41 +121,19 @@ services:
   minio-init:
     image: minio/mc:latest
     depends_on:
-      minio:
-        condition: service_started
+      - minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ccframe}
     restart: "no"
-    entrypoint: ["/bin/sh"]
+    entrypoint: ["/bin/sh", "-c"]
     command: >
-      -c "
-      echo 'MinIO初始化开始...';
-      until mc ready http://minio:9000 >/dev/null 2>&1; do
-        echo '等待MinIO服务启动...';
-        sleep 2;
-      done;
-      echo 'MinIO服务已就绪，开始配置...';
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
-      echo '创建存储桶: ccframe';
-      mc mb -p local/ccframe || echo '存储桶ccframe已存在';
-      echo '创建存储桶: photo-gallery'; 
-      mc mb -p local/photo-gallery || echo '存储桶photo-gallery已存在';
-      if [ -n \"$$S3_BUCKET_NAME\" ] && [ \"$$S3_BUCKET_NAME\" != 'ccframe' ] && [ \"$$S3_BUCKET_NAME\" != 'photo-gallery' ]; then
-        echo \"创建存储桶: $$S3_BUCKET_NAME\";
-        mc mb -p local/$$S3_BUCKET_NAME || echo \"存储桶$$S3_BUCKET_NAME已存在\";
-      fi;
-      echo '设置公共读取策略...';
-      mc anonymous set download local/ccframe || true;
-      mc anonymous set download local/photo-gallery || true;
-      if [ -n \"$$S3_BUCKET_NAME\" ]; then
-        mc anonymous set download local/$$S3_BUCKET_NAME || true;
-      fi;
-      echo '列出创建的存储桶:';
-      mc ls local/;
-      echo 'MinIO初始化完成!';
-      "
+      "sleep 15 && 
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD && 
+      mc mb -p local/ccframe || true && 
+      mc mb -p local/photo-gallery || true && 
+      echo 'MinIO buckets created'"
     networks:
       - ccframe
 
