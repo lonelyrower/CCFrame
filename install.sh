@@ -188,8 +188,25 @@ cmd_install() {
   check_system
   clone_project
   ensure_env
+  
+  # 清理旧的容器和资源避免502错误
+  print_step "清理旧的容器和缓存..."
+  $DOCKER_COMPOSE_CMD down --remove-orphans 2>/dev/null || true
+  docker stop ccframe-web ccframe-worker ccframe-postgres ccframe-redis ccframe-minio ccframe-nginx 2>/dev/null || true
+  docker rm ccframe-web ccframe-worker ccframe-postgres ccframe-redis ccframe-minio ccframe-nginx 2>/dev/null || true
+  docker system prune -f --volumes >/dev/null 2>&1 || true
+  docker network prune -f >/dev/null 2>&1 || true
+  docker volume prune -f >/dev/null 2>&1 || true
+  docker network rm ccframe 2>/dev/null || true
+  docker volume rm ccframe_pgdata ccframe_minio 2>/dev/null || true
+  
+  # 停止可能冲突的nginx服务
+  systemctl stop nginx 2>/dev/null || service nginx stop 2>/dev/null || true
+  rm -rf /var/cache/nginx/* 2>/dev/null || true
+  print_success "清理完成"
+  
   print_step "构建并启动容器..."
-  $DOCKER_COMPOSE_CMD up -d --build
+  $DOCKER_COMPOSE_CMD up -d --build --force-recreate
   docker_info
 }
 
