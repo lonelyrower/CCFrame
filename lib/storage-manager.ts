@@ -35,11 +35,14 @@ export class StorageManager {
     const configs: Record<StorageProvider, () => StorageConfig> = {
       minio: () => ({
         provider: 'minio',
-        endpoint: process.env.S3_ENDPOINT || 'http://minio:9000',
-        region: 'us-east-1',
-        accessKeyId: process.env.MINIO_ROOT_USER || 'minioadmin',
-        secretAccessKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin',
+        // Prefer explicit S3_ENDPOINT; default to localhost rather than internal hostname
+        endpoint: process.env.S3_ENDPOINT || 'http://127.0.0.1:9000',
+        region: process.env.S3_REGION || 'us-east-1',
+        // Support generic S3_* envs with fallback to MINIO_ROOT_*
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.MINIO_ROOT_USER || 'minioadmin',
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.MINIO_ROOT_PASSWORD || 'minioadmin',
         bucket: process.env.S3_BUCKET_NAME!,
+        cdnUrl: process.env.CDN_BASE_URL,
         forcePathStyle: true
       }),
       aws: () => ({
