@@ -16,7 +16,9 @@ interface Params {
 // which may not be resolvable from the user's network/environment.
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id: photoId, variant } = params
+    const { id: photoId } = params
+    // Support legacy alias "thumbnail" => "thumb"
+    const reqVariant = params.variant === 'thumbnail' ? 'thumb' : params.variant
     const url = new URL(request.url)
     const format = url.searchParams.get('format') || 'jpeg'
 
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       where: { id: photoId },
       include: {
         variants: {
-          where: { variant },
+          where: { variant: reqVariant },
         },
       },
     })
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       medium: ['medium', 'small', 'large', 'thumb'],
       large: ['large', 'medium', 'small', 'thumb'],
     }
-    const sizes = sizePreference[variant] || [variant, 'small', 'medium', 'large', 'thumb']
+    const sizes = sizePreference[reqVariant] || [reqVariant, 'small', 'medium', 'large', 'thumb']
     const photoVariant = sizes
       .map((sz) => preferFormats.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
       .find(Boolean)
