@@ -42,7 +42,11 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     }
 
-    const photoVariant = photo.variants[0]
+    // Find exact or fallback format
+    const preferFormats = [format, 'webp', 'jpeg', 'avif']
+    const photoVariant = preferFormats
+      .map((fmt) => photo.variants.find((v) => v.variant === variant && v.format === fmt))
+      .find((v) => !!v)
     if (!photoVariant) {
       return NextResponse.json({ error: 'Variant not found' }, { status: 404 })
     }
@@ -65,7 +69,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     return new NextResponse(buffer, {
       headers: {
-        'Content-Type': `image/${format}`,
+        'Content-Type': `image/${photoVariant.format}`,
         'Content-Length': buffer.length.toString(),
         'Cache-Control': cacheHeader,
       },
@@ -75,4 +79,3 @@ export async function GET(request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
