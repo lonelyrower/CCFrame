@@ -101,18 +101,63 @@ clone_project() {
   print_step "获取项目代码..."
   # 情况1：当前目录已经是仓库根目录
   if [ -d .git ]; then
-    git pull --rebase --autostash || true
-    print_success "当前目录为仓库，已更新代码"
-    return
+    REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
+    BRANCH=${BRANCH:-main}
+    echo "origin: $(git remote get-url origin 2>/dev/null || echo '(none)')"
+    if git pull --rebase --autostash; then
+      print_success "当前目录为仓库，已更新代码"
+      return
+    else
+      print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
+      CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+      if echo "$CURRENT_REMOTE" | grep -q "^git@github.com:"; then
+        # 转换 SSH -> HTTPS
+        HTTPS_URL="https://github.com/${CURRENT_REMOTE#git@github.com:}.git"
+        git remote set-url origin "$HTTPS_URL" || true
+      else
+        git remote set-url origin "$REPO_URL" || true
+      fi
+      git fetch --all --prune || true
+      if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
+      if git reset --hard "origin/$BRANCH"; then
+        print_success "已切换为 HTTPS 并同步到 origin/$BRANCH"
+        return
+      else
+        print_error "无法更新当前仓库，请检查网络或权限"
+        exit 1
+      fi
+    fi
   fi
 
   # 情况2：上级目录存在 CCFrame 仓库
   PROJECT_DIR="CCFrame"
   if [ -d "$PROJECT_DIR/.git" ]; then
     cd "$PROJECT_DIR"
-    git pull --rebase --autostash || true
-    print_success "进入 $PROJECT_DIR 并更新代码"
-    return
+    REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
+    BRANCH=${BRANCH:-main}
+    echo "origin: $(git remote get-url origin 2>/dev/null || echo '(none)')"
+    if git pull --rebase --autostash; then
+      print_success "进入 $PROJECT_DIR 并更新代码"
+      return
+    else
+      print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
+      CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+      if echo "$CURRENT_REMOTE" | grep -q "^git@github.com:"; then
+        HTTPS_URL="https://github.com/${CURRENT_REMOTE#git@github.com:}.git"
+        git remote set-url origin "$HTTPS_URL" || true
+      else
+        git remote set-url origin "$REPO_URL" || true
+      fi
+      git fetch --all --prune || true
+      if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
+      if git reset --hard "origin/$BRANCH"; then
+        print_success "已切换为 HTTPS 并同步到 origin/$BRANCH"
+        return
+      else
+        print_error "无法更新仓库，请检查网络或权限"
+        exit 1
+      fi
+    fi
   fi
 
   # 情况3：自动克隆（公开仓库 HTTPS，或通过 REPO_URL 指定）
@@ -307,8 +352,7 @@ interactive_menu() {
       0) exit 0 ;;
       *) echo "请输入有效编号" ;;
     esac
-    echo ""
-    read -rp "按回车返回菜单（Ctrl+C 退出）" _ || exit 0
+    # 自动返回菜单（不再提示按回车）
     echo ""
     print_info "请选择操作："
     echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
