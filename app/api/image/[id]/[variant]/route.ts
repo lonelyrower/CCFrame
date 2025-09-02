@@ -41,11 +41,18 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     }
 
-    // Find exact or fallback format
+    // Find exact or fallback format/size
     const preferFormats = [format, 'webp', 'jpeg', 'avif']
-    const photoVariant = preferFormats
-      .map((fmt) => photo.variants.find((v) => v.variant === variant && v.format === fmt))
-      .find((v) => !!v)
+    const sizePreference: Record<string, string[]> = {
+      thumb: ['thumb', 'small', 'medium', 'large'],
+      small: ['small', 'medium', 'thumb', 'large'],
+      medium: ['medium', 'small', 'large', 'thumb'],
+      large: ['large', 'medium', 'small', 'thumb'],
+    }
+    const sizes = sizePreference[variant] || [variant, 'small', 'medium', 'large', 'thumb']
+    const photoVariant = sizes
+      .map((sz) => preferFormats.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
+      .find(Boolean)
     if (!photoVariant) {
       return NextResponse.json({ error: 'Variant not found' }, { status: 404 })
     }
