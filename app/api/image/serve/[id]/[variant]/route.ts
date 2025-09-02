@@ -13,7 +13,9 @@ interface Params {
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id: photoId, variant } = params
+    const { id: photoId } = params
+    // Support legacy alias "thumbnail" => "thumb"
+    const variant = params.variant === 'thumbnail' ? 'thumb' : params.variant
     const url = new URL(request.url)
     const format = url.searchParams.get('format') || 'jpeg'
 
