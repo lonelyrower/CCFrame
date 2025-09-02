@@ -112,17 +112,43 @@ export async function POST(request: NextRequest) {
     }
 
     // 保存配置到环境文件（在实际部署中，这应该保存到数据库）
+    // 同步命名到应用实际读取的变量
     const envPath = path.join(process.cwd(), '.env.local')
-    const envContent = `STORAGE_PROVIDER=${provider}
-${provider.toUpperCase()}_ENDPOINT=${config.endpoint || ''}
-${provider.toUpperCase()}_REGION=${config.region}
-${provider.toUpperCase()}_ACCESS_KEY_ID=${config.accessKeyId}
-${provider.toUpperCase()}_SECRET_ACCESS_KEY=${config.secretAccessKey}
-${provider.toUpperCase()}_BUCKET=${config.bucket}
-${provider.toUpperCase()}_CDN_URL=${config.cdnUrl || ''}
-`
 
-    await fs.writeFile(envPath, envContent)
+    let envLines: string[] = []
+    envLines.push(`STORAGE_PROVIDER=${provider}`)
+
+    if (provider === 'minio') {
+      // 应用读取通用 S3_* 变量；MinIO 凭证也可用 MINIO_ROOT_*，但此处以 S3_* 为准
+      envLines.push(`S3_ENDPOINT=${config.endpoint || ''}`)
+      envLines.push(`S3_REGION=${config.region}`)
+      envLines.push(`S3_ACCESS_KEY_ID=${config.accessKeyId}`)
+      envLines.push(`S3_SECRET_ACCESS_KEY=${config.secretAccessKey}`)
+      envLines.push(`S3_BUCKET_NAME=${config.bucket}`)
+      if (config.cdnUrl) envLines.push(`CDN_BASE_URL=${config.cdnUrl}`)
+    } else if (provider === 'aws') {
+      // 与 storage-manager 期望的 AWS_* 命名对齐
+      envLines.push(`AWS_REGION=${config.region}`)
+      envLines.push(`AWS_ACCESS_KEY_ID=${config.accessKeyId}`)
+      envLines.push(`AWS_SECRET_ACCESS_KEY=${config.secretAccessKey}`)
+      envLines.push(`AWS_S3_BUCKET=${config.bucket}`)
+      if (config.cdnUrl) envLines.push(`AWS_CLOUDFRONT_URL=${config.cdnUrl}`)
+    } else if (provider === 'aliyun') {
+      envLines.push(`ALIYUN_REGION=${config.region}`)
+      envLines.push(`ALIYUN_ACCESS_KEY_ID=${config.accessKeyId}`)
+      envLines.push(`ALIYUN_SECRET_ACCESS_KEY=${config.secretAccessKey}`)
+      envLines.push(`ALIYUN_OSS_BUCKET=${config.bucket}`)
+      if (config.cdnUrl) envLines.push(`ALIYUN_CDN_URL=${config.cdnUrl}`)
+    } else if (provider === 'qcloud') {
+      envLines.push(`QCLOUD_REGION=${config.region}`)
+      envLines.push(`QCLOUD_SECRET_ID=${config.accessKeyId}`)
+      envLines.push(`QCLOUD_SECRET_KEY=${config.secretAccessKey}`)
+      envLines.push(`QCLOUD_COS_BUCKET=${config.bucket}`)
+      if (config.cdnUrl) envLines.push(`QCLOUD_CDN_URL=${config.cdnUrl}`)
+    }
+
+    envLines.push('')
+    await fs.writeFile(envPath, envLines.join('\n'))
 
     return NextResponse.json({ 
       success: true,
