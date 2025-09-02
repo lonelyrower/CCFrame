@@ -125,12 +125,24 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-photo-gallery}
     entrypoint: ["/bin/sh","-c"]
     command: >
       set -e;
+      echo "等待MinIO服务启动...";
+      sleep 10;
       mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
+      echo "创建存储桶: $S3_BUCKET_NAME";
       mc mb -p local/"$S3_BUCKET_NAME" || true;
+      echo "创建存储桶: ccframe";
+      mc mb -p local/ccframe || true;
+      echo "创建存储桶: photo-gallery";
+      mc mb -p local/photo-gallery || true;
+      echo "设置存储桶访问策略...";
+      mc anonymous set public local/"$S3_BUCKET_NAME" || true;
+      mc anonymous set public local/ccframe || true;
+      mc anonymous set public local/photo-gallery || true;
+      echo "MinIO初始化完成";
     networks:
       - ccframe
 
