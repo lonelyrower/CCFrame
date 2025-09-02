@@ -24,8 +24,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       where: { id: photoId },
       include: {
         variants: {
-          where: { variant, format },
-          take: 1,
+          where: { variant },
         },
       },
     })
