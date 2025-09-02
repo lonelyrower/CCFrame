@@ -3,8 +3,8 @@ set -euo pipefail
 
 # 🚀 CCFrame VPS 一键运维脚本（Docker 专用）
 # 非交互用法：
-#   bash install.sh install     # 安装/升级并启动（自动构建）
-#   bash install.sh update      # 拉取代码并重建启动
+#   bash install.sh install     # 初始化/重建（清理旧容器与无主卷）
+#   bash install.sh update      # 更新代码并重建（保留数据卷）
 #   bash install.sh start       # 启动容器
 #   bash install.sh stop        # 停止容器
 #   bash install.sh restart     # 重启容器
@@ -277,8 +277,8 @@ cmd_health() {
 interactive_menu() {
   echo ""
   print_info "请选择操作："
-  echo "  1) 安装/升级并启动"
-  echo "  2) 更新代码并重启"
+  echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
+  echo "  2) 更新代码并重建（保留数据卷）"
   echo "  3) 启动"
   echo "  4) 重启"
   echo "  5) 停止"
@@ -288,20 +288,34 @@ interactive_menu() {
   echo "  9) 健康检查"
   echo "  0) 退出"
   while true; do
-    read -rp "输入编号: " choice
+    read -rp "输入编号: " choice || exit 0
     case "$choice" in
-      1) cmd_install; break ;;
-      2) cmd_update; break ;;
-      3) cmd_start; break ;;
-      4) cmd_restart; break ;;
-      5) cmd_stop; break ;;
-      6) cmd_status; break ;;
-      7) read -rp "服务名(可留空): " svc; cmd_logs "$svc"; break ;;
-      8) cmd_env; break ;;
-      9) cmd_health; break ;;
+      1) cmd_install ;;
+      2) cmd_update  ;;
+      3) cmd_start   ;;
+      4) cmd_restart ;;
+      5) cmd_stop    ;;
+      6) cmd_status  ;;
+      7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
+      8) cmd_env     ;;
+      9) cmd_health  ;;
       0) exit 0 ;;
       *) echo "请输入有效编号" ;;
     esac
+    echo ""
+    read -rp "按回车返回菜单（Ctrl+C 退出）" _ || exit 0
+    echo ""
+    print_info "请选择操作："
+    echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
+    echo "  2) 更新代码并重建（保留数据卷）"
+    echo "  3) 启动"
+    echo "  4) 重启"
+    echo "  5) 停止"
+    echo "  6) 状态"
+    echo "  7) 查看日志"
+    echo "  8) 修复/生成 .env"
+    echo "  9) 健康检查"
+    echo "  0) 退出"
   done
 }
 
