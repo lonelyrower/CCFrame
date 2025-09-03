@@ -67,13 +67,16 @@ export function Navigation() {
             <div className="hidden md:flex items-center space-x-8">
               {publicNavItems.map((item) => {
                 const Icon = item.icon
+                const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={cn(
                       'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
-                      'text-gray-600 dark:text-gray-300'
+                      isActive 
+                        ? 'text-primary' 
+                        : 'text-gray-600 dark:text-gray-300'
                     )}
                   >
                     <Icon className="h-4 w-4" />

@@ -98,11 +98,22 @@ export class StorageManager {
   }
 
   async getPresignedDownloadUrl(key: string): Promise<string> {
-    const command = new GetObjectCommand({
-      Bucket: this.config.bucket,
-      Key: key,
-    })
-    return getSignedUrl(this.client, command, { expiresIn: 3600 })
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+      })
+      return await getSignedUrl(this.client, command, { expiresIn: 3600 })
+    } catch (error) {
+      console.error('Storage getPresignedDownloadUrl error:', {
+        key,
+        bucket: this.config.bucket,
+        endpoint: this.config.endpoint,
+        provider: this.config.provider,
+        error: error instanceof Error ? error.message : error
+      })
+      throw error
+    }
   }
 
   async deleteObject(key: string): Promise<void> {
