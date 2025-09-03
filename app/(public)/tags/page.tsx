@@ -4,6 +4,7 @@ import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { PhotoWithDetails } from '@/types'
 import Link from 'next/link'
 import { Tag, Hash, Image, ArrowRight } from 'lucide-react'
+import { getImageUrl } from '@/lib/utils'
 
 interface TagWithCount {
   id: string
@@ -121,7 +122,7 @@ function TagCard({ tag }: { tag: TagWithCount }) {
             {tag.photos.slice(0, 6).map((photo) => (
               <div key={photo.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                 <img
-                  src={`/api/image/${photo.id}/thumb`}
+                  src={getImageUrl(photo.id, 'thumb', 'webp')}
                   alt={photo.album?.title || 'Photo'}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                 />

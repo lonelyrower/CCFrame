@@ -222,6 +222,13 @@ docker_info() {
   if [ -z "${SERVER_IP:-}" ]; then
     SERVER_IP=$(curl -fsSL https://api.ipify.org || echo "127.0.0.1")
   fi
+  
+  # 读取.env中的密码
+  ADMIN_PASSWORD="请查看 .env 文件中的 ADMIN_PASSWORD"
+  if [ -f .env ] && grep -q '^ADMIN_PASSWORD=' .env; then
+    ADMIN_PASSWORD=$(grep '^ADMIN_PASSWORD=' .env | cut -d'=' -f2 | tr -d '"')
+  fi
+  
   echo ""
   print_info "📋 Docker 已启动"
   echo ""
@@ -232,7 +239,7 @@ docker_info() {
   echo ""
   echo "🔑 默认账户:"
   echo "   邮箱: admin@local.dev"
-  echo "   密码: 请查看 .env 文件中的 ADMIN_PASSWORD"
+  echo "   密码: $ADMIN_PASSWORD"
   echo ""
   echo "🛠️  管理命令:"
   echo "   停止: $DOCKER_COMPOSE_CMD down"
@@ -355,15 +362,15 @@ interactive_menu() {
 main() {
   print_banner
   case "${1:-}" in
-    install)  shift; cmd_install "$@" ;;
-    update)   shift; cmd_update  "$@" ;;
-    start)    shift; cmd_start   "$@" ;;
-    stop)     shift; cmd_stop    "$@" ;;
-    restart)  shift; cmd_restart "$@" ;;
-    status)   shift; cmd_status  "$@" ;;
-    logs)     shift; cmd_logs    "$@" ;;
-    env)      shift; cmd_env     "$@" ;;
-    health)   shift; cmd_health  "$@" ;;
+    install)  shift; cmd_install "$@"; exit 0 ;;
+    update)   shift; cmd_update  "$@"; exit 0 ;;
+    start)    shift; cmd_start   "$@"; exit 0 ;;
+    stop)     shift; cmd_stop    "$@"; exit 0 ;;
+    restart)  shift; cmd_restart "$@"; exit 0 ;;
+    status)   shift; cmd_status  "$@"; exit 0 ;;
+    logs)     shift; cmd_logs    "$@"; exit 0 ;;
+    env)      shift; cmd_env     "$@"; exit 0 ;;
+    health)   shift; cmd_health  "$@"; exit 0 ;;
     *)
       # 无参数时：若是非交互环境（无 TTY），给出用法并退出；否则进入交互菜单
       if [ -t 0 ] || [ -r /dev/tty ]; then
