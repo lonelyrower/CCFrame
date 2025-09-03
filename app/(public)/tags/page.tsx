@@ -125,6 +125,15 @@ function TagCard({ tag }: { tag: TagWithCount }) {
                   src={getImageUrl(photo.id, 'thumb', 'webp')}
                   alt={photo.album?.title || 'Photo'}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                  onError={(e) => {
+                    console.error('Tag page image failed to load:', photo.id)
+                    const img = e.target as HTMLImageElement
+                    if (img.src.includes('webp')) {
+                      img.src = getImageUrl(photo.id, 'thumb', 'jpeg')
+                    } else if (img.src.includes('thumb')) {
+                      img.src = getImageUrl(photo.id, 'small', 'webp')
+                    }
+                  }}
                 />
               </div>
             ))}

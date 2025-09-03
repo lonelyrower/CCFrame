@@ -40,7 +40,72 @@ export function Navigation() {
   }, [])
 
   if (!mounted) {
-    return null
+    return (
+      <nav className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <Link 
+              href="/" 
+              className="flex items-center gap-3 font-bold text-xl text-gray-900 dark:text-white group"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-sm opacity-20 group-hover:opacity-40 transition-opacity" />
+                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                  <Aperture className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  CC Frame
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1 font-normal">
+                  个人相册
+                </span>
+              </div>
+            </Link>
+
+            <div className="hidden md:flex items-center space-x-8">
+              {publicNavItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
+                      'text-gray-600 dark:text-gray-300'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </div>
+
+            <div className="hidden md:flex items-center gap-4">
+              <Button variant="ghost" size="icon">
+                <Sun className="h-5 w-5" />
+              </Button>
+              <Link href="/admin/login">
+                <Button variant="outline" size="sm">
+                  登录
+                </Button>
+              </Link>
+            </div>
+
+            <div className="md:hidden flex items-center gap-2">
+              <Button variant="ghost" size="icon">
+                <Sun className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    )
   }
 
   return (

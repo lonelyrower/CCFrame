@@ -105,6 +105,16 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
                       blurDataURL={`data:image/svg+xml;base64,${toBase64(
                         `<svg width=\"400\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"400\" height=\"300\" fill=\"#f3f4f6\"/></svg>`
                       )}`}
+                      onError={(e) => {
+                        console.error('Image failed to load:', photo.id, photo.album?.title)
+                        // Fallback to different variant or format
+                        const img = e.target as HTMLImageElement
+                        if (img.src.includes('webp')) {
+                          img.src = getImageUrl(photo.id, 'small', 'jpeg')
+                        } else if (img.src.includes('small')) {
+                          img.src = getImageUrl(photo.id, 'thumb', 'webp')
+                        }
+                      }}
                     />
                     
                     {photo.tags.length > 0 && (

@@ -125,6 +125,15 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 400px"
+                    onError={(e) => {
+                      console.error('Timeline single image failed to load:', mainPhoto.id)
+                      const img = e.target as HTMLImageElement
+                      if (img.src.includes('webp')) {
+                        img.src = getImageUrl(mainPhoto.id, 'medium', 'jpeg')
+                      } else if (img.src.includes('medium')) {
+                        img.src = getImageUrl(mainPhoto.id, 'small', 'webp')
+                      }
+                    }}
                   />
                 </div>
                 {mainPhoto.album?.title && (
@@ -150,6 +159,15 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-200"
                       sizes="200px"
+                      onError={(e) => {
+                        console.error('Timeline grid image failed to load:', photo.id)
+                        const img = e.target as HTMLImageElement
+                        if (img.src.includes('webp')) {
+                          img.src = getImageUrl(photo.id, 'small', 'jpeg')
+                        } else if (img.src.includes('small')) {
+                          img.src = getImageUrl(photo.id, 'thumb', 'webp')
+                        }
+                      }}
                     />
                   </div>
                 ))}
@@ -164,6 +182,15 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 600px"
+                    onError={(e) => {
+                      console.error('Timeline main image failed to load:', mainPhoto.id)
+                      const img = e.target as HTMLImageElement
+                      if (img.src.includes('webp')) {
+                        img.src = getImageUrl(mainPhoto.id, 'medium', 'jpeg')
+                      } else if (img.src.includes('medium')) {
+                        img.src = getImageUrl(mainPhoto.id, 'small', 'webp')
+                      }
+                    }}
                   />
                 </div>
                 <div className="grid grid-cols-6 gap-2">
@@ -175,6 +202,15 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-200"
                         sizes="80px"
+                        onError={(e) => {
+                          console.error('Timeline thumb image failed to load:', photo.id)
+                          const img = e.target as HTMLImageElement
+                          if (img.src.includes('webp')) {
+                            img.src = getImageUrl(photo.id, 'thumb', 'jpeg')
+                          } else {
+                            img.src = getImageUrl(photo.id, 'small', 'webp')
+                          }
+                        }}
                       />
                     </div>
                   ))}
