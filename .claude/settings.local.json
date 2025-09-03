@@ -27,7 +27,9 @@
       "Bash(docker compose logs:*)",
       "Bash(docker compose:*)",
       "Bash(rm:*)",
-      "Bash(git filter-branch:*)"
+      "Bash(git filter-branch:*)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)"
     ],
     "deny": [],
     "ask": []
