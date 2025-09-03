@@ -278,8 +278,14 @@ cmd_update() {
   check_system
   clone_project
   ensure_env
+  
+  # 清理构建缓存，确保使用最新代码
+  print_step "清理构建缓存..."
+  docker builder prune -f >/dev/null 2>&1 || true
+  print_success "缓存清理完成"
+  
   print_step "更新代码并重建..."
-  $DOCKER_COMPOSE_CMD up -d --build
+  $DOCKER_COMPOSE_CMD up -d --build --force-recreate
   docker_info
 }
 
