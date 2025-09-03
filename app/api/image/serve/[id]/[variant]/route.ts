@@ -1,87 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
 
-interface Params {
-  params: {
-    id: string
-    variant: string
-  }
-}
+export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest, { params }: Params) {
+const VALID_VARIANTS = new Set(['thumb', 'small', 'medium', 'large', 'original'])
+const FORMAT_ORDER = ['webp', 'jpeg', 'avif'] as const
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string; variant: string } }
+) {
   try {
-    const { id: photoId } = params
-    // Support legacy alias "thumbnail" => "thumb"
-    const variant = params.variant === 'thumbnail' ? 'thumb' : params.variant
-    const url = new URL(request.url)
-    const format = url.searchParams.get('format') || 'jpeg'
+    const { id, variant } = params
+    if (!id || !variant) {
+      return NextResponse.json({ error: 'Missing id or variant' }, { status: 400 })
+    }
 
-    // Get photo with variants
-    const photo = await db.photo.findUnique({
-      where: { id: photoId },
-      include: {
-        variants: {
-          where: { variant },
+    const url = new URL(req.url)
+    const requestedFormat = (url.searchParams.get('format') || 'webp').toLowerCase()
+
+    if (!VALID_VARIANTS.has(variant)) {
+      return NextResponse.json({ error: 'Invalid variant' }, { status: 400 })
+    }
+
+    // Try to find the exact requested variant/format, then fall back through formats
+    const formatsToTry = [requestedFormat, ...FORMAT_ORDER.filter(f => f !== requestedFormat)]
+
+    let record = null as null | {
+      fileKey: string
+      format: string
+    }
+
+    for (const fmt of formatsToTry) {
+      const found = await db.photoVariant.findFirst({
+        where: {
+          photoId: id,
+          variant,
+          format: fmt,
         },
-      },
-    })
-
-    if (!photo) {
-      return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
-    }
-
-    // Check if photo is private
-    if (photo.visibility === 'PRIVATE') {
-      const session = await getServerSession(authOptions)
-      if (!session?.user?.id || session.user.id !== photo.userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        select: { fileKey: true, format: true },
+      })
+      if (found) {
+        record = found
+        break
       }
     }
 
-    // Find requested variant with format and size fallback
-    const preferFormats = [format, 'webp', 'jpeg', 'avif']
-    const sizePreference: Record<string, string[]> = {
-      thumb: ['thumb', 'small', 'medium', 'large'],
-      small: ['small', 'medium', 'thumb', 'large'],
-      medium: ['medium', 'small', 'large', 'thumb'],
-      large: ['large', 'medium', 'small', 'thumb'],
-    }
-    const sizes = sizePreference[variant] || [variant, 'small', 'medium', 'large', 'thumb']
-    const photoVariant = sizes
-      .map((sz) => preferFormats.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
-      .find(Boolean) as typeof photo.variants[number] | undefined
-    if (!photoVariant) {
-      return NextResponse.json({ error: 'Variant not found' }, { status: 404 })
+    // Optional: try original as last resort
+    if (!record) {
+      const original = await db.photoVariant.findFirst({
+        where: { photoId: id, variant: 'original' },
+        select: { fileKey: true, format: true },
+      })
+      if (original) record = original
     }
 
-    // Stream from storage for both public and private to avoid exposing internal endpoints
+    if (!record) {
+      return NextResponse.json({ error: 'Image variant not found' }, { status: 404 })
+    }
+
     const storage = getStorageManager()
-    const downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
-    const response = await fetch(downloadUrl)
-    
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch image' }, { status: 500 })
-    }
 
-    const buffer = Buffer.from(await response.arrayBuffer())
+    // Generate a signed download URL (works for private buckets and public alike)
+    const signedUrl = await storage.getPresignedDownloadUrl(record.fileKey)
 
-    // Public images can be cached longer; private images cached briefly
-    const cacheHeader = photo.visibility === 'PUBLIC'
-      ? 'public, max-age=86400, immutable'
-      : 'private, max-age=3600'
-
-    return new NextResponse(buffer, {
-      headers: {
-        'Content-Type': `image/${photoVariant.format}`,
-        'Content-Length': buffer.length.toString(),
-        'Cache-Control': cacheHeader,
-      }
-    })
-  } catch (error) {
-    console.error('Image serve error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    // Let Next/Image fetch via redirect; cache aggressively at the edge and browser
+    const res = NextResponse.redirect(signedUrl, { status: 302 })
+    res.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+    return res
+  } catch (err) {
+    console.error('Image serve error:', err)
+    return NextResponse.json({ error: 'Failed to serve image' }, { status: 500 })
   }
 }
+
