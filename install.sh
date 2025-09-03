@@ -117,7 +117,9 @@ clone_project() {
         HTTPS_URL="https://github.com/${REPO_PATH}.git"
         git remote set-url origin "$HTTPS_URL" || true
       else
-        git remote set-url origin "$REPO_URL" || true
+        # 确保使用干净的HTTPS URL
+        CLEAN_REPO_URL="https://github.com/lonelyrower/CCFrame.git"
+        git remote set-url origin "$CLEAN_REPO_URL" || true
       fi
       git fetch --all --prune || true
       if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
@@ -151,7 +153,9 @@ clone_project() {
         HTTPS_URL="https://github.com/${REPO_PATH}.git"
         git remote set-url origin "$HTTPS_URL" || true
       else
-        git remote set-url origin "$REPO_URL" || true
+        # 确保使用干净的HTTPS URL
+        CLEAN_REPO_URL="https://github.com/lonelyrower/CCFrame.git"
+        git remote set-url origin "$CLEAN_REPO_URL" || true
       fi
       git fetch --all --prune || true
       if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
