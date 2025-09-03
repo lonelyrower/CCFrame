@@ -186,20 +186,20 @@ ensure_env() {
     else
       print_warning ".env.docker.example 不存在，创建最小化 .env"
       cat > .env << 'EOF'
-NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || echo "change-me")
+NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || echo "change-me-$(date +%s)")
 ADMIN_EMAIL=admin@local.dev
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=$(openssl rand -base64 12 2>/dev/null || echo "admin-$(date +%s)")
 POSTGRES_USER=ccframe
-POSTGRES_PASSWORD=ccframe
+POSTGRES_PASSWORD=$(openssl rand -base64 16 2>/dev/null || echo "db-$(date +%s)")
 POSTGRES_DB=ccframe
-DATABASE_URL=postgresql://ccframe:ccframe@db:5432/ccframe
+DATABASE_URL=postgresql://ccframe:$(openssl rand -base64 16 2>/dev/null || echo "db-$(date +%s)")@db:5432/ccframe
 REDIS_URL=redis://redis:6379
-S3_ACCESS_KEY_ID=minioadmin
-S3_SECRET_ACCESS_KEY=minioadmin
+S3_ACCESS_KEY_ID=$(openssl rand -base64 12 2>/dev/null || echo "s3-$(date +%s)")
+S3_SECRET_ACCESS_KEY=$(openssl rand -base64 16 2>/dev/null || echo "s3secret-$(date +%s)")
 S3_BUCKET_NAME=ccframe
 S3_REGION=us-east-1
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin
+MINIO_ROOT_USER=$(openssl rand -base64 12 2>/dev/null || echo "minio-$(date +%s)")
+MINIO_ROOT_PASSWORD=$(openssl rand -base64 16 2>/dev/null || echo "miniosecret-$(date +%s)")
 EOF
     fi
   fi
@@ -232,7 +232,7 @@ docker_info() {
   echo ""
   echo "🔑 默认账户:"
   echo "   邮箱: admin@local.dev"
-  echo "   密码: admin123"
+  echo "   密码: 请查看 .env 文件中的 ADMIN_PASSWORD"
   echo ""
   echo "🛠️  管理命令:"
   echo "   停止: $DOCKER_COMPOSE_CMD down"
@@ -338,17 +338,17 @@ interactive_menu() {
   echo "  0) 退出"
   read -rp "输入编号: " choice || exit 0
   case "$choice" in
-    1) cmd_install ;;
-    2) cmd_update  ;;
-    3) cmd_start   ;;
-    4) cmd_restart ;;
-    5) cmd_stop    ;;
-    6) cmd_status  ;;
+    1) cmd_install; exit 0 ;;
+    2) cmd_update; exit 0  ;;
+    3) cmd_start; exit 0   ;;
+    4) cmd_restart; exit 0 ;;
+    5) cmd_stop; exit 0    ;;
+    6) cmd_status; exit 0  ;;
     7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
-    8) cmd_env     ;;
-    9) cmd_health  ;;
+    8) cmd_env; exit 0     ;;
+    9) cmd_health; exit 0  ;;
     0) exit 0 ;;
-    *) echo "请输入有效编号" ;;
+    *) echo "请输入有效编号"; exit 1 ;;
   esac
 }
 

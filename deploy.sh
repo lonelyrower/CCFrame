@@ -1,98 +1,41 @@
 #!/bin/bash
 
-# CCFrame 一键部署脚本
-# 支持 Vercel, Railway, Docker 多种部署方式
+echo "🚀 CCFrame 全新部署脚本"
+echo "========================"
 
-set -e
+# 停止所有相关服务
+echo "📦 清理旧容器和网络..."
+docker compose down --remove-orphans 2>/dev/null || true
+docker stop ccframe-web ccframe-worker ccframe-postgres ccframe-redis ccframe-minio ccframe-nginx 2>/dev/null || true
+docker rm ccframe-web ccframe-worker ccframe-postgres ccframe-redis ccframe-minio ccframe-nginx 2>/dev/null || true
 
-# 颜色输出
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# 清理Docker缓存和资源
+echo "🧹 清理Docker缓存..."
+docker system prune -f --volumes
+docker network prune -f
+docker volume prune -f
 
-# 输出函数
-print_header() {
-    echo -e "${BLUE}"
-    echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║                CCFrame 一键部署脚本                      ║"
-    echo "║            个人相册网站 - AI驱动的照片管理               ║"
-    echo "╚══════════════════════════════════════════════════════════╝"
-    echo -e "${NC}"
-}
+# 清理CCFrame相关网络和卷
+echo "🗑️ 清理项目相关资源..."
+docker network rm ccframe 2>/dev/null || true
+docker volume rm ccframe_pgdata ccframe_minio 2>/dev/null || true
 
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
+# 清理nginx配置缓存
+echo "🔧 清理nginx缓存..."
+sudo systemctl stop nginx 2>/dev/null || true
+sudo rm -rf /var/cache/nginx/* 2>/dev/null || true
 
-print_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
-
-# 检查依赖
-check_dependencies() {
-    print_info "检查系统依赖..."
-    
-    # 检查 Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js 未安装，请先安装 Node.js 18+"
-        exit 1
-    fi
-    
-    NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js 版本过低，需要 18+ 版本"
-        exit 1
-    fi
-    print_success "Node.js $(node -v) ✓"
-    
-    # 检查 npm
-    if ! command -v npm &> /dev/null; then
-        print_error "npm 未安装"
-        exit 1
-    fi
-    print_success "npm $(npm -v) ✓"
-    
-    # 检查 git
-    if ! command -v git &> /dev/null; then
-        print_error "git 未安装"
-        exit 1
-    fi
-    print_success "git $(git --version | cut -d' ' -f3) ✓"
-}
-
-# 选择部署方式
-choose_deployment_method() {
-    echo ""
-    print_info "选择部署方式："
-    echo "1) Vercel (推荐 - 最简单快速)"
-    echo "2) Railway (包含数据库)"
-    echo "3) Docker (本地/云服务器)"
-    echo "4) 手动配置"
-    echo ""
-    
-    while true; do
-        read -p "请选择部署方式 [1-4]: " choice
-        case $choice in
-            1) DEPLOYMENT_METHOD="vercel"; break ;;
-            2) DEPLOYMENT_METHOD="railway"; break ;;
-            3) DEPLOYMENT_METHOD="docker"; break ;;
-            4) DEPLOYMENT_METHOD="manual"; break ;;
-            *) print_error "请输入 1-4 之间的数字" ;;
-        esac
-    done
-    
-    print_success "选择了: $DEPLOYMENT_METHOD 部署方式"
-}
+# 确保环境文件存在
+if [ ! -f .env ]; then
+  if [ -f .env.docker.example ]; then
+    echo "📝 复制环境配置文件..."
+    cp .env.docker.example .env
+    echo "⚠️  请检查并修改 .env 文件中的配置"
+  else
+    echo "❌ 未找到 .env.docker.example 文件"
+    exit 1
+  fi
+fi
 
 # Vercel 部署
 deploy_vercel() {
