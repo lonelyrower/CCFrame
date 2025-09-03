@@ -22,18 +22,29 @@ export async function GET(request: NextRequest, { params }: Params) {
     const url = new URL(request.url)
     const format = url.searchParams.get('format') || 'jpeg'
 
-    const photo = await db.photo.findUnique({
-      where: { id: photoId },
-      include: {
-        variants: {
-          where: { variant: reqVariant },
+    console.log('Image API request:', { photoId, reqVariant, format })
+
+    let photo
+    try {
+      photo = await db.photo.findUnique({
+        where: { id: photoId },
+        include: {
+          variants: {
+            where: { variant: reqVariant },
+          },
         },
-      },
-    })
+      })
+    } catch (dbError) {
+      console.error('Database error in image API:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
 
     if (!photo) {
+      console.log('Photo not found:', photoId)
       return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
     }
+
+    console.log('Found photo:', { id: photo.id, variants: photo.variants.length })
 
     // Enforce access for private photos
     if (photo.visibility === 'PRIVATE') {
@@ -56,19 +67,44 @@ export async function GET(request: NextRequest, { params }: Params) {
       .map((sz) => preferFormats.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
       .find(Boolean)
     if (!photoVariant) {
+      console.log('Photo variant not found:', { photoId, reqVariant, availableVariants: photo.variants.map(v => `${v.variant}.${v.format}`) })
       return NextResponse.json({ error: 'Variant not found' }, { status: 404 })
     }
 
-    const storage = getStorageManager()
+    console.log('Using photo variant:', { variant: photoVariant.variant, format: photoVariant.format, fileKey: photoVariant.fileKey })
+
+    let storage
+    try {
+      storage = getStorageManager()
+    } catch (storageError) {
+      console.error('Storage manager initialization failed:', storageError)
+      return NextResponse.json({ error: 'Storage service unavailable' }, { status: 503 })
+    }
 
     // Always stream via server to avoid exposing internal endpoints
-    const downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
-    const response = await fetch(downloadUrl)
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch image' }, { status: 500 })
+    let downloadUrl
+    try {
+      downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
+      console.log('Generated download URL for:', photoVariant.fileKey)
+    } catch (storageError) {
+      console.error('Failed to generate download URL:', storageError)
+      return NextResponse.json({ error: 'Failed to generate download URL' }, { status: 500 })
+    }
+
+    let response
+    try {
+      response = await fetch(downloadUrl)
+      if (!response.ok) {
+        console.error('Storage fetch failed:', { status: response.status, statusText: response.statusText })
+        return NextResponse.json({ error: 'Failed to fetch image from storage' }, { status: 500 })
+      }
+    } catch (fetchError) {
+      console.error('Network error fetching from storage:', fetchError)
+      return NextResponse.json({ error: 'Network error accessing storage' }, { status: 500 })
     }
 
     const buffer = Buffer.from(await response.arrayBuffer())
+    console.log('Successfully fetched image buffer:', { size: buffer.length })
 
     // Public images can be cached longer; private images cached briefly
     const cacheHeader = photo.visibility === 'PUBLIC'
@@ -83,7 +119,20 @@ export async function GET(request: NextRequest, { params }: Params) {
       },
     })
   } catch (error) {
-    console.error('Image serve (compat) error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Image serve (compat) error:', {
+      photoId,
+      variant: reqVariant,
+      format,
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined
+    })
+    
+    // Return more detailed error in development
+    const isDev = process.env.NODE_ENV === 'development'
+    return NextResponse.json({ 
+      error: isDev ? 
+        `Image API error: ${error instanceof Error ? error.message : 'Unknown error'}` : 
+        'Internal server error' 
+    }, { status: 500 })
   }
 }
