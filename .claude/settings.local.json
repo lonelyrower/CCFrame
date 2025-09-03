@@ -29,7 +29,8 @@
       "Bash(rm:*)",
       "Bash(git filter-branch:*)",
       "Bash(git reflog:*)",
-      "Bash(git gc:*)"
+      "Bash(git gc:*)",
+      "Bash(git remote get-url:*)"
     ],
     "deny": [],
     "ask": []
