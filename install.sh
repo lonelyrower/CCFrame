@@ -111,8 +111,10 @@ clone_project() {
       print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
       CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
       if echo "$CURRENT_REMOTE" | grep -q "^git@github.com:"; then
-        # 转换 SSH -> HTTPS
-        HTTPS_URL="https://github.com/${CURRENT_REMOTE#git@github.com:}.git"
+        # 转换 SSH -> HTTPS，移除可能存在的 .git 后缀
+        REPO_PATH="${CURRENT_REMOTE#git@github.com:}"
+        REPO_PATH="${REPO_PATH%.git}"  # 移除末尾的 .git
+        HTTPS_URL="https://github.com/${REPO_PATH}.git"
         git remote set-url origin "$HTTPS_URL" || true
       else
         git remote set-url origin "$REPO_URL" || true
@@ -143,7 +145,10 @@ clone_project() {
       print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
       CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
       if echo "$CURRENT_REMOTE" | grep -q "^git@github.com:"; then
-        HTTPS_URL="https://github.com/${CURRENT_REMOTE#git@github.com:}.git"
+        # 转换 SSH -> HTTPS，移除可能存在的 .git 后缀  
+        REPO_PATH="${CURRENT_REMOTE#git@github.com:}"
+        REPO_PATH="${REPO_PATH%.git}"  # 移除末尾的 .git
+        HTTPS_URL="https://github.com/${REPO_PATH}.git"
         git remote set-url origin "$HTTPS_URL" || true
       else
         git remote set-url origin "$REPO_URL" || true
