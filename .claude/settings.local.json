@@ -23,7 +23,11 @@
       "Bash(docker compose build:*)",
       "Bash(git remote set-url:*)",
       "Bash(git reset:*)",
-      "Bash(npx prisma migrate dev:*)"
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(docker compose logs:*)",
+      "Bash(docker compose:*)",
+      "Bash(rm:*)",
+      "Bash(git filter-branch:*)"
     ],
     "deny": [],
     "ask": []
