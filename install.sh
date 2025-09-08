@@ -388,37 +388,32 @@ interactive_menu() {
   if [ -r /dev/tty ]; then
     exec </dev/tty
   fi
-  while true; do
-    echo ""
-    print_info "请选择操作："
-    echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
-    echo "  2) 更新代码并重建（保留数据卷）"
-    echo "  3) 启动"
-    echo "  4) 重启"
-    echo "  5) 停止"
-    echo "  6) 状态"
-    echo "  7) 查看日志"
-    echo "  8) 修复/生成 .env"
-    echo "  9) 健康检查"
-    echo "  0) 退出"
-    read -rp "输入编号: " choice || exit 0
-    case "$choice" in
-      1) cmd_install ;;
-      2) cmd_update  ;;
-      3) cmd_start   ;;
-      4) cmd_restart ;;
-      5) cmd_stop    ;;
-      6) cmd_status  ;;
-      7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
-      8) cmd_env     ;;
-      9) cmd_health  ;;
-      0) echo "再见！"; exit 0 ;;
-      *) echo "请输入有效编号" ;;
-    esac
-    # 操作结束后暂停，避免信息刷屏
-    read -rp "按回车键返回菜单，输入 q 退出: " back || exit 0
-    [ "${back:-}" = "q" ] && exit 0
-  done
+  echo ""
+  print_info "请选择操作："
+  echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
+  echo "  2) 更新代码并重建（保留数据卷）"
+  echo "  3) 启动"
+  echo "  4) 重启"
+  echo "  5) 停止"
+  echo "  6) 状态"
+  echo "  7) 查看日志"
+  echo "  8) 修复/生成 .env"
+  echo "  9) 健康检查"
+  echo "  0) 退出"
+  read -rp "输入编号: " choice || exit 0
+  case "$choice" in
+    1) cmd_install;  exit 0 ;;
+    2) cmd_update;   exit 0 ;;
+    3) cmd_start;    exit 0 ;;
+    4) cmd_restart;  exit 0 ;;
+    5) cmd_stop;     exit 0 ;;
+    6) cmd_status;   exit 0 ;;
+    7) read -rp "服务名(可留空): " svc; cmd_logs "$svc"; exit 0 ;;
+    8) cmd_env;      exit 0 ;;
+    9) cmd_health;   exit 0 ;;
+    0) exit 0 ;;
+    *) echo "请输入有效编号"; exit 1 ;;
+  esac
 }
 
 main() {

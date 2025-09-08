@@ -8,6 +8,9 @@ const nextConfig = {
     serverComponentsExternalPackages: ['sharp', 'exifr'],
   },
   images: {
+    // 我们已在后端生成多尺寸/格式的变体，禁用 Next 内置优化，
+    // 直接使用 /api/image 路由，避免 /_next/image 二次代理导致的 500。
+    unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
       // 允许通过 http 访问 MinIO/S3 签名地址（内网/开发环境常见）
