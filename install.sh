@@ -156,74 +156,51 @@ check_system() {
 
 clone_project() {
   print_step "获取项目代码..."
-  # 情况1：当前目录已经是仓库根目录
-  if [ -d .git ]; then
-    REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
-    BRANCH=${BRANCH:-main}
-    # 先规范化 origin 再打印，避免出现 .git.git... 的异常
-    CLEANED_ORIGIN=$(ensure_normalized_origin)
-    echo "origin: ${CLEANED_ORIGIN:-'(none)'}"
-    if git pull --rebase --autostash; then
-      print_success "当前目录为仓库，已更新代码"
-      return
-    else
-      print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
-      CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-      HTTPS_URL=$(normalize_to_https "$CURRENT_REMOTE")
-      git remote set-url origin "$HTTPS_URL" || true
-      git fetch --all --prune || true
-      if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
-      if git reset --hard "origin/$BRANCH"; then
-        print_success "已切换为 HTTPS 并同步到 origin/$BRANCH"
-        return
-      else
-        print_error "无法更新当前仓库，请检查网络或权限"
-        exit 1
-      fi
-    fi
-  fi
-
-  # 情况2：上级目录存在 CCFrame 仓库
-  PROJECT_DIR="CCFrame"
-  if [ -d "$PROJECT_DIR/.git" ]; then
-    cd "$PROJECT_DIR"
-    REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
-    BRANCH=${BRANCH:-main}
-    CLEANED_ORIGIN=$(ensure_normalized_origin)
-    echo "origin: ${CLEANED_ORIGIN:-'(none)'}"
-    if git pull --rebase --autostash; then
-      print_success "进入 $PROJECT_DIR 并更新代码"
-      return
-    else
-      print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
-      CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-      HTTPS_URL=$(normalize_to_https "$CURRENT_REMOTE")
-      git remote set-url origin "$HTTPS_URL" || true
-      git fetch --all --prune || true
-      if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
-      if git reset --hard "origin/$BRANCH"; then
-        print_success "已切换为 HTTPS 并同步到 origin/$BRANCH"
-        return
-      else
-        print_error "无法更新仓库，请检查网络或权限"
-        exit 1
-      fi
-    fi
-  fi
-
-  # 情况3：自动克隆（公开仓库 HTTPS，或通过 REPO_URL 指定）
+  
+  # 统一使用 /opt/ccframe 作为项目目录
+  PROJECT_DIR="/opt/ccframe"
   REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
   BRANCH=${BRANCH:-main}
-  print_info "未检测到本地仓库，尝试自动克隆: $REPO_URL (分支: $BRANCH)"
-  if git ls-remote --heads "$REPO_URL" "$BRANCH" >/dev/null 2>&1; then
-    git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR"
+  
+  # 确保项目目录存在
+  mkdir -p "$PROJECT_DIR"
+  
+  # 如果目录已存在且是git仓库，尝试更新
+  if [ -d "$PROJECT_DIR/.git" ]; then
     cd "$PROJECT_DIR"
-    print_success "已克隆仓库并进入目录: $PROJECT_DIR"
-    return
+    print_info "更新现有仓库..."
+    
+    # 规范化 origin 地址
+    CLEANED_ORIGIN=$(ensure_normalized_origin)
+    echo "origin: ${CLEANED_ORIGIN:-'(none)'}"
+    
+    # 尝试更新代码
+    if git pull --rebase --autostash 2>/dev/null; then
+      print_success "代码更新成功"
+      return
+    else
+      print_warning "git pull 失败，尝试强制重置..."
+      git fetch --all --prune || true
+      if git reset --hard "origin/$BRANCH" 2>/dev/null; then
+        print_success "强制重置到最新代码"
+        return
+      else
+        print_warning "更新失败，将重新克隆..."
+        cd /
+        rm -rf "$PROJECT_DIR"
+        mkdir -p "$PROJECT_DIR"
+      fi
+    fi
+  fi
+  
+  # 克隆仓库到项目目录
+  print_info "克隆仓库: $REPO_URL (分支: $BRANCH)"
+  if git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR" 2>/dev/null; then
+    cd "$PROJECT_DIR"
+    print_success "仓库克隆成功: $PROJECT_DIR"
   else
-    print_error "无法克隆仓库：$REPO_URL (分支: $BRANCH)"
-    print_info  "可通过设置 REPO_URL/BRANCH 环境变量指定来源，例如："
-    echo "  REPO_URL=https://github.com/your/repo.git BRANCH=main bash install.sh install"
+    print_error "无法克隆仓库：$REPO_URL"
+    print_info "请检查网络连接或仓库地址"
     exit 1
   fi
 }
@@ -342,29 +319,34 @@ cmd_update() {
 
 cmd_start() {
   check_system
+  cd /opt/ccframe || { print_error "项目目录不存在，请先运行安装"; exit 1; }
   $DOCKER_COMPOSE_CMD up -d
   docker_info
 }
 
 cmd_stop() {
   check_system
+  cd /opt/ccframe || { print_error "项目目录不存在，请先运行安装"; exit 1; }
   $DOCKER_COMPOSE_CMD down
   print_success "已停止所有容器"
 }
 
 cmd_restart() {
   check_system
+  cd /opt/ccframe || { print_error "项目目录不存在，请先运行安装"; exit 1; }
   $DOCKER_COMPOSE_CMD restart
   docker_info
 }
 
 cmd_status() {
   check_system
+  cd /opt/ccframe || { print_error "项目目录不存在，请先运行安装"; exit 1; }
   $DOCKER_COMPOSE_CMD ps
 }
 
 cmd_logs() {
   check_system
+  cd /opt/ccframe || { print_error "项目目录不存在，请先运行安装"; exit 1; }
   svc=${1:-}
   if [ -n "$svc" ]; then
     $DOCKER_COMPOSE_CMD logs -f --tail=200 "$svc"
@@ -374,6 +356,7 @@ cmd_logs() {
 }
 
 cmd_env() {
+  cd /opt/ccframe || { print_error "项目目录不存在，请先运行安装"; exit 1; }
   ensure_env
 }
 
