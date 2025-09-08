@@ -48,6 +48,8 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/jobs ./jobs
+# Fallback copy: duplicate jobs under scripts/jobs to avoid path issues in some builds
+COPY --from=build /app/jobs ./scripts/jobs
 
 EXPOSE 3000
 
