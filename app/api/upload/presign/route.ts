@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
     const photo = await db.photo.create({
       data: {
         fileKey,
-        hash: '', // Will be set during processing
+        // 使用临时唯一哈希占位，避免唯一索引冲突
+        hash: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         width: 0, // Will be set during processing
         height: 0, // Will be set during processing
         userId: session.user.id,

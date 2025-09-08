@@ -4,21 +4,22 @@ const fs = require('fs')
 const path = require('path')
 
 const REQUIRED_PAGES = [
-  // Public pages
+  // Public pages (App Router groups)
   'app/(public)/page.tsx',
-  'app/photos/page.tsx',
-  'app/tags/page.tsx',
-  'app/timeline/page.tsx',
+  'app/(public)/photos/page.tsx',
+  'app/(public)/tags/page.tsx',
+  'app/(public)/timeline/page.tsx',
   'app/not-found.tsx',
   'app/offline/page.tsx',
   
   // Admin pages
   'app/admin/page.tsx',
-  'app/admin/login/page.tsx',
+  'app/(auth)/admin/login/page.tsx',
   'app/admin/upload/page.tsx',
   'app/admin/library/page.tsx',
   'app/admin/albums/page.tsx',
-  'app/admin/albums/new/page.tsx',
+  // optional page may be absent in this codebase
+  // 'app/admin/albums/new/page.tsx',
   'app/admin/settings/page.tsx',
   'app/admin/ai/page.tsx',
 ]

@@ -15,12 +15,13 @@ interface Params {
 // photos. It avoids redirecting clients to the storage endpoint (e.g., MinIO),
 // which may not be resolvable from the user's network/environment.
 export async function GET(request: NextRequest, { params }: Params) {
+  // Hoist for error logging scope
+  const { id: photoId } = params
+  const reqVariant = params.variant === 'thumbnail' ? 'thumb' : params.variant
+  let format = 'jpeg'
   try {
-    const { id: photoId } = params
-    // Support legacy alias "thumbnail" => "thumb"
-    const reqVariant = params.variant === 'thumbnail' ? 'thumb' : params.variant
     const url = new URL(request.url)
-    const format = url.searchParams.get('format') || 'jpeg'
+    format = url.searchParams.get('format') || 'jpeg'
 
     console.log('Image API request:', { photoId, reqVariant, format })
 
@@ -29,9 +30,8 @@ export async function GET(request: NextRequest, { params }: Params) {
       photo = await db.photo.findUnique({
         where: { id: photoId },
         include: {
-          variants: {
-            where: { variant: reqVariant },
-          },
+          // 包含全部变体，便于按尺寸与格式回退
+          variants: true,
         },
       })
     } catch (dbError) {

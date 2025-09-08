@@ -18,14 +18,10 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 365,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/image/:id/:variant',
-        destination: '/api/image/serve/:id/:variant',
-      },
-    ]
-  },
+  // Use streaming image route by default to avoid exposing internal S3 endpoints
+  // and ensure images load even when storage hostname isn't publicly resolvable.
+  // If you prefer redirect-based serving, reintroduce a rewrite to
+  // '/api/image/serve/:id/:variant'.
   async headers() {
     return [
       {

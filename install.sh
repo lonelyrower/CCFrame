@@ -25,6 +25,22 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 print_banner() {
+  # 检测是否支持 UTF-8，若不支持则降级为 ASCII 文本，避免乱码符号
+  local use_utf8=1
+  if [ -z "${LANG:-}" ] || ! printf '%s' "$LANG" | grep -qi 'utf-8'; then
+    use_utf8=0
+  fi
+  if [ "$use_utf8" -eq 0 ]; then
+    echo "==============================================="
+    echo "   CCFrame - 个人AI相册网站 一键运维脚本"
+    echo "==============================================="
+    echo " 功能特色:"
+    echo "   - 智能相册管理  - AI图片处理"
+    echo "   - 响应式设计    - 权限控制"
+    echo "   - PWA离线支持   - 暗黑模式"
+    echo
+    return
+  fi
   echo -e "${PURPLE}"
   cat << 'EOF'
     ╔══════════════════════════════════════════════════════════════╗
@@ -55,6 +71,47 @@ print_info()    { echo -e "${BLUE}ℹ️  $1${NC}"; }
 print_step()    { echo -e "${PURPLE}🚀 $1${NC}"; }
 
 DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-}
+
+# 规范化仓库地址，清理重复的 .git 后缀并统一为 HTTPS
+normalize_to_https() {
+  local input="$1"
+  local path=""
+  if [[ "$input" =~ ^git@github.com: ]]; then
+    path="${input#git@github.com:}"
+  elif [[ "$input" =~ ^https?://github.com/ ]]; then
+    path="${input#*github.com/}"
+  else
+    # 未知/空输入，返回默认仓库
+    echo "https://github.com/lonelyrower/CCFrame.git"
+    return 0
+  fi
+  # 去除所有结尾多余的 .git（可能是 .git.git...）并去掉多余斜杠
+  path=$(echo "$path" | sed -E 's#^/+##; s/(\.git)+$//')
+  # 仅保留 owner/repo 两段
+  local owner repo
+  owner=$(echo "$path" | cut -d/ -f1)
+  repo=$(echo "$path" | cut -d/ -f2)
+  if [ -z "$owner" ] || [ -z "$repo" ]; then
+    owner="lonelyrower"; repo="CCFrame"
+  fi
+  echo "https://github.com/$owner/$repo.git"
+}
+
+# 读取并必要时修复 origin 地址，返回修复后的地址
+ensure_normalized_origin() {
+  local current
+  current=$(git remote get-url origin 2>/dev/null || echo "")
+  if [ -z "$current" ]; then
+    echo "https://github.com/lonelyrower/CCFrame.git"
+    return 0
+  fi
+  local normalized
+  normalized=$(normalize_to_https "$current")
+  if [ "$normalized" != "$current" ]; then
+    git remote set-url origin "$normalized" >/dev/null 2>&1 || true
+  fi
+  echo "$normalized"
+}
 
 check_system() {
   print_step "检查系统环境..."
@@ -103,24 +160,17 @@ clone_project() {
   if [ -d .git ]; then
     REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
     BRANCH=${BRANCH:-main}
-    echo "origin: $(git remote get-url origin 2>/dev/null || echo '(none)')"
+    # 先规范化 origin 再打印，避免出现 .git.git... 的异常
+    CLEANED_ORIGIN=$(ensure_normalized_origin)
+    echo "origin: ${CLEANED_ORIGIN:-'(none)'}"
     if git pull --rebase --autostash; then
       print_success "当前目录为仓库，已更新代码"
       return
     else
       print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
       CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-      if echo "$CURRENT_REMOTE" | grep -q "^git@github.com:"; then
-        # 转换 SSH -> HTTPS，移除可能存在的 .git 后缀
-        REPO_PATH="${CURRENT_REMOTE#git@github.com:}"
-        REPO_PATH="${REPO_PATH%.git}"  # 移除末尾的 .git
-        HTTPS_URL="https://github.com/${REPO_PATH}.git"
-        git remote set-url origin "$HTTPS_URL" || true
-      else
-        # 确保使用干净的HTTPS URL
-        CLEAN_REPO_URL="https://github.com/lonelyrower/CCFrame.git"
-        git remote set-url origin "$CLEAN_REPO_URL" || true
-      fi
+      HTTPS_URL=$(normalize_to_https "$CURRENT_REMOTE")
+      git remote set-url origin "$HTTPS_URL" || true
       git fetch --all --prune || true
       if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
       if git reset --hard "origin/$BRANCH"; then
@@ -139,24 +189,16 @@ clone_project() {
     cd "$PROJECT_DIR"
     REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
     BRANCH=${BRANCH:-main}
-    echo "origin: $(git remote get-url origin 2>/dev/null || echo '(none)')"
+    CLEANED_ORIGIN=$(ensure_normalized_origin)
+    echo "origin: ${CLEANED_ORIGIN:-'(none)'}"
     if git pull --rebase --autostash; then
       print_success "进入 $PROJECT_DIR 并更新代码"
       return
     else
       print_warning "git pull 失败，尝试切换为 HTTPS 并重试..."
       CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-      if echo "$CURRENT_REMOTE" | grep -q "^git@github.com:"; then
-        # 转换 SSH -> HTTPS，移除可能存在的 .git 后缀  
-        REPO_PATH="${CURRENT_REMOTE#git@github.com:}"
-        REPO_PATH="${REPO_PATH%.git}"  # 移除末尾的 .git
-        HTTPS_URL="https://github.com/${REPO_PATH}.git"
-        git remote set-url origin "$HTTPS_URL" || true
-      else
-        # 确保使用干净的HTTPS URL
-        CLEAN_REPO_URL="https://github.com/lonelyrower/CCFrame.git"
-        git remote set-url origin "$CLEAN_REPO_URL" || true
-      fi
+      HTTPS_URL=$(normalize_to_https "$CURRENT_REMOTE")
+      git remote set-url origin "$HTTPS_URL" || true
       git fetch --all --prune || true
       if git checkout "$BRANCH" 2>/dev/null; then :; else git checkout -B "$BRANCH" || true; fi
       if git reset --hard "origin/$BRANCH"; then
@@ -342,36 +384,41 @@ cmd_health() {
 }
 
 interactive_menu() {
-  echo ""
-  print_info "请选择操作："
-  # 如果存在 TTY，则将标准输入重定向到 /dev/tty，确保在管道/curl 下也能交互
+  # 若可读 /dev/tty，则绑定到 TTY，避免管道环境下无输入
   if [ -r /dev/tty ]; then
     exec </dev/tty
   fi
-  echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
-  echo "  2) 更新代码并重建（保留数据卷）"
-  echo "  3) 启动"
-  echo "  4) 重启"
-  echo "  5) 停止"
-  echo "  6) 状态"
-  echo "  7) 查看日志"
-  echo "  8) 修复/生成 .env"
-  echo "  9) 健康检查"
-  echo "  0) 退出"
-  read -rp "输入编号: " choice || exit 0
-  case "$choice" in
-    1) cmd_install; exit 0 ;;
-    2) cmd_update; exit 0  ;;
-    3) cmd_start; exit 0   ;;
-    4) cmd_restart; exit 0 ;;
-    5) cmd_stop; exit 0    ;;
-    6) cmd_status; exit 0  ;;
-    7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
-    8) cmd_env; exit 0     ;;
-    9) cmd_health; exit 0  ;;
-    0) exit 0 ;;
-    *) echo "请输入有效编号"; exit 1 ;;
-  esac
+  while true; do
+    echo ""
+    print_info "请选择操作："
+    echo "  1) 初始化安装/重建（清理旧容器与无主卷）"
+    echo "  2) 更新代码并重建（保留数据卷）"
+    echo "  3) 启动"
+    echo "  4) 重启"
+    echo "  5) 停止"
+    echo "  6) 状态"
+    echo "  7) 查看日志"
+    echo "  8) 修复/生成 .env"
+    echo "  9) 健康检查"
+    echo "  0) 退出"
+    read -rp "输入编号: " choice || exit 0
+    case "$choice" in
+      1) cmd_install ;;
+      2) cmd_update  ;;
+      3) cmd_start   ;;
+      4) cmd_restart ;;
+      5) cmd_stop    ;;
+      6) cmd_status  ;;
+      7) read -rp "服务名(可留空): " svc; cmd_logs "$svc" ;;
+      8) cmd_env     ;;
+      9) cmd_health  ;;
+      0) echo "再见！"; exit 0 ;;
+      *) echo "请输入有效编号" ;;
+    esac
+    # 操作结束后暂停，避免信息刷屏
+    read -rp "按回车键返回菜单，输入 q 退出: " back || exit 0
+    [ "${back:-}" = "q" ] && exit 0
+  done
 }
 
 main() {

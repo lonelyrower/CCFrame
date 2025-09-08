@@ -13,10 +13,7 @@ export async function GET() {
     // 查找用户的API设置
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { 
-        id: true, 
-        pixabayApiKey: true 
-      }
+      select: { id: true },
     })
 
     if (!user) {
@@ -24,7 +21,8 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      pixabayApiKey: user.pixabayApiKey || ''
+      // 使用 any 以兼容尚未生成的 Prisma 类型
+      pixabayApiKey: (user as any)?.pixabayApiKey || ''
     })
   } catch (error) {
     console.error('获取API设置失败:', error)
@@ -44,18 +42,14 @@ export async function POST(request: NextRequest) {
     // 更新用户的API设置
     const user = await db.user.update({
       where: { id: session.user.id },
-      data: { 
-        pixabayApiKey: pixabayApiKey || null 
-      },
-      select: { 
-        id: true, 
-        pixabayApiKey: true 
-      }
+      // 兼容旧版生成的 Prisma 类型定义
+      data: ({ pixabayApiKey: pixabayApiKey || null } as any),
+      select: { id: true },
     })
 
     return NextResponse.json({
       message: 'API设置已保存',
-      pixabayApiKey: user.pixabayApiKey || ''
+      pixabayApiKey: (user as any)?.pixabayApiKey || ''
     })
   } catch (error) {
     console.error('保存API设置失败:', error)

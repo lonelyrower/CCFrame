@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
 
@@ -20,41 +22,45 @@ export async function GET(
     const url = new URL(req.url)
     const requestedFormat = (url.searchParams.get('format') || 'webp').toLowerCase()
 
-    if (!VALID_VARIANTS.has(variant)) {
+    // Support legacy alias "thumbnail" => "thumb"
+    const reqVariant = variant === 'thumbnail' ? 'thumb' : variant
+
+    if (!VALID_VARIANTS.has(reqVariant)) {
       return NextResponse.json({ error: 'Invalid variant' }, { status: 400 })
     }
 
-    // Try to find the exact requested variant/format, then fall back through formats
-    const formatsToTry = [requestedFormat, ...FORMAT_ORDER.filter(f => f !== requestedFormat)]
-
-    let record = null as null | {
-      fileKey: string
-      format: string
+    // Load photo with variants for permission check and selection
+    const photo = await db.photo.findUnique({
+      where: { id },
+      include: {
+        variants: true,
+      },
+    })
+    if (!photo) {
+      return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
     }
 
-    for (const fmt of formatsToTry) {
-      const found = await db.photoVariant.findFirst({
-        where: {
-          photoId: id,
-          variant,
-          format: fmt,
-        },
-        select: { fileKey: true, format: true },
-      })
-      if (found) {
-        record = found
-        break
+    // Enforce access for private photos
+    if (photo.visibility === 'PRIVATE') {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.id || session.user.id !== photo.userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
     }
 
-    // Optional: try original as last resort
-    if (!record) {
-      const original = await db.photoVariant.findFirst({
-        where: { photoId: id, variant: 'original' },
-        select: { fileKey: true, format: true },
-      })
-      if (original) record = original
+    // Try to find the exact requested variant/format, then fall back through formats
+    const formatsToTry = [requestedFormat, ...FORMAT_ORDER.filter((f) => f !== requestedFormat)]
+    const sizePreference: Record<string, string[]> = {
+      thumb: ['thumb', 'small', 'medium', 'large'],
+      small: ['small', 'medium', 'thumb', 'large'],
+      medium: ['medium', 'small', 'large', 'thumb'],
+      large: ['large', 'medium', 'small', 'thumb'],
+      original: ['original'],
     }
+    const sizes = sizePreference[reqVariant] || [reqVariant, 'small', 'medium', 'large', 'thumb']
+    const record = sizes
+      .map((sz) => formatsToTry.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
+      .find(Boolean)
 
     if (!record) {
       return NextResponse.json({ error: 'Image variant not found' }, { status: 404 })
@@ -74,4 +80,3 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to serve image' }, { status: 500 })
   }
 }
-

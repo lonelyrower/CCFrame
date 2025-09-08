@@ -142,6 +142,15 @@ docker-compose up -d --build
 - 首次启动会自动执行 `prisma db push` 与管理员创建脚本。
 - 如需 HEIC 支持，镜像已安装系统 libvips+heif，sharp 将优先使用系统库。
 
+### 🖼️ 图片服务模式（重要）
+
+项目默认使用“流式图片接口”直接由服务端读取存储并返回图片二进制，从而避免暴露存储的内网域名（如 `minio` 容器主机名）导致浏览器无法访问的情况；同时对 PRIVATE 照片会进行会话校验。
+
+- 默认：`/api/image/:id/:variant` 走流式返回（推荐）
+- 可选：如需跳转到签名地址，使用 `/api/image/serve/:id/:variant` 路由（需确保签名 URL 的域名对浏览器可达，并已做权限校验）
+
+建议保持默认的流式模式以获得最佳兼容性与安全性。
+
 ### 4. 手动部署
 
 完全自定义的部署方案：
@@ -252,13 +261,13 @@ npm install
 cp .env.example .env
 # 编辑 .env 文件
 
-# 4. 初始化数据库
+# 4. 初始化数据库（推荐使用 PostgreSQL）
 npx prisma generate
 npx prisma db push
 node scripts/create-admin.js
 
-# 5. 启动开发服务
-npm run dev
+# 5. 启动开发服务 + 工作队列（生成图片变体必需）
+npm run dev & START_WORKERS=true npx tsx jobs/worker.ts
 ```
 
 ### 项目结构

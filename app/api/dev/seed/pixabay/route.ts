@@ -29,10 +29,10 @@ export async function POST(request: NextRequest) {
     // Try to get API key from user's settings first, then fallback to environment variable
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { pixabayApiKey: true }
+      select: { id: true },
     })
 
-    let apiKey = user?.pixabayApiKey || process.env.PIXABAY_API_KEY
+    let apiKey = (user as any)?.pixabayApiKey || process.env.PIXABAY_API_KEY
     if (!apiKey) {
       return NextResponse.json({ 
         error: 'Pixabay API Key 未设置。请在管理设置 > API 配置中配置您的 API Key，或者联系管理员设置环境变量。' 
@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
         const photo = await db.photo.create({
           data: {
             fileKey: originalKey,
-            hash: '',
+            // 临时唯一哈希占位，避免唯一索引冲突
+            hash: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
             width: 0,
             height: 0,
             userId: session.user.id,
@@ -140,4 +141,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
