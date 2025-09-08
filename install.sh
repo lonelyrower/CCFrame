@@ -161,6 +161,13 @@ clone_project() {
   PROJECT_DIR="/opt/ccframe"
   REPO_URL=${REPO_URL:-https://github.com/lonelyrower/CCFrame.git}
   BRANCH=${BRANCH:-main}
+  # 如果是 GitHub 地址，规范化为 https；否则尊重用户自定义（例如镜像域名）
+  if printf '%s' "$REPO_URL" | grep -Eq '^(git@github.com:|https?://github.com/)'; then
+    PRIMARY_URL=$(normalize_to_https "$REPO_URL")
+  else
+    PRIMARY_URL="$REPO_URL"
+  fi
+  export GIT_TERMINAL_PROMPT=0
   
   # 确保项目目录存在
   mkdir -p "$PROJECT_DIR"
@@ -175,7 +182,7 @@ clone_project() {
     echo "origin: ${CLEANED_ORIGIN:-'(none)'}"
     
     # 尝试更新代码
-    if git pull --rebase --autostash 2>/dev/null; then
+    if git pull --rebase --autostash; then
       print_success "代码更新成功"
       return
     else
@@ -194,15 +201,53 @@ clone_project() {
   fi
   
   # 克隆仓库到项目目录
-  print_info "克隆仓库: $REPO_URL (分支: $BRANCH)"
-  if git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR" 2>/dev/null; then
-    cd "$PROJECT_DIR"
-    print_success "仓库克隆成功: $PROJECT_DIR"
-  else
-    print_error "无法克隆仓库：$REPO_URL"
-    print_info "请检查网络连接或仓库地址"
-    exit 1
+  print_info "克隆仓库: $PRIMARY_URL (分支: $BRANCH) -> $PROJECT_DIR"
+  if git clone --depth 1 --branch "$BRANCH" "$PRIMARY_URL" "$PROJECT_DIR"; then
+    cd "$PROJECT_DIR" && print_success "仓库克隆成功: $PROJECT_DIR"
+    return
   fi
+
+  # 若直接克隆失败，尝试镜像源（适用于国内网络）
+  print_warning "克隆失败，尝试使用镜像源..."
+  cd /
+  rm -rf "$PROJECT_DIR" && mkdir -p "$PROJECT_DIR"
+  
+  # 构建镜像候选地址列表
+  MIRRORS=()
+  if [ -n "${GITHUB_MIRROR:-}" ]; then
+    # 前缀型代理（如 ghproxy）：GITHUB_MIRROR=https://mirror.ghproxy.com
+    MIRRORS+=("${GITHUB_MIRROR%/}/$PRIMARY_URL")
+  fi
+  MIRRORS+=(
+    "$(echo "$PRIMARY_URL" | sed 's#://github.com/#://kgithub.com/#')"
+    "$(echo "$PRIMARY_URL" | sed 's#://github.com/#://hub.fastgit.org/#')"
+    "$(echo "$PRIMARY_URL" | sed 's#://github.com/#://gitclone.com/github.com/#')"
+    "https://gh-proxy.com/$PRIMARY_URL"
+    "https://mirror.ghproxy.com/$PRIMARY_URL"
+  )
+
+  for alt in "${MIRRORS[@]}"; do
+    [ -n "$alt" ] || continue
+    print_info "尝试镜像: $alt"
+    if git clone --depth 1 --branch "$BRANCH" "$alt" "$PROJECT_DIR"; then
+      cd "$PROJECT_DIR" || true
+      # 将 origin 统一改回官方地址，后续 pull 使用官方源
+      git remote set-url origin "$PRIMARY_URL" >/dev/null 2>&1 || true
+      print_success "通过镜像源克隆成功"
+      return
+    fi
+    # 清理失败的半成品目录
+    cd /
+    rm -rf "$PROJECT_DIR" && mkdir -p "$PROJECT_DIR"
+  done
+
+  print_error "无法克隆仓库：$PRIMARY_URL"
+  print_info "可能原因：网络无法访问 GitHub。可设置 GITHUB_MIRROR，例如:"
+  echo "  GITHUB_MIRROR=https://mirror.ghproxy.com bash install.sh update"
+  echo "或手动导出环境变量后重试："
+  echo "  export GITHUB_MIRROR=https://mirror.ghproxy.com"
+  echo "  bash install.sh install"
+  exit 1
 }
 
 ensure_env() {
@@ -213,21 +258,34 @@ ensure_env() {
       print_success ".env 已从 .env.docker.example 生成"
     else
       print_warning ".env.docker.example 不存在，创建最小化 .env"
-      cat > .env << 'EOF'
-NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || echo "change-me-$(date +%s)")
+      # 生成随机值（在 shell 中计算，避免写入未展开的占位符）
+      local _ts=$(date +%s)
+      local NEXTAUTH_SECRET ADMIN_PASSWORD POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB S3_ACCESS_KEY_ID S3_SECRET_ACCESS_KEY MINIO_ROOT_USER MINIO_ROOT_PASSWORD
+      NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || echo "change-me-${_ts}")
+      ADMIN_PASSWORD=$(openssl rand -base64 12 2>/dev/null || echo "admin-${_ts}")
+      POSTGRES_USER=ccframe
+      POSTGRES_PASSWORD=$(openssl rand -base64 16 2>/dev/null || echo "db-${_ts}")
+      POSTGRES_DB=ccframe
+      S3_ACCESS_KEY_ID=$(openssl rand -base64 12 2>/dev/null || echo "s3-${_ts}")
+      S3_SECRET_ACCESS_KEY=$(openssl rand -base64 16 2>/dev/null || echo "s3secret-${_ts}")
+      MINIO_ROOT_USER=$(openssl rand -base64 12 2>/dev/null || echo "minio-${_ts}")
+      MINIO_ROOT_PASSWORD=$(openssl rand -base64 16 2>/dev/null || echo "miniosecret-${_ts}")
+
+      cat > .env <<EOF
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
 ADMIN_EMAIL=admin@local.dev
-ADMIN_PASSWORD=$(openssl rand -base64 12 2>/dev/null || echo "admin-$(date +%s)")
-POSTGRES_USER=ccframe
-POSTGRES_PASSWORD=$(openssl rand -base64 16 2>/dev/null || echo "db-$(date +%s)")
-POSTGRES_DB=ccframe
-DATABASE_URL=postgresql://ccframe:$(openssl rand -base64 16 2>/dev/null || echo "db-$(date +%s)")@db:5432/ccframe
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
+POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_DB=${POSTGRES_DB}
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 REDIS_URL=redis://redis:6379
-S3_ACCESS_KEY_ID=$(openssl rand -base64 12 2>/dev/null || echo "s3-$(date +%s)")
-S3_SECRET_ACCESS_KEY=$(openssl rand -base64 16 2>/dev/null || echo "s3secret-$(date +%s)")
+S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
 S3_BUCKET_NAME=ccframe
 S3_REGION=us-east-1
-MINIO_ROOT_USER=$(openssl rand -base64 12 2>/dev/null || echo "minio-$(date +%s)")
-MINIO_ROOT_PASSWORD=$(openssl rand -base64 16 2>/dev/null || echo "miniosecret-$(date +%s)")
+MINIO_ROOT_USER=${MINIO_ROOT_USER}
+MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
 EOF
     fi
   fi
