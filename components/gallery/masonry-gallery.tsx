@@ -106,13 +106,17 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
                         `<svg width=\"400\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"400\" height=\"300\" fill=\"#f3f4f6\"/></svg>`
                       )}`}
                       onError={(e) => {
-                        console.error('Image failed to load:', photo.id, photo.album?.title)
-                        // Fallback to different variant or format
+                        console.error('Gallery image failed to load:', photo.id, photo.album?.title)
                         const img = e.target as HTMLImageElement
                         if (img.src.includes('webp')) {
+                          console.log('Retrying with JPEG format')
                           img.src = getImageUrl(photo.id, 'small', 'jpeg')
                         } else if (img.src.includes('small')) {
+                          console.log('Retrying with thumb size')
                           img.src = getImageUrl(photo.id, 'thumb', 'webp')
+                        } else if (img.src.includes('thumb')) {
+                          console.log('Retrying with original API route')
+                          img.src = `/api/image/${photo.id}/small?format=jpeg`
                         }
                       }}
                     />

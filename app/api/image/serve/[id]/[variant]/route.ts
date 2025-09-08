@@ -58,12 +58,17 @@ export async function GET(
       original: ['original'],
     }
     const sizes = sizePreference[reqVariant] || [reqVariant, 'small', 'medium', 'large', 'thumb']
-    const record = sizes
+    let record = sizes
       .map((sz) => formatsToTry.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
       .find(Boolean)
 
+    // Fallback: if still not found, redirect to original file (photo.fileKey)
     if (!record) {
-      return NextResponse.json({ error: 'Image variant not found' }, { status: 404 })
+      const storage = getStorageManager()
+      const signedUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
+      const res = NextResponse.redirect(signedUrl, { status: 302 })
+      res.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+      return res
     }
 
     const storage = getStorageManager()

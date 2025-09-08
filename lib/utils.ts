@@ -45,7 +45,7 @@ export function slugify(text: string): string {
 }
 
 export function getImageUrl(photoId: string, variant: string = 'medium', format: string = 'webp'): string {
-  return `/api/image/${photoId}/${variant}?format=${format}`
+  return `/api/image/serve/${photoId}/${variant}?format=${format}`
 }
 
 export function getOptimizedImageUrl(

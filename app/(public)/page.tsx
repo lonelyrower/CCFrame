@@ -149,7 +149,7 @@ async function GalleryContent() {
 
   if (photos.length === 0) {
     return (
-      <div className="min-h-screen">
+      <div>
         <HeroSection />
         <div className="container mx-auto px-4 py-16 text-center">
           <div className="max-w-md mx-auto">
@@ -172,7 +172,7 @@ async function GalleryContent() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div>
       <HeroSection />
       
       <div className="container mx-auto px-4 py-8">
@@ -213,11 +213,9 @@ async function GalleryContent() {
 
 export default function HomePage() {
   return (
-    <main className="bg-gray-50 dark:bg-gray-900">
-      <Suspense fallback={<GalleryLoading />}>
-        <GalleryContent />
-      </Suspense>
-    </main>
+    <Suspense fallback={<GalleryLoading />}>
+      <GalleryContent />
+    </Suspense>
   )
 }
 

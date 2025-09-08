@@ -63,12 +63,47 @@ export async function GET(request: NextRequest, { params }: Params) {
       large: ['large', 'medium', 'small', 'thumb'],
     }
     const sizes = sizePreference[reqVariant] || [reqVariant, 'small', 'medium', 'large', 'thumb']
-    const photoVariant = sizes
+    let photoVariant = sizes
       .map((sz) => preferFormats.map((fmt) => photo.variants.find((v) => v.variant === sz && v.format === fmt)).find(Boolean))
       .find(Boolean)
+    // Fallback: stream original file when variant not present yet
     if (!photoVariant) {
-      console.log('Photo variant not found:', { photoId, reqVariant, availableVariants: photo.variants.map(v => `${v.variant}.${v.format}`) })
-      return NextResponse.json({ error: 'Variant not found' }, { status: 404 })
+      console.log('Variant not found, fallback to original fileKey', {
+        photoId,
+        reqVariant,
+        availableVariants: photo.variants.map(v => `${v.variant}.${v.format}`)
+      })
+
+      let storage
+      try {
+        storage = getStorageManager()
+      } catch (storageError) {
+        console.error('Storage manager initialization failed:', storageError)
+        return NextResponse.json({ error: 'Storage service unavailable' }, { status: 503 })
+      }
+
+      try {
+        const originalUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
+        const resp = await fetch(originalUrl)
+        if (!resp.ok) {
+          console.error('Original fetch failed:', { status: resp.status, statusText: resp.statusText })
+          return NextResponse.json({ error: 'Failed to fetch original image' }, { status: 500 })
+        }
+        const arrayBuf = await resp.arrayBuffer()
+        const buf = Buffer.from(arrayBuf)
+        const contentType = resp.headers.get('content-type') || 'image/jpeg'
+        const cacheHeader = photo.visibility === 'PUBLIC' ? 'public, max-age=86400, immutable' : 'private, max-age=3600'
+        return new NextResponse(buf, {
+          headers: {
+            'Content-Type': contentType,
+            'Content-Length': buf.length.toString(),
+            'Cache-Control': cacheHeader,
+          }
+        })
+      } catch (e) {
+        console.error('Original stream failed:', e)
+        return NextResponse.json({ error: 'Failed to stream original' }, { status: 500 })
+      }
     }
 
     console.log('Using photo variant:', { variant: photoVariant.variant, format: photoVariant.format, fileKey: photoVariant.fileKey })

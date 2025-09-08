@@ -132,6 +132,8 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                         img.src = getImageUrl(mainPhoto.id, 'medium', 'jpeg')
                       } else if (img.src.includes('medium')) {
                         img.src = getImageUrl(mainPhoto.id, 'small', 'webp')
+                      } else if (img.src.includes('small')) {
+                        img.src = `/api/image/${mainPhoto.id}/medium?format=jpeg`
                       }
                     }}
                   />
@@ -166,6 +168,8 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
                           img.src = getImageUrl(photo.id, 'small', 'jpeg')
                         } else if (img.src.includes('small')) {
                           img.src = getImageUrl(photo.id, 'thumb', 'webp')
+                        } else if (img.src.includes('thumb')) {
+                          img.src = `/api/image/${photo.id}/small?format=jpeg`
                         }
                       }}
                     />
@@ -260,37 +264,35 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
 
 function TimelineLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
-        </div>
-        
-        <div className="space-y-12">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="relative">
-              <div className="absolute left-6 top-12 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
-              <div className="absolute left-4 top-4 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full" />
-              <div className="ml-16">
-                <div className="bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse">
-                  <div className="px-6 py-4 border-b border-gray-300 dark:border-gray-600">
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 bg-gray-300 dark:bg-gray-700 rounded" />
-                      <div>
-                        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20 mb-1" />
-                        <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-16" />
-                      </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
+      </div>
+      
+      <div className="space-y-12">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="relative">
+            <div className="absolute left-6 top-12 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
+            <div className="absolute left-4 top-4 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full" />
+            <div className="ml-16">
+              <div className="bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse">
+                <div className="px-6 py-4 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-gray-300 dark:bg-gray-700 rounded" />
+                    <div>
+                      <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20 mb-1" />
+                      <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-16" />
                     </div>
                   </div>
-                  <div className="p-6">
-                    <div className="aspect-[16/9] bg-gray-300 dark:bg-gray-700 rounded-lg" />
-                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="aspect-[16/9] bg-gray-300 dark:bg-gray-700 rounded-lg" />
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -300,54 +302,52 @@ async function TimelineContent() {
   const timelineGroups = await getTimelinePhotos()
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
-            时间线
-          </h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+          时间线
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          按时间顺序浏览你的照片，重温美好时光
+        </p>
+      </div>
+
+      {timelineGroups.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-12 h-12 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+            暂时还没有照片
+          </h3>
           <p className="text-gray-600 dark:text-gray-400">
-            按时间顺序浏览你的照片，重温美好时光
+            开始上传照片来创建你的时间线
           </p>
         </div>
-
-        {timelineGroups.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Clock className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-              暂时还没有照片
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              开始上传照片来创建你的时间线
-            </p>
+      ) : (
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-0">
+            {timelineGroups.map((group, index) => (
+              <TimelineItem 
+                key={group.date} 
+                group={group} 
+                index={index}
+              />
+            ))}
           </div>
-        ) : (
-          <div className="max-w-4xl mx-auto">
-            <div className="space-y-0">
-              {timelineGroups.map((group, index) => (
-                <TimelineItem 
-                  key={group.date} 
-                  group={group} 
-                  index={index}
-                />
-              ))}
-            </div>
-            
-            {/* 时间线结束标记 */}
-            <div className="relative">
-              <div className="absolute left-6 -top-6 w-px h-6 bg-gradient-to-b from-primary/50 to-transparent" />
-              <div className="absolute left-4 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full border-4 border-white dark:border-gray-900" />
-              <div className="ml-16 text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  这是时间的开始 ✨
-                </p>
-              </div>
+          
+          {/* 时间线结束标记 */}
+          <div className="relative">
+            <div className="absolute left-6 -top-6 w-px h-6 bg-gradient-to-b from-primary/50 to-transparent" />
+            <div className="absolute left-4 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full border-4 border-white dark:border-gray-900" />
+            <div className="ml-16 text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                这是时间的开始 ✨
+              </p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
