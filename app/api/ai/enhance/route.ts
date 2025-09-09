@@ -11,9 +11,9 @@ export const dynamic = 'force-dynamic'
 
 const enhanceRequestSchema = z.object({
   photoId: z.string(),
-  taskType: z.enum(['enhance', 'upscale', 'remove-background', 'style-transfer']),
+  taskType: z.enum(['enhance', 'upscale', 'remove-background', 'style-transfer', 'cleanup']),
   params: z.record(z.any()).optional().default({}),
-  provider: z.enum(['gemini', 'openai']).optional().default('gemini')
+  provider: z.enum(['auto', 'local', 'gemini', 'openai', 'clipdrop', 'removebg']).optional().default('auto')
 })
 
 export async function POST(request: NextRequest) {
@@ -94,7 +94,7 @@ async function processAITask(
   photo: any,
   taskType: string,
   params: Record<string, any>,
-  provider: 'gemini' | 'openai'
+  provider: 'auto' | 'local' | 'gemini' | 'openai' | 'clipdrop' | 'removebg'
 ) {
   const storageManager = getStorageManager()
 
@@ -117,10 +117,31 @@ async function processAITask(
     })
 
     // 使用AI处理图片
+    let effectiveParams = params || {}
+
+    // If cleanup, expect a mask sent from client (base64 dataURL or raw base64)
+    if (taskType === 'cleanup') {
+      try {
+        const rawBody = body as any
+        const maskStr: string | undefined = rawBody?.mask
+        if (!maskStr) throw new Error('缺少掩膜数据')
+        const base64 = maskStr.startsWith('data:') ? maskStr.split(',')[1] : maskStr
+        let maskBuf = Buffer.from(base64, 'base64')
+        // Resize mask to original photo size to match provider expectation
+        const sharp = (await import('sharp')).default
+        const meta = await sharp(maskBuf).metadata()
+        if (!meta.width || !meta.height) throw new Error('无效掩膜图像')
+        maskBuf = await sharp(maskBuf).resize(photo.width, photo.height, { fit: 'fill' }).png().toBuffer()
+        effectiveParams = { ...effectiveParams, maskBuffer: maskBuf }
+      } catch (e) {
+        throw new Error(e instanceof Error ? e.message : '处理掩膜失败')
+      }
+    }
+
     const enhancedBuffer = await AIImageProcessor.processImage(
       originalBuffer,
       taskType,
-      params,
+      effectiveParams,
       provider
     )
 
@@ -131,12 +152,14 @@ async function processAITask(
     })
 
     // 保存处理后的图片
+    const outExt = taskType === 'remove-background' ? 'png' : 'jpg'
+    const contentType = outExt === 'png' ? 'image/png' : 'image/jpeg'
     const enhancedKey = StorageManager.generateKey(
       'enhanced',
-      `${photo.id}_${taskType}_${Date.now()}.jpg`
+      `${photo.id}_${taskType}_${Date.now()}.${outExt}`
     )
     
-    await storageManager.uploadBuffer(enhancedKey, enhancedBuffer, 'image/jpeg')
+    await storageManager.uploadBuffer(enhancedKey, enhancedBuffer, contentType)
 
     // 创建EditVersion记录
     const editVersion = await db.editVersion.create({

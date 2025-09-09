@@ -108,6 +108,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     console.log('Using photo variant:', { variant: photoVariant.variant, format: photoVariant.format, fileKey: photoVariant.fileKey })
 
+    // For PUBLIC photos, prefer redirect to signed URL to leverage edge/CDN caching
     let storage
     try {
       storage = getStorageManager()
@@ -116,41 +117,26 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Storage service unavailable' }, { status: 503 })
     }
 
-    // Always stream via server to avoid exposing internal endpoints
-    let downloadUrl
-    try {
-      downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
-      console.log('Generated download URL for:', photoVariant.fileKey)
-    } catch (storageError) {
-      console.error('Failed to generate download URL:', storageError)
-      return NextResponse.json({ error: 'Failed to generate download URL' }, { status: 500 })
+    const downloadUrl = await storage.getPresignedDownloadUrl(photoVariant.fileKey)
+
+    if (photo.visibility === 'PUBLIC') {
+      const res = NextResponse.redirect(downloadUrl, { status: 302 })
+      res.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+      return res
     }
 
-    let response
-    try {
-      response = await fetch(downloadUrl)
-      if (!response.ok) {
-        console.error('Storage fetch failed:', { status: response.status, statusText: response.statusText })
-        return NextResponse.json({ error: 'Failed to fetch image from storage' }, { status: 500 })
-      }
-    } catch (fetchError) {
-      console.error('Network error fetching from storage:', fetchError)
-      return NextResponse.json({ error: 'Network error accessing storage' }, { status: 500 })
+    // PRIVATE: stream via server
+    const response = await fetch(downloadUrl)
+    if (!response.ok) {
+      console.error('Storage fetch failed:', { status: response.status, statusText: response.statusText })
+      return NextResponse.json({ error: 'Failed to fetch image from storage' }, { status: 500 })
     }
-
     const buffer = Buffer.from(await response.arrayBuffer())
-    console.log('Successfully fetched image buffer:', { size: buffer.length })
-
-    // Public images can be cached longer; private images cached briefly
-    const cacheHeader = photo.visibility === 'PUBLIC'
-      ? 'public, max-age=86400, immutable'
-      : 'private, max-age=3600'
-
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': `image/${photoVariant.format}`,
         'Content-Length': buffer.length.toString(),
-        'Cache-Control': cacheHeader,
+        'Cache-Control': 'private, max-age=3600',
       },
     })
   } catch (error) {

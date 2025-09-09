@@ -5,6 +5,9 @@ import { getStorageManager } from '@/lib/storage-manager'
 import { ImageProcessor } from '@/lib/image-processing'
 import { ExifProcessor } from '@/lib/exif'
 import { JobType } from '@/types'
+import { getAutoTagConfig } from '@/lib/settings'
+import { autoTagPhoto } from '@/lib/auto-tag'
+import { AIImageProcessor } from '@/lib/ai-providers'
 
 // Queue for processing uploaded images
 let _imageQueue: Queue | null = null
@@ -75,6 +78,7 @@ interface AIProcessingJobData {
 const startImageWorker = async () => {
   const { Worker } = await import('bullmq')
   const { redis } = await import('@/lib/redis')
+  const concurrency = Math.max(1, parseInt(process.env.IMG_WORKER_CONCURRENCY || '3', 10))
   return new Worker(
     'image-processing',
   async (job: Job<ImageProcessingJobData>) => {
@@ -92,6 +96,49 @@ const startImageWorker = async () => {
 
       await job.updateProgress(30)
 
+      // Before heavy processing, compute content hash and check exact duplicates for this user
+      const contentHash = await ImageProcessor.calculateContentHash(buffer)
+
+      const duplicate = await db.photo.findFirst({
+        where: { userId, contentHash, status: 'COMPLETED' },
+        include: { variants: true }
+      })
+
+      if (duplicate) {
+        // Remove redundant uploaded original
+        try { await storage.deleteObject(fileKey) } catch {}
+
+        // Clone variant records referencing existing files
+        const variantRecordsDup = duplicate.variants.map((v: any) => ({
+          variant: v.variant,
+          format: v.format,
+          width: v.width,
+          height: v.height,
+          fileKey: v.fileKey,
+          sizeBytes: v.sizeBytes,
+        }))
+
+        await db.photo.update({
+          where: { id: photoId },
+          data: {
+            fileKey: duplicate.fileKey,
+            hash: duplicate.hash,
+            contentHash: duplicate.contentHash,
+            width: duplicate.width,
+            height: duplicate.height,
+            blurhash: duplicate.blurhash || null,
+            exifJson: duplicate.exifJson as any,
+            takenAt: duplicate.takenAt,
+            location: duplicate.location as any,
+            status: 'COMPLETED',
+            variants: { createMany: { data: variantRecordsDup } },
+          }
+        })
+
+        await job.updateProgress(100)
+        return { success: true, variants: variantRecordsDup.length, deduplicatedFrom: duplicate.id }
+      }
+
       // Extract EXIF data
       const exifData = await ExifProcessor.extractExif(buffer)
 
@@ -102,12 +149,12 @@ const startImageWorker = async () => {
 
       await job.updateProgress(70)
 
-      // Upload variants to S3
-      const variantRecords = []
-      for (const variant of variants) {
+      // Upload variants to S3 with limited concurrency
+      const variantRecords: any[] = []
+      const uploadConcurrency = Math.max(1, parseInt(process.env.UPLOAD_CONCURRENCY || '4', 10))
+      const tasks = variants.map((variant) => async () => {
         const variantKey = `variants/${photoId}/${variant.variant}.${variant.format}`
         await storage.uploadBuffer(variantKey, variant.buffer, `image/${variant.format}`)
-        
         variantRecords.push({
           variant: variant.variant,
           format: variant.format,
@@ -116,18 +163,23 @@ const startImageWorker = async () => {
           fileKey: variantKey,
           sizeBytes: variant.size,
         })
+      })
+      for (let i = 0; i < tasks.length; i += uploadConcurrency) {
+        await Promise.all(tasks.slice(i, i + uploadConcurrency).map(fn => fn()))
       }
 
       await job.updateProgress(90)
 
-      // Calculate image hash for deduplication
+      // Calculate hashes for similarity (pHash) and exact binary equality (sha256)
       const hash = await ImageProcessor.calculateHash(buffer)
+      const contentHash = await ImageProcessor.calculateContentHash(buffer)
 
       // Update photo record in database
       await db.photo.update({
         where: { id: photoId },
         data: {
           hash,
+          contentHash,
           width: metadata.width!,
           height: metadata.height!,
           blurhash,
@@ -144,6 +196,27 @@ const startImageWorker = async () => {
       })
 
       await job.updateProgress(100)
+
+      // Schedule auto-tagging if enabled
+      try {
+        const conf = await getAutoTagConfig()
+        if (conf.enabled) {
+          // Create a job record for tracking
+          const tagJob = await db.job.create({
+            data: {
+              type: 'AI_AUTO_TAG' as any,
+              payloadJson: { photoId, includeColors: conf.includeColors, includeContent: conf.includeContent } as any,
+              userId,
+              status: 'PENDING',
+              progress: 0,
+            },
+          })
+          const q = await getAIQueue()
+          await q.add('ai-process', { jobId: tagJob.id, photoId, taskType: 'AI_AUTO_TAG' as any, params: { includeColors: conf.includeColors, includeContent: conf.includeContent } })
+        }
+      } catch (e) {
+        console.warn('Auto-tag schedule failed:', e)
+      }
 
       return { success: true, variants: variantRecords.length }
     } catch (error) {
@@ -167,7 +240,7 @@ const startImageWorker = async () => {
 const startAIWorker = async () => {
   const { Worker } = await import('bullmq')
   const { redis } = await import('@/lib/redis')
-  return new Worker(
+      return new Worker(
     'ai-processing',
   async (job: Job<AIProcessingJobData>) => {
     const { jobId, photoId, taskType, params } = job.data
@@ -208,6 +281,9 @@ const startAIWorker = async () => {
         case 'AI_REMOVE_BACKGROUND':
           result = await processBackgroundRemoval(photo, params)
           break
+        case 'AI_AUTO_TAG':
+          result = await processAutoTagging(photo, params)
+          break
         default:
           throw new Error(`Unsupported task type: ${taskType}`)
       }
@@ -242,7 +318,7 @@ const startAIWorker = async () => {
     },
     {
       connection: redis,
-      concurrency: 1,
+      concurrency: Math.max(1, parseInt(process.env.AI_WORKER_CONCURRENCY || '1', 10)),
     }
   )
 }
@@ -255,14 +331,9 @@ async function processAIEnhancement(photo: any, params: any) {
   const res = await fetch(originalUrl)
   const buf = Buffer.from(await res.arrayBuffer())
 
-  // Simple local enhancement via sharp as a placeholder
-  const sharp = (await import('sharp')).default
-  let pipeline = sharp(buf)
-  if (typeof params?.brightness === 'number') pipeline = pipeline.modulate({ brightness: 1 + params.brightness / 100 })
-  if (typeof params?.saturation === 'number') pipeline = pipeline.modulate({ saturation: 1 + params.saturation / 100 })
-  if (typeof params?.contrast === 'number') pipeline = pipeline.linear(1 + params.contrast / 100, 0)
-  if (typeof params?.sharpness === 'number') pipeline = pipeline.sharpen(params.sharpness)
-  const out = await pipeline.jpeg({ quality: 95 }).toBuffer()
+  // Real enhancement via provider (auto selects based on env), fallback to local
+  const provider = typeof params?.provider === 'string' ? params.provider : 'auto'
+  const out = await AIImageProcessor.processImage(buf, 'enhance', params || {}, provider as any)
 
   const key = `enhanced/${photo.id}/${Date.now()}.jpg`
   await storage.uploadBuffer(key, out, 'image/jpeg')
@@ -284,12 +355,9 @@ async function processAIUpscale(photo: any, params: any) {
   const originalUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
   const res = await fetch(originalUrl)
   const buf = Buffer.from(await res.arrayBuffer())
-
-  const sharp = (await import('sharp')).default
-  const scale = Math.max(2, Math.min(4, Number(params?.scaleFactor) || 2))
-  const meta = await sharp(buf).metadata()
-  const width = meta.width ? Math.round(meta.width * scale) : undefined
-  const out = await sharp(buf).resize(width, null, { withoutEnlargement: false }).jpeg({ quality: 95 }).toBuffer()
+  const scale = Math.max(2, Math.min(4, Number(params?.scaleFactor) || Number(params?.scale) || 2))
+  const provider = typeof params?.provider === 'string' ? params.provider : 'auto'
+  const out = await AIImageProcessor.processImage(buf, 'upscale', { scale }, provider as any)
 
   const key = `upscaled/${photo.id}/${Date.now()}_${scale}x.jpg`
   await storage.uploadBuffer(key, out, 'image/jpeg')
@@ -308,12 +376,11 @@ async function processAIUpscale(photo: any, params: any) {
 
 async function processBackgroundRemoval(photo: any, params: any) {
   const storage = getStorageManager()
-  // Placeholder: no real background removal; just convert to PNG
   const originalUrl = await storage.getPresignedDownloadUrl(photo.fileKey)
   const res = await fetch(originalUrl)
   const buf = Buffer.from(await res.arrayBuffer())
-  const sharp = (await import('sharp')).default
-  const out = await sharp(buf).png().toBuffer()
+  const provider = typeof params?.provider === 'string' ? params.provider : 'auto'
+  const out = await AIImageProcessor.processImage(buf, 'remove-background', params || {}, provider as any)
   const key = `no-bg/${photo.id}/${Date.now()}.png`
   await storage.uploadBuffer(key, out, 'image/png')
 
@@ -327,6 +394,16 @@ async function processBackgroundRemoval(photo: any, params: any) {
   })
 
   return { status: 'completed', editVersionId: edit.id, processedImageKey: key }
+}
+
+async function processAutoTagging(photo: any, params: any) {
+  // Params include includeColors/includeContent; provider/limit handled inside auto-tag module via settings
+  try {
+    await autoTagPhoto(photo.id, { includeColors: params?.includeColors !== false, includeContent: params?.includeContent !== false })
+    return { status: 'completed' }
+  } catch (e) {
+    throw e
+  }
 }
 
 // 启动 Worker 仅在明确标志下进行，避免构建期连接 Redis

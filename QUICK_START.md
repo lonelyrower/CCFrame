@@ -46,6 +46,8 @@ ADMIN_PASSWORD="your-secure-password"
 OPENAI_API_KEY="sk-your-openai-key"
 ANTHROPIC_API_KEY="sk-ant-your-claude-key"  
 GOOGLE_API_KEY="your-google-key"
+CLIPDROP_API_KEY="your-clipdrop-key"      # 启用真·AI放大 / 去背景
+REMOVE_BG_API_KEY="your-removebg-key"     # 备选：去背景
 ```
 
 ## 🗄️ 数据库选择

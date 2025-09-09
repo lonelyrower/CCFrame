@@ -13,7 +13,7 @@ export async function GET() {
     // 查找用户的API设置
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true },
+      select: { id: true, pixabayApiKey: true },
     })
 
     if (!user) {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       // 兼容旧版生成的 Prisma 类型定义
       data: ({ pixabayApiKey: pixabayApiKey || null } as any),
-      select: { id: true },
+      select: { id: true, pixabayApiKey: true },
     })
 
     return NextResponse.json({

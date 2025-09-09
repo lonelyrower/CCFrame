@@ -19,6 +19,8 @@ export const JobTypeValues = [
   'AI_UPSCALE',
   'AI_REMOVE_BACKGROUND',
   'AI_STYLE_TRANSFER',
+  'AI_CLEANUP',
+  'AI_AUTO_TAG',
   'FACE_DETECTION',
 ] as const
 export type JobType = typeof JobTypeValues[number]

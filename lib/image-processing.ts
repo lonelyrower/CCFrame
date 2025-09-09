@@ -1,5 +1,6 @@
 import sharp from 'sharp'
 import { encode } from 'blurhash'
+import { getStorageSettings } from './settings'
 
 export interface ImageVariant {
   name: string
@@ -15,6 +16,18 @@ export const IMAGE_VARIANTS: ImageVariant[] = [
   { name: 'medium', width: 1200, quality: 90, formats: ['avif', 'webp', 'jpeg'] },
   { name: 'large', width: 2400, quality: 95, formats: ['avif', 'webp', 'jpeg'] },
 ]
+
+function enabledFormats(): string[] {
+  const env = (process.env.IMAGE_FORMATS || '').trim()
+  if (!env) return ['avif', 'webp', 'jpeg']
+  return env.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+}
+
+function enabledVariantNames(): string[] {
+  const env = (process.env.IMAGE_VARIANT_NAMES || '').trim()
+  if (!env) return ['thumb', 'small', 'medium', 'large']
+  return env.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+}
 
 export class ImageProcessor {
   static async processImage(inputBuffer: Buffer): Promise<{
@@ -49,8 +62,13 @@ export class ImageProcessor {
       size: number
     }> = []
 
+    const storageSettings = await getStorageSettings()
+    const allowNames = new Set(storageSettings.imageVariantNames || ['thumb', 'small', 'medium', 'large'])
+    const allowFormats = new Set(storageSettings.imageFormats || ['avif', 'webp', 'jpeg'])
     for (const variant of IMAGE_VARIANTS) {
-      for (const format of variant.formats) {
+      if (!allowNames.has(variant.name)) continue
+      const fmts = variant.formats.filter(f => allowFormats.has(f))
+      for (const format of fmts) {
         let processedImage = image.clone()
 
         // Resize
@@ -131,5 +149,12 @@ export class ImageProcessor {
     return Array.from(bytes)
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
+  }
+
+  static async calculateContentHash(buffer: Buffer): Promise<string> {
+    const crypto = await import('crypto')
+    const hash = crypto.createHash('sha256')
+    hash.update(buffer)
+    return hash.digest('hex')
   }
 }

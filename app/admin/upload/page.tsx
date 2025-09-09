@@ -51,8 +51,19 @@ export default function UploadPage() {
     })
   }
 
+  const sha256Hex = async (file: File): Promise<string> => {
+    const buf = await file.arrayBuffer()
+    const hash = await crypto.subtle.digest('SHA-256', buf)
+    const bytes = new Uint8Array(hash)
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
   const uploadFile = async (file: UploadFile) => {
     try {
+      // Precompute content hash for duplicate fast-path
+      let contentHash: string | undefined
+      try { contentHash = await sha256Hex(file) } catch {}
+
       // Request presigned URL
       const presignResponse = await fetch('/api/upload/presign', {
         method: 'POST',
@@ -61,7 +72,8 @@ export default function UploadPage() {
           filename: file.name,
           contentType: file.type,
           size: file.size,
-          albumId: selectedAlbum || undefined
+          albumId: selectedAlbum || undefined,
+          contentHash
         })
       })
 
@@ -69,7 +81,12 @@ export default function UploadPage() {
         throw new Error('获取上传地址失败')
       }
 
-      const { photoId, uploadUrl, fileKey } = await presignResponse.json()
+      const { photoId, uploadUrl, fileKey, completed } = await presignResponse.json()
+
+      if (completed) {
+        setUploads(prev => new Map(prev).set(file.id, { id: file.id, filename: file.name, progress: 100, status: 'completed' }))
+        return
+      }
 
       // Update progress
       setUploads(prev => new Map(prev).set(file.id, {

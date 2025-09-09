@@ -13,6 +13,7 @@ const uploadRequestSchema = z.object({
   contentType: z.string(),
   size: z.number().max(50 * 1024 * 1024), // 50MB max
   albumId: z.string().optional(),
+  contentHash: z.string().length(64).optional(), // hex sha256
 })
 
 export async function POST(request: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { filename, contentType, size, albumId } = uploadRequestSchema.parse(body)
+    const { filename, contentType, size, albumId, contentHash } = uploadRequestSchema.parse(body)
 
     // Validate content type
     if (!contentType.startsWith('image/')) {
@@ -40,32 +41,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // If frontend provided contentHash, check exact duplicate for fast-path
+    if (contentHash) {
+      const dup = await db.photo.findFirst({ where: { userId: session.user.id, contentHash, status: 'COMPLETED' }, include: { variants: true } })
+      if (dup) {
+        // Create a new completed photo referencing existing files (no upload needed)
+        const photo = await db.photo.create({
+          data: {
+            fileKey: dup.fileKey,
+            hash: dup.hash,
+            contentHash: dup.contentHash,
+            width: dup.width,
+            height: dup.height,
+            userId: session.user.id,
+            albumId,
+            status: 'COMPLETED',
+            blurhash: dup.blurhash,
+            exifJson: dup.exifJson as any,
+            takenAt: dup.takenAt,
+            location: dup.location as any,
+            variants: { createMany: { data: dup.variants.map((v: any) => ({ variant: v.variant, format: v.format, width: v.width, height: v.height, fileKey: v.fileKey, sizeBytes: v.sizeBytes })) } },
+          }
+        })
+        return NextResponse.json({ photoId: photo.id, completed: true })
+      }
+    }
+
     // Generate file key
     const fileKey = StorageManager.generateKey('originals', filename)
 
-    // Create photo record
+    // Create photo record (uploading)
     const photo = await db.photo.create({
       data: {
         fileKey,
-        // 使用临时唯一哈希占位，避免唯一索引冲突
         hash: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        width: 0, // Will be set during processing
-        height: 0, // Will be set during processing
+        width: 0,
+        height: 0,
         userId: session.user.id,
         albumId,
         status: 'UPLOADING'
       }
     })
 
-    // Get presigned URL
     const storage = getStorageManager()
     const uploadUrl = await storage.getPresignedUploadUrl(fileKey, contentType)
 
-    return NextResponse.json({
-      photoId: photo.id,
-      uploadUrl,
-      fileKey
-    })
+    return NextResponse.json({ photoId: photo.id, uploadUrl, fileKey })
   } catch (error) {
     console.error('Upload presign error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -8,17 +8,14 @@ import {
   Filter, 
   Grid3X3, 
   List,
-  MoreHorizontal,
-  Eye,
-  EyeOff,
-  Trash2,
-  Edit,
-  Download,
   Image as ImageIcon
 } from 'lucide-react'
 import { PhotoWithDetails } from '@/types'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
+import { LibraryBatchGrid } from '@/components/admin/library-batch-grid'
 import { SeedDemoButton } from '@/components/admin/seed-demo-button'
+import { PhotoTagsInline } from '@/components/admin/photo-tags-inline'
+import { PhotoActions } from '@/components/admin/photo-actions'
 
 interface LibraryStats {
   total: number
@@ -134,42 +131,7 @@ function StatsBar({ stats }: { stats: LibraryStats }) {
   )
 }
 
-function PhotoActions({ photo }: { photo: PhotoWithDetails }) {
-  return (
-    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-      <div className="flex items-center gap-1 bg-black/50 rounded-md p-1">
-        <button 
-          className="p-1 text-white hover:bg-white/20 rounded transition-colors"
-          title="编辑"
-        >
-          <Edit className="w-4 h-4" />
-        </button>
-        <button 
-          className="p-1 text-white hover:bg-white/20 rounded transition-colors"
-          title={photo.visibility === 'PUBLIC' ? '设为私密' : '设为公开'}
-        >
-          {photo.visibility === 'PUBLIC' ? (
-            <EyeOff className="w-4 h-4" />
-          ) : (
-            <Eye className="w-4 h-4" />
-          )}
-        </button>
-        <button 
-          className="p-1 text-white hover:bg-white/20 rounded transition-colors"
-          title="下载"
-        >
-          <Download className="w-4 h-4" />
-        </button>
-        <button 
-          className="p-1 text-white hover:bg-red-600 rounded transition-colors"
-          title="删除"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  )
-}
+// Removed server-side placeholder actions; replaced by client component PhotoActions
 
 function LibraryLoading() {
   return (
@@ -268,46 +230,7 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {photos.map(photo => (
-              <div key={photo.id} className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                <img
-                  src={`/api/image/${photo.id}/small`}
-                  alt={photo.album?.title || 'Photo'}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                
-                <PhotoActions photo={photo} />
-                
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                  <div className="text-white text-sm">
-                    {photo.album?.title && (
-                      <div className="font-medium mb-1">{photo.album.title}</div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`px-2 py-1 rounded-full text-xs ${
-                          photo.visibility === 'PUBLIC'
-                            ? 'bg-green-500/20 text-green-300'
-                            : 'bg-orange-500/20 text-orange-300'
-                        }`}>
-                          {photo.visibility === 'PUBLIC' ? '公开' : '私密'}
-                        </div>
-                        {photo.status !== 'COMPLETED' && (
-                          <div className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs">
-                            {photo.status === 'PROCESSING' ? '处理中' : '上传中'}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs opacity-75">
-                        {photo.width} × {photo.height}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <LibraryBatchGrid initial={photos.map(p => ({ id: p.id, visibility: p.visibility as any, width: p.width, height: p.height, albumTitle: p.album?.title || null, tags: (p.tags || []).map((t: any) => ({ id: t.tag.id, name: t.tag.name, color: t.tag.color })) }))} />
         )}
 
         {hasMore && (

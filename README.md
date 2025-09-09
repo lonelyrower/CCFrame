@@ -189,6 +189,8 @@ ADMIN_PASSWORD="your-secure-password"
 OPENAI_API_KEY="sk-your-openai-key"
 ANTHROPIC_API_KEY="sk-ant-your-claude-key"
 GOOGLE_API_KEY="your-google-key"
+CLIPDROP_API_KEY="your-clipdrop-key"       # 真·AI放大 / 去背景
+REMOVE_BG_API_KEY="your-removebg-key"      # 可选备用：去背景
 
 # 存储配置
 S3_ACCESS_KEY_ID="your-access-key"
@@ -197,6 +199,14 @@ S3_BUCKET_NAME="your-bucket"
 
 # 缓存配置
 REDIS_URL="redis://localhost:6379"
+
+# 性能与并发（可选）
+# 控制处理并发与生成格式/尺寸，降低CPU/网络压力
+IMG_WORKER_CONCURRENCY="3"         # 图片处理Worker并发
+AI_WORKER_CONCURRENCY="1"          # AI处理Worker并发
+UPLOAD_CONCURRENCY="4"             # 变体上传并发
+IMAGE_FORMATS="webp,jpeg"          # 启用的变体格式（默认 avif,webp,jpeg）
+IMAGE_VARIANT_NAMES="thumb,small,medium,large" # 启用的变体尺寸名
 ```
 
 ### 免费服务推荐

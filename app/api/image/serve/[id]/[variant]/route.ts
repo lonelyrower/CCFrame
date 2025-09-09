@@ -72,13 +72,13 @@ export async function GET(
     }
 
     const storage = getStorageManager()
-
-    // Generate a signed download URL (works for private buckets and public alike)
     const signedUrl = await storage.getPresignedDownloadUrl(record.fileKey)
 
-    // Let Next/Image fetch via redirect; cache aggressively at the edge and browser
     const res = NextResponse.redirect(signedUrl, { status: 302 })
-    res.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+    const cacheHeader = photo.visibility === 'PUBLIC'
+      ? 'public, max-age=31536000, immutable'
+      : 'private, max-age=3600'
+    res.headers.set('Cache-Control', cacheHeader)
     return res
   } catch (err) {
     console.error('Image serve error:', err)

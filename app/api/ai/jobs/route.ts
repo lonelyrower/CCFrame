@@ -9,7 +9,8 @@ import { z } from 'zod'
 const createJobSchema = z.object({
   photoId: z.string(),
   type: z.enum(JobTypeValues),
-  params: z.record(z.any()).optional().default({})
+  params: z.record(z.any()).optional().default({}),
+  provider: z.enum(['auto','local','gemini','openai','clipdrop','removebg']).optional().default('auto')
 })
 
 export async function POST(request: NextRequest) {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { photoId, type, params } = createJobSchema.parse(body)
+    const { photoId, type, params, provider } = createJobSchema.parse(body)
 
     // Verify photo ownership
     const photo = await db.photo.findFirst({
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     const job = await db.job.create({
       data: {
         type,
-        payloadJson: { photoId, ...params } as any,
+        payloadJson: { photoId, ...params, provider } as any,
         userId: session.user.id,
         status: 'PENDING',
         progress: 0
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       jobId: job.id,
       photoId,
       taskType: type,
-      params
+      params: { ...params, provider }
     })
 
     return NextResponse.json({

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ImageComparison } from '@/components/ai/image-comparison'
+import { CleanupEditor } from '@/components/ai/cleanup-editor'
 import toast from 'react-hot-toast'
 
 interface Photo {
@@ -90,6 +91,7 @@ export default function AIEnhancePage() {
     enhanced: string
   } | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showCleanup, setShowCleanup] = useState(false)
 
   useEffect(() => {
     fetchPhotos()
@@ -127,7 +129,7 @@ export default function AIEnhancePage() {
           photoId: selectedPhoto.id,
           taskType,
           params,
-          provider: 'gemini'
+          provider: 'auto'
         })
       })
 
@@ -159,9 +161,9 @@ export default function AIEnhancePage() {
           setCurrentTask(task)
           
           if (task.status === 'COMPLETED' && task.result) {
-            // 获取对比图片
+            // 获取对比图片（编辑版本通过 /api/edit/:id 提供）
             const originalUrl = `/api/image/${selectedPhoto!.id}/medium`
-            const enhancedUrl = `/api/image/${task.result.enhancedKey.split('/').pop()}/medium`
+            const enhancedUrl = task.result.editVersionId ? `/api/edit/${task.result.editVersionId}` : `/api/image/${selectedPhoto!.id}/medium`
             
             setResultImages({
               original: originalUrl,
@@ -198,6 +200,33 @@ export default function AIEnhancePage() {
   const resetTask = () => {
     setCurrentTask(null)
     setResultImages(null)
+  }
+
+  const startCleanup = async (maskDataUrl: string) => {
+    if (!selectedPhoto) return
+    setLoading(true)
+    try {
+      const response = await fetch('/api/ai/enhance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoId: selectedPhoto.id, taskType: 'cleanup', params: {}, mask: maskDataUrl })
+      })
+      if (response.ok) {
+        const result = await response.json()
+        setCurrentTask({ id: result.jobId, status: 'PENDING', progress: 0 })
+        toast.success('AI清理任务已启动')
+        setShowCleanup(false)
+        pollTaskStatus(result.jobId)
+      } else {
+        const err = await response.json().catch(() => ({}))
+        toast.error(err.error || 'AI清理启动失败')
+      }
+    } catch (e) {
+      console.error('Cleanup error:', e)
+      toast.error('AI清理启动失败')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -338,6 +367,27 @@ export default function AIEnhancePage() {
                         </div>
                       )
                     })}
+                    {/* Cleanup tile */}
+                    <div
+                      className="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+                      onClick={() => setShowCleanup(true)}
+                    >
+                      <div className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-rose-500`}>
+                            <Zap className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              去物体（涂抹）
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              涂抹需要清理的区域，自动修复背景
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -395,6 +445,18 @@ export default function AIEnhancePage() {
           </div>
         </div>
       </div>
+      {showCleanup && selectedPhoto && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-xl p-4">
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">去物体 - 选择区域</h3>
+            <CleanupEditor
+              imageUrl={`/api/image/${selectedPhoto.id}/large?format=jpeg`}
+              onCancel={() => setShowCleanup(false)}
+              onSubmit={(mask) => startCleanup(mask)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

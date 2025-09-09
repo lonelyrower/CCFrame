@@ -15,6 +15,8 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       PIXABAY_API_KEY: ${PIXABAY_API_KEY}
       DEV_SEED_TOKEN: ${DEV_SEED_TOKEN}
+      CLIPDROP_API_KEY: ${CLIPDROP_API_KEY}
+      REMOVE_BG_API_KEY: ${REMOVE_BG_API_KEY}
       # Redis / S3
       REDIS_URL: redis://redis:6379
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
@@ -62,6 +64,8 @@ services:
       S3_REGION: ${S3_REGION}
       S3_ENDPOINT: http://minio:9000
       START_WORKERS: 'true'
+      CLIPDROP_API_KEY: ${CLIPDROP_API_KEY}
+      REMOVE_BG_API_KEY: ${REMOVE_BG_API_KEY}
     depends_on:
       db:
         condition: service_healthy

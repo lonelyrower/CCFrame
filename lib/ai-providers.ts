@@ -3,12 +3,15 @@
 // 方法内部进行惰性动态导入；若导入失败或未配置 API Key，
 // 则回退到本地基于 sharp 的占位实现。
 
+import { getAIKey, hasAIKey } from './settings'
+
 export interface AIProvider {
   name: string
   enhance: (imageBuffer: Buffer, options: EnhanceOptions) => Promise<Buffer>
   upscale: (imageBuffer: Buffer, scale: number) => Promise<Buffer>
   removeBackground: (imageBuffer: Buffer) => Promise<Buffer>
   styleTransfer: (imageBuffer: Buffer, style: string) => Promise<Buffer>
+  cleanup?: (imageBuffer: Buffer, maskBuffer: Buffer) => Promise<Buffer>
 }
 
 export interface EnhanceOptions {
@@ -23,14 +26,14 @@ export interface EnhanceOptions {
 // Gemini Vision API Provider
 export class GeminiAIProvider implements AIProvider {
   name = 'Gemini'
-  private apiKey: string | undefined = process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_API_KEY
 
   private async getClient(): Promise<any | null> {
     try {
-      if (!this.apiKey) return null
+      const apiKey = await getAIKey('google')
+      if (!apiKey) return null
       const mod: any = await import('@google/generative-ai')
       const Client = mod.GoogleGenerativeAI
-      return new Client(this.apiKey)
+      return new Client(apiKey)
     } catch {
       return null
     }
@@ -151,14 +154,14 @@ export class GeminiAIProvider implements AIProvider {
 // OpenAI DALL-E Provider (可选)
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI'
-  private apiKey: string | undefined = process.env.OPENAI_API_KEY
 
   private async getClient(): Promise<any | null> {
     try {
-      if (!this.apiKey) return null
+      const apiKey = await getAIKey('openai')
+      if (!apiKey) return null
       const mod: any = await import('openai')
       const OpenAI = mod.default || mod
-      return new OpenAI({ apiKey: this.apiKey })
+      return new OpenAI({ apiKey })
     } catch {
       return null
     }
@@ -190,16 +193,158 @@ export class OpenAIProvider implements AIProvider {
   }
 }
 
+// Local provider using sharp only (fallback)
+class LocalProvider implements AIProvider {
+  name = 'Local'
+  async enhance(imageBuffer: Buffer, options: EnhanceOptions): Promise<Buffer> {
+    const sharp = (await import('sharp')).default
+    let pipeline = sharp(imageBuffer)
+    if (typeof options.brightness === 'number') pipeline = pipeline.modulate({ brightness: 1 + options.brightness / 100 })
+    if (typeof options.saturation === 'number') pipeline = pipeline.modulate({ saturation: 1 + options.saturation / 100 })
+    if (typeof options.contrast === 'number') pipeline = pipeline.linear(1 + options.contrast / 100, 0)
+    if (typeof options.sharpness === 'number') pipeline = pipeline.sharpen(options.sharpness)
+    return pipeline.jpeg({ quality: 95 }).toBuffer()
+  }
+  async upscale(imageBuffer: Buffer, scale: number): Promise<Buffer> {
+    const sharp = (await import('sharp')).default
+    const meta = await sharp(imageBuffer).metadata()
+    const width = meta.width ? Math.round(meta.width * Math.max(2, Math.min(4, Number(scale) || 2))) : undefined
+    return sharp(imageBuffer).resize(width, null, { withoutEnlargement: false }).jpeg({ quality: 95 }).toBuffer()
+  }
+  async removeBackground(imageBuffer: Buffer): Promise<Buffer> {
+    // Fallback: not a true background removal, just convert to PNG
+    const sharp = (await import('sharp')).default
+    return sharp(imageBuffer).png().toBuffer()
+  }
+  async styleTransfer(imageBuffer: Buffer, style: string): Promise<Buffer> {
+    const sharp = (await import('sharp')).default
+    return sharp(imageBuffer).modulate({ saturation: 1.1 }).gamma(1.05).jpeg({ quality: 95 }).toBuffer()
+  }
+
+  async cleanup(imageBuffer: Buffer, maskBuffer: Buffer): Promise<Buffer> {
+    // 简易占位：未实现真实去物体；请配置 Clipdrop API Key
+    throw new Error('去物体需要配置 Clipdrop（在后台 AI 设置中设置 CLIPDROP_API_KEY）')
+  }
+}
+
+// Clipdrop provider: background removal + upscaling
+class ClipdropProvider implements AIProvider {
+  name = 'Clipdrop'
+  private async getKey(): Promise<string> {
+    const key = await getAIKey('clipdrop')
+    if (!key) throw new Error('CLIPDROP_API_KEY not configured (or not set in AI 设置)')
+    return key
+  }
+
+  private async postBinary(endpoint: string, imageBuffer: Buffer): Promise<Buffer> {
+    const apiKey = await this.getKey()
+    const form = new FormData()
+    // Use Blob to avoid additional deps
+    const blob = new Blob([imageBuffer], { type: 'image/jpeg' })
+    form.append('image_file', blob, 'image.jpg')
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey },
+      body: form as any,
+    })
+    if (!res.ok) {
+      let msg = `${res.status} ${res.statusText}`
+      try { msg = (await res.text()) || msg } catch {}
+      throw new Error(`Clipdrop API error: ${msg}`)
+    }
+    return Buffer.from(await res.arrayBuffer())
+  }
+
+  async enhance(imageBuffer: Buffer, options: EnhanceOptions): Promise<Buffer> {
+    // No direct clipdrop endpoint for generic enhance; fallback to Local
+    return new LocalProvider().enhance(imageBuffer, options)
+  }
+  async upscale(imageBuffer: Buffer, scale: number): Promise<Buffer> {
+    // Clipdrop upscaler ignores scale param (single model). We'll accept it.
+    return this.postBinary('https://clipdrop-api.co/image-upscaling/v1', imageBuffer)
+  }
+  async removeBackground(imageBuffer: Buffer): Promise<Buffer> {
+    return this.postBinary('https://clipdrop-api.co/remove-background/v1', imageBuffer)
+  }
+  async styleTransfer(imageBuffer: Buffer, style: string): Promise<Buffer> {
+    // Not implemented; fallback
+    return new LocalProvider().styleTransfer(imageBuffer, style)
+  }
+
+  async cleanup(imageBuffer: Buffer, maskBuffer: Buffer): Promise<Buffer> {
+    const apiKey = await this.getKey()
+    const form = new FormData()
+    form.append('image_file', new Blob([imageBuffer], { type: 'image/jpeg' }), 'image.jpg')
+    form.append('mask_file', new Blob([maskBuffer], { type: 'image/png' }), 'mask.png')
+    const res = await fetch('https://clipdrop-api.co/cleanup/v1', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey },
+      body: form as any,
+    })
+    if (!res.ok) {
+      let msg = `${res.status} ${res.statusText}`
+      try { msg = (await res.text()) || msg } catch {}
+      throw new Error(`Clipdrop Cleanup error: ${msg}`)
+    }
+    return Buffer.from(await res.arrayBuffer())
+  }
+}
+
+// Remove.bg provider: background removal only
+class RemoveBgProvider implements AIProvider {
+  name = 'Remove.bg'
+  private async getKey(): Promise<string> {
+    const key = await getAIKey('removebg')
+    if (!key) throw new Error('REMOVE_BG_API_KEY not configured (or not set in AI 设置)')
+    return key
+  }
+
+  async enhance(imageBuffer: Buffer, options: EnhanceOptions): Promise<Buffer> {
+    return new LocalProvider().enhance(imageBuffer, options)
+  }
+  async upscale(imageBuffer: Buffer, scale: number): Promise<Buffer> {
+    return new LocalProvider().upscale(imageBuffer, scale)
+  }
+  async removeBackground(imageBuffer: Buffer): Promise<Buffer> {
+    const apiKey = await this.getKey()
+    const form = new FormData()
+    const blob = new Blob([imageBuffer], { type: 'image/jpeg' })
+    form.append('image_file', blob, 'image.jpg')
+    const res = await fetch('https://api.remove.bg/v1.0/removebg', {
+      method: 'POST',
+      headers: { 'X-Api-Key': apiKey },
+      body: form as any,
+    })
+    if (!res.ok) {
+      let msg = `${res.status} ${res.statusText}`
+      try { msg = (await res.text()) || msg } catch {}
+      throw new Error(`remove.bg API error: ${msg}`)
+    }
+    return Buffer.from(await res.arrayBuffer())
+  }
+  async styleTransfer(imageBuffer: Buffer, style: string): Promise<Buffer> {
+    return new LocalProvider().styleTransfer(imageBuffer, style)
+  }
+}
+
 // AI Provider Factory
+export type AIProviderName = 'auto' | 'local' | 'gemini' | 'openai' | 'clipdrop' | 'removebg'
+
 export class AIProviderFactory {
-  static create(provider: 'gemini' | 'openai' = 'gemini'): AIProvider {
+  static create(provider: AIProviderName = 'local', taskType?: string): AIProvider {
     switch (provider) {
+      case 'local':
+        return new LocalProvider()
       case 'gemini':
         return new GeminiAIProvider()
       case 'openai':
         return new OpenAIProvider()
+      case 'clipdrop':
+        return new ClipdropProvider()
+      case 'removebg':
+        return new RemoveBgProvider()
       default:
-        throw new Error(`Unsupported AI provider: ${provider}`)
+        return new LocalProvider()
     }
   }
 }
@@ -210,9 +355,13 @@ export class AIImageProcessor {
     imageBuffer: Buffer, 
     taskType: string, 
     params: Record<string, any>,
-    provider: 'gemini' | 'openai' = 'gemini'
+    provider: AIProviderName = 'auto'
   ): Promise<Buffer> {
-    const aiProvider = AIProviderFactory.create(provider)
+    let chosen: AIProviderName = provider
+    if (provider === 'auto') {
+      chosen = await this.resolveAutoProvider(taskType)
+    }
+    const aiProvider = AIProviderFactory.create(chosen, taskType)
     
     switch (taskType) {
       case 'enhance':
@@ -221,10 +370,38 @@ export class AIImageProcessor {
         return aiProvider.upscale(imageBuffer, params.scale || 2)
       case 'remove-background':
         return aiProvider.removeBackground(imageBuffer)
+      case 'cleanup': {
+        if (typeof (aiProvider as any).cleanup !== 'function') {
+          throw new Error('选定的提供商不支持去物体')
+        }
+        const maskBuf = params?.maskBuffer
+        if (!maskBuf || !(maskBuf instanceof Buffer)) {
+          throw new Error('缺少或无效的掩膜数据')
+        }
+        return (aiProvider as any).cleanup(imageBuffer, maskBuf)
+      }
       case 'style-transfer':
         return aiProvider.styleTransfer(imageBuffer, params.style || 'artistic')
       default:
         throw new Error(`Unsupported task type: ${taskType}`)
     }
+  }
+
+  static async resolveAutoProvider(taskType: string): Promise<AIProviderName> {
+    if (taskType === 'cleanup') {
+      if (await hasAIKey('clipdrop')) return 'clipdrop'
+      return 'local'
+    }
+    if (taskType === 'remove-background') {
+      if (await hasAIKey('clipdrop')) return 'clipdrop'
+      if (await hasAIKey('removebg')) return 'removebg'
+      return 'local'
+    }
+    if (taskType === 'upscale') {
+      if (await hasAIKey('clipdrop')) return 'clipdrop'
+      return 'local'
+    }
+    if (await hasAIKey('google')) return 'gemini'
+    return 'local'
   }
 }

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Try to get API key from user's settings first, then fallback to environment variable
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true },
+      select: { id: true, pixabayApiKey: true },
     })
 
     let apiKey = (user as any)?.pixabayApiKey || process.env.PIXABAY_API_KEY
@@ -74,6 +74,10 @@ export async function POST(request: NextRequest) {
         if (!imgResp.ok) continue
         const buffer = Buffer.from(await imgResp.arrayBuffer())
 
+        // Exact dedup by content hash for this user
+        const contentHash = await ImageProcessor.calculateContentHash(buffer)
+        const duplicate = await db.photo.findFirst({ where: { userId: session.user.id, contentHash, status: 'COMPLETED' }, include: { variants: true } })
+
         // Generate file key for original
         const ext = imageUrl.split('.').pop()?.split('?')[0] || 'jpg'
         const originalKey = StorageManager.generateKey('originals', `pixabay_${Date.now()}.${ext}`)
@@ -94,30 +98,37 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        // Process image (variants, exif, blurhash)
-        const exifData = await ExifProcessor.extractExif(buffer)
-        const { variants, blurhash, metadata } = await ImageProcessor.processImage(buffer)
-
-        // Upload variants
-        const variantRecords: any[] = []
-        for (const v of variants) {
-          const variantKey = `variants/${photo.id}/${v.variant}.${v.format}`
-          await storage.uploadBuffer(variantKey, v.buffer, `image/${v.format}`)
-          variantRecords.push({
-            variant: v.variant,
-            format: v.format,
-            width: v.width,
-            height: v.height,
-            fileKey: variantKey,
-            sizeBytes: v.size,
-          })
-        }
-
-        // Update photo
-        await db.photo.update({
-          where: { id: photo.id },
-          data: {
+        if (duplicate) {
+          // Delete just uploaded original
+          try { await storage.deleteObject(originalKey) } catch {}
+          await db.photo.update({ where: { id: photo.id }, data: {
+            fileKey: duplicate.fileKey,
+            hash: duplicate.hash,
+            contentHash: duplicate.contentHash,
+            width: duplicate.width,
+            height: duplicate.height,
+            blurhash: duplicate.blurhash,
+            exifJson: duplicate.exifJson as any,
+            takenAt: duplicate.takenAt,
+            location: duplicate.location as any,
+            status: 'COMPLETED',
+            variants: { createMany: { data: duplicate.variants.map((v: any) => ({ variant: v.variant, format: v.format, width: v.width, height: v.height, fileKey: v.fileKey, sizeBytes: v.sizeBytes })) } },
+          } })
+        } else {
+          // Process image (variants, exif, blurhash)
+          const exifData = await ExifProcessor.extractExif(buffer)
+          const { variants, blurhash, metadata } = await ImageProcessor.processImage(buffer)
+          // Upload variants
+          const variantRecords: any[] = []
+          for (const v of variants) {
+            const variantKey = `variants/${photo.id}/${v.variant}.${v.format}`
+            await storage.uploadBuffer(variantKey, v.buffer, `image/${v.format}`)
+            variantRecords.push({ variant: v.variant, format: v.format, width: v.width, height: v.height, fileKey: variantKey, sizeBytes: v.size })
+          }
+          // Update photo
+          await db.photo.update({ where: { id: photo.id }, data: {
             hash: await ImageProcessor.calculateHash(buffer),
+            contentHash,
             width: metadata.width || 0,
             height: metadata.height || 0,
             blurhash,
@@ -126,8 +137,8 @@ export async function POST(request: NextRequest) {
             location: exifData?.location ? JSON.parse(JSON.stringify(exifData.location)) : undefined,
             status: 'COMPLETED',
             variants: { createMany: { data: variantRecords } },
-          },
-        })
+          } })
+        }
 
         seeded += 1
       } catch (e) {
