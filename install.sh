@@ -12,6 +12,7 @@ set -euo pipefail
 #   bash install.sh logs [svc]  # 查看日志（可选 svc：web/worker/nginx/minio/db/redis）
 #   bash install.sh env         # 生成/修复 .env（不会覆盖已有值）
 #   bash install.sh health      # 健康检查
+#   bash install.sh uninstall   # 卸载（--purge 同时删除数据卷；--all 连同代码目录）
 # 交互用法：
 #   bash install.sh             # 弹出菜单
 
@@ -424,6 +425,59 @@ cmd_health() {
   curl -fsSL http://$SERVER_IP/api/health || echo '{"ok":false}'
 }
 
+cmd_uninstall() {
+  check_system
+  local PURGE=0 REMOVE_ALL=0 YES=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --purge) PURGE=1 ;;
+      --all|--remove-all) REMOVE_ALL=1 ;;
+      -y|--yes) YES=1 ;;
+    esac
+    shift
+  done
+
+  print_warning "即将卸载 CCFrame。该操作会停止并删除容器${PURGE:+、并删除数据卷}${REMOVE_ALL:+、并删除 /opt/ccframe 目录}。"
+  if [ "$YES" -ne 1 ]; then
+    read -rp "请输入 uninstall 确认继续: " confirm || exit 1
+    [ "$confirm" = "uninstall" ] || { print_error "已取消"; exit 1; }
+  fi
+
+  # 优先使用 compose down
+  if [ -d /opt/ccframe ]; then
+    cd /opt/ccframe || true
+    if [ -f docker-compose.yml ] || [ -f docker-compose.yaml ] || [ -f compose.yml ] || [ -f compose.yaml ]; then
+      if [ "$PURGE" -eq 1 ]; then
+        print_step "停止并删除容器与数据卷..."
+        $DOCKER_COMPOSE_CMD down -v || true
+      else
+        print_step "停止并删除容器..."
+        $DOCKER_COMPOSE_CMD down || true
+      fi
+    fi
+  fi
+
+  # 兜底：清理可能残留的容器与网络
+  for c in ccframe-web ccframe-worker ccframe-nginx ccframe-minio ccframe-postgres ccframe-redis; do
+    docker rm -f "$c" >/dev/null 2>&1 || true
+  done
+  docker network rm ccframe >/dev/null 2>&1 || true
+
+  # 数据卷清理（仅在 --purge）
+  if [ "$PURGE" -eq 1 ]; then
+    docker volume rm pgdata >/dev/null 2>&1 || true
+    docker volume rm minio >/dev/null 2>&1 || true
+  fi
+
+  # 删除代码目录（仅在 --all）
+  if [ "$REMOVE_ALL" -eq 1 ]; then
+    print_step "删除项目目录 /opt/ccframe ..."
+    rm -rf /opt/ccframe || true
+  fi
+
+  print_success "卸载完成"
+}
+
 interactive_menu() {
   # 若可读 /dev/tty，则绑定到 TTY，避免管道环境下无输入
   if [ -r /dev/tty ]; then
@@ -440,6 +494,7 @@ interactive_menu() {
   echo "  7) 查看日志"
   echo "  8) 修复/生成 .env"
   echo "  9) 健康检查"
+  echo " 10) 卸载 (回车后可选择是否删除数据卷)"
   echo "  0) 退出"
   read -rp "输入编号: " choice || exit 0
   case "$choice" in
@@ -452,6 +507,7 @@ interactive_menu() {
     7) read -rp "服务名(可留空): " svc; cmd_logs "$svc"; exit 0 ;;
     8) cmd_env;      exit 0 ;;
     9) cmd_health;   exit 0 ;;
+    10) read -rp "是否删除数据卷? 输入 yes 删除: " a; if [ "$a" = "yes" ]; then cmd_uninstall --purge; else cmd_uninstall; fi; exit 0 ;;
     0) exit 0 ;;
     *) echo "请输入有效编号"; exit 1 ;;
   esac
@@ -469,12 +525,13 @@ main() {
     logs)     shift; cmd_logs    "$@"; exit 0 ;;
     env)      shift; cmd_env     "$@"; exit 0 ;;
     health)   shift; cmd_health  "$@"; exit 0 ;;
+    uninstall) shift; cmd_uninstall "$@"; exit 0 ;;
     *)
       # 无参数时：若是非交互环境（无 TTY），给出用法并退出；否则进入交互菜单
       if [ -t 0 ] || [ -r /dev/tty ]; then
         interactive_menu
       else
-        echo "用法: bash install.sh [install|update|start|stop|restart|status|logs|env|health]"
+        echo "用法: bash install.sh [install|update|start|stop|restart|status|logs|env|health|uninstall]"
         echo "示例: curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh | bash -s -- update"
         exit 0
       fi
