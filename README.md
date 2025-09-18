@@ -1,13 +1,13 @@
-# 🎨 CCFrame - AI驱动的个人相册网站
+# 🎨 CCFrame - 现代化个人相册网站
 
 <div align="center">
 
-![CCFrame](https://img.shields.io/badge/CCFrame-AI%20Gallery-purple?style=for-the-badge)
+![CCFrame](https://img.shields.io/badge/CCFrame-Gallery-purple?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=for-the-badge&logo=tailwindcss)
 
-一个现代化、智能化的个人相册网站，具有AI图片处理功能
+一个现代化的个人相册网站，具有完善的图片管理功能
 
 [📸 在线演示](#) | [🚀 一键部署](#-一键部署) | [📖 详细文档](#-详细文档)
 
@@ -32,23 +32,27 @@ curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh
 
 ## ✨ 功能特色
 
-### 📸 智能相册管理
-- **多种视图** - 瀑布流、网格、时间线、地图展示
-- **智能分类** - 自动按时间、地点、标签整理
+### 📸 相册管理
+- **多种视图** - 瀑布流、网格、时间线展示
+- **标签分类** - 按时间、地点、标签整理
 - **批量操作** - 上传、编辑、删除多张照片
 - **EXIF提取** - 自动读取拍摄信息和地理位置
 
-### 🤖 AI图片处理
-- **智能增强** - 一键改善照片亮度、对比度、色彩
-- **AI放大** - 无损放大图片分辨率
-- **背景移除** - 智能抠图和背景替换
-- **多AI支持** - OpenAI、Claude、Gemini可选
+### 🔍 搜索功能
+- **标签搜索** - 基于标签快速查找照片
+- **内容搜索** - 支持EXIF信息搜索
+- **时间筛选** - 按拍摄时间范围查找
 
 ### 🎨 现代化设计
 - **响应式设计** - 完美适配手机、平板、桌面
 - **暗黑模式** - 自动切换，保护夜间视力
 - **PWA支持** - 可安装到设备，离线浏览
 - **动效优化** - 流畅的过渡和微交互
+
+### 📱 移动端 & PWA 小贴士
+- 支持安装为 PWA：iOS Safari 选择“添加到主屏幕”，Android Chrome/Edge 选择“安装应用”。
+- Lightbox 已支持 pinch / double tap / swipe 等手势，可在帮助面板的 Touch & Trackpad 板块查看。
+- 部署前后可参考 [docs/mobile-pwa-guide.md](docs/mobile-pwa-guide.md) 获取性能与离线优化建议。
 
 ### 🔐 权限与安全
 - **双重权限** - 公开/私密照片分级管理
@@ -74,9 +78,8 @@ curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/install.sh
 - **存储**: S3兼容 (AWS/MinIO/阿里云)
 - **认证**: NextAuth.js + bcrypt
 
-### AI与图像处理
+### 图像处理
 - **图像处理**: Sharp + EXIF提取
-- **AI集成**: OpenAI/Claude/Gemini APIs
 - **格式优化**: AVIF/WebP/JPEG 多格式输出
 - **缓存策略**: CDN + 本地缓存
 
@@ -167,87 +170,36 @@ npm start
 
 ## 🔧 配置说明
 
-### 必需环境变量
+所有部署方式都可以复用仓库自带的 `config/production.env.example` 模板。复制后根据环境填写敏感信息：
 
-```env
-# 数据库连接
-DATABASE_URL="postgresql://username:password@host:5432/dbname"
+| 变量 | 说明 | 必填 | 默认值 |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | PostgreSQL 连接串 | 是 | - |
+| `NEXTAUTH_SECRET` | NextAuth 加密密钥（32+ 位随机值） | 是 | - |
+| `NEXTAUTH_URL` | 对外访问地址，用于 OAuth/NextAuth 回调 | 是 | - |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | 初始化管理员账号 | 是 | - |
+| `REDIS_URL` | Redis 实例地址（任务队列、缓存） | 建议 | `redis://redis:6379` |
+| `STORAGE_PROVIDER` | `s3` 或 `local` | 否 | `local` |
+| S3 相关变量 | `S3_BUCKET_NAME`、`S3_REGION`、`S3_ENDPOINT`、`S3_ACCESS_KEY_ID`、`S3_SECRET_ACCESS_KEY` | 按需 | - |
+| `CDN_BASE_URL` | CDN 加速域名 | 否 | - |
+| `RATE_LIMIT_ENABLED` | 是否启用 API 速率限制 | 否 | `true` |
+| `CACHE_TTL` / `IMAGE_CACHE_TTL` | 应用级缓存时长（秒） | 否 | `3600` / `31536000` |
+| `LOG_LEVEL` | Pino 日志级别 | 否 | `info` |
 
-# 应用配置  
-NEXTAUTH_SECRET="your-32-character-secret-key"
-NEXTAUTH_URL="https://your-domain.com"
+> 若使用 Docker/PM2，请将 `config/production.env` 上传至服务器；本地开发仍采用根目录 `.env`。
 
-# 管理员账户
-ADMIN_EMAIL="admin@yourdomain.com"
-ADMIN_PASSWORD="your-secure-password"
-```
+### Prometheus 指标
 
-### 可选环境变量
+- 默认开启 `ccframe_` 前缀的进程与业务指标，并在 `/api/metrics` 暴露 Prometheus 文本格式。
+- 上传链路、健康检查等关键 API 均已埋点，可直接接入 Prometheus + Grafana。
+- 若尚未部署 Prometheus，可用 `curl http://<host>/api/metrics` 快速查看实时指标。
 
-```env
-# AI功能 (可选)
-OPENAI_API_KEY="sk-your-openai-key"
-ANTHROPIC_API_KEY="sk-ant-your-claude-key"
-GOOGLE_API_KEY="your-google-key"
-CLIPDROP_API_KEY="your-clipdrop-key"       # 真·AI放大 / 去背景
-REMOVE_BG_API_KEY="your-removebg-key"      # 可选备用：去背景
+### 可选功能开关
 
-# 存储配置
-S3_ACCESS_KEY_ID="your-access-key"
-S3_SECRET_ACCESS_KEY="your-secret-key"
-S3_BUCKET_NAME="your-bucket"
-
-# 缓存配置
-REDIS_URL="redis://localhost:6379"
-
-# 性能与并发（可选）
-# 控制处理并发与生成格式/尺寸，降低CPU/网络压力
-IMG_WORKER_CONCURRENCY="3"         # 图片处理Worker并发
-AI_WORKER_CONCURRENCY="1"          # AI处理Worker并发
-UPLOAD_CONCURRENCY="4"             # 变体上传并发
-IMAGE_FORMATS="webp,jpeg"          # 启用的变体格式（默认 avif,webp,jpeg）
-IMAGE_VARIANT_NAMES="thumb,small,medium,large" # 启用的变体尺寸名
-```
-
-### 免费服务推荐
-
-| 服务类型 | 推荐平台 | 免费额度 | 特色 |
-|---------|---------|---------|------|
-| **部署平台** | Vercel | 无限制 | 全球CDN + 自动SSL |
-| **数据库** | Supabase | 500MB | 实时功能 + 管理界面 |
-| **数据库** | Neon | 0.5GB | 无冷启动 + 分支管理 |
-| **存储** | Cloudflare R2 | 10GB | 零出站费用 |
-| **缓存** | Upstash Redis | 10k命令/天 | 无服务器架构 |
-
----
-
-## 📱 功能预览
-
-### 🏠 主页展示
-- 瀑布流照片展示
-- 响应式多列布局
-- 懒加载 + 无限滚动
-- 快速搜索和筛选
-
-### 👨‍💼 管理后台
-- 拖拽上传照片
-- 批量编辑和标签
-- AI处理工作台
-- 数据统计面板
-
-### 📸 照片详情
-- 大图灯箱浏览
-- EXIF信息展示
-- 地理位置地图
-- 相关照片推荐
-
-### 🤖 AI工作台
-- 实时预览效果
-- 参数调节控制
-- 处理进度显示
-- 版本历史管理
-
----
+| 功能 | 变量 | 说明 |
+| ---- | ---- | ---- |
+| 上传速率限制 | `RATE_LIMIT_ENABLED` | 仅在内网/离线环境建议关闭 |
+| 本地存储目录 | `UPLOAD_PATH` | 当 `STORAGE_PROVIDER=local` 时指定挂载路径 |
 
 ## 🛠️ 本地开发
 
@@ -296,7 +248,6 @@ CCFrame/
 │   ├── auth.ts           # 认证逻辑
 │   ├── db.ts             # 数据库客户端
 │   ├── storage.ts        # 文件存储
-│   └── ai-services.ts    # AI 服务集成
 ├── jobs/                  # 后台任务
 ├── prisma/               # 数据库模型
 ├── scripts/              # 工具脚本
@@ -309,15 +260,13 @@ CCFrame/
 
 ### v1.0 (当前)
 - ✅ 基础相册功能
-- ✅ AI图片处理
 - ✅ 管理后台
 - ✅ PWA支持
 
 ### v1.1 (规划中)
 - 🔄 人脸识别和分组
-- 🔄 智能相册推荐
-- 🔄 批量AI处理
-- 🔄 更多AI模型支持
+- 🔄 批量图片处理
+- 🔄 多模态搜索支持
 
 ### v1.2 (未来)
 - 📋 移动端原生应用

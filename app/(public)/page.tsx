@@ -200,6 +200,7 @@ async function GalleryContent() {
           />
         </div>
 
+
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">最新照片</h2>
           <p className="text-gray-600 dark:text-gray-400">发现生活中的美好时刻</p>

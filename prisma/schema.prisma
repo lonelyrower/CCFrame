@@ -125,17 +125,16 @@ model Face {
   id        String  @id @default(cuid())
   bbox      String  // JSON string: {x, y, width, height}
   personId  String? @map("person_id")
-  embedding Bytes? // face embedding for similarity
-  
+
   photoId String @map("photo_id")
   photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  
+
   @@map("faces")
 }
 
 model Job {
   id          String   @id @default(cuid())
-  type        String   // "THUMBNAIL_GENERATION", "EXIF_EXTRACTION", "AI_ENHANCEMENT", etc.
+  type        String   // "THUMBNAIL_GENERATION", "EXIF_EXTRACTION", etc.
   payloadJson Json     @map("payload_json")
   status      String   @default("PENDING") // "PENDING", "RUNNING", "COMPLETED", "FAILED"
   progress    Int      @default(0) // 0-100
@@ -197,21 +196,9 @@ model SmartAlbum {
 // Application-level settings (singleton row)
 model AppSettings {
   id             String   @id @default("singleton")
-  openaiApiKey   String?  @map("openai_api_key")
-  googleApiKey   String?  @map("google_api_key")
-  clipdropApiKey String?  @map("clipdrop_api_key")
-  removeBgApiKey String?  @map("remove_bg_api_key")
   // Storage strategy
   imageFormats      String? @map("image_formats")
   imageVariantNames String? @map("image_variant_names")
-  // Auto-tagging preferences
-  autoTagEnabled         Boolean  @default(false) @map("auto_tag_enabled")
-  autoTagIncludeColors   Boolean  @default(true)  @map("auto_tag_include_colors")
-  autoTagIncludeContent  Boolean  @default(true)  @map("auto_tag_include_content")
-  autoTagProvider        String?               @map("auto_tag_provider") // 'auto' | 'gemini' | 'openai'
-  autoTagDailyLimit      Int?                  @map("auto_tag_daily_limit")
-  autoTagUsageDate       String?               @map("auto_tag_usage_date") // YYYY-MM-DD
-  autoTagUsageCount      Int       @default(0) @map("auto_tag_usage_count")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
