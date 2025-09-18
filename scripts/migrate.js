@@ -73,11 +73,12 @@ async function main() {
       })
       
       if (!defaultAlbum) {
+        const { VISIBILITY } = require('../lib/constants')
         await prisma.album.create({
           data: {
             title: '默认相册',
             description: '系统自动创建的默认相册',
-            visibility: 'PUBLIC',
+            visibility: VISIBILITY.PUBLIC,
             userId: adminUser.id
           }
         })

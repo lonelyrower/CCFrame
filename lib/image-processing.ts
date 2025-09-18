@@ -10,6 +10,12 @@ export interface ImageVariant {
   formats: string[]
 }
 
+function formatSupported(format: string) {
+  const formatInfo = sharp.format as any;
+  const info = formatInfo[format] as { output?: boolean } | undefined;
+  return !!info?.output;
+}
+
 export const IMAGE_VARIANTS: ImageVariant[] = [
   { name: 'thumb', width: 300, height: 300, quality: 80, formats: ['avif', 'webp', 'jpeg'] },
   { name: 'small', width: 600, quality: 85, formats: ['avif', 'webp', 'jpeg'] },
@@ -41,7 +47,9 @@ export class ImageProcessor {
       size: number
     }>
     blurhash: string
+    timings: { totalMs: number; blurhashMs: number; variantsMs: number; start: number; end: number }
   }> {
+    const t0 = Date.now()
     const image = sharp(inputBuffer)
     const metadata = await image.metadata()
 
@@ -49,8 +57,10 @@ export class ImageProcessor {
       throw new Error('Invalid image metadata')
     }
 
-    // Generate blurhash
-    const blurhash = await this.generateBlurhash(inputBuffer)
+  // Generate blurhash
+  const bhStart = Date.now()
+  const blurhash = await this.generateBlurhash(inputBuffer)
+  const blurhashMs = Date.now() - bhStart
 
     // Generate variants
     const variants: Array<{
@@ -65,11 +75,13 @@ export class ImageProcessor {
     const storageSettings = await getStorageSettings()
     const allowNames = new Set(storageSettings.imageVariantNames || ['thumb', 'small', 'medium', 'large'])
     const allowFormats = new Set(storageSettings.imageFormats || ['avif', 'webp', 'jpeg'])
-    for (const variant of IMAGE_VARIANTS) {
+  const varStart = Date.now()
+  for (const variant of IMAGE_VARIANTS) {
       if (!allowNames.has(variant.name)) continue
       const fmts = variant.formats.filter(f => allowFormats.has(f))
       for (const format of fmts) {
-        let processedImage = image.clone()
+      if (!formatSupported(format)) continue
+      let processedImage = image.clone()
 
         // Resize
         if (variant.name === 'thumb') {
@@ -109,10 +121,13 @@ export class ImageProcessor {
       }
     }
 
+    const variantsMs = Date.now() - varStart
+    const end = Date.now()
     return {
       metadata,
       variants,
-      blurhash
+      blurhash,
+      timings: { totalMs: end - t0, blurhashMs, variantsMs, start: t0, end }
     }
   }
 

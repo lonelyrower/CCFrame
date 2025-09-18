@@ -170,13 +170,22 @@ async function AlbumsContent() {
             </p>
           </div>
           
-          <Link
-            href="/admin/albums/new"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            新建相册
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/albums/smart"
+              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <FolderOpen className="w-4 h-4 mr-2" />
+              智能相册
+            </Link>
+            <Link
+              href="/admin/albums/new"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              新建相册
+            </Link>
+          </div>
         </div>
 
         {albums.length === 0 ? (

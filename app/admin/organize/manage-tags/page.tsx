@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
+import { Copy, Tags } from 'lucide-react'
 
 type Tag = { id: string; name: string; color: string; _count?: { photos: number } }
 
@@ -124,6 +126,15 @@ export default function ManageTagsPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">标签管理</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">重命名、改颜色、合并或删除标签</p>
+            <div className="flex items-center gap-4 mt-3">
+              <Link
+                href="/admin/organize/duplicates"
+                className="inline-flex items-center text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              >
+                <Copy className="w-4 h-4 mr-1" />
+                重复照片 →
+              </Link>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索标签" className="px-3 py-2 border rounded" />

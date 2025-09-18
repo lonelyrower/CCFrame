@@ -6,7 +6,6 @@ import {
   Camera, 
   FolderOpen, 
   Upload, 
-  Clock,
   TrendingUp,
   HardDrive,
   Eye,
@@ -135,8 +134,7 @@ function LoadingStats() {
   )
 }
 
-async function StatsCards() {
-  const stats = await getStats()
+function StatsCards({ stats }: { stats: Stats }) {
 
   const statItems = [
     {
@@ -211,9 +209,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* 统计卡片 */}
-      <Suspense fallback={<LoadingStats />}>
-        <StatsCards />
-      </Suspense>
+      <StatsCards stats={stats} />
 
       {/* Visibility Breakdown */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -274,13 +270,7 @@ export default async function AdminDashboard() {
               <FolderOpen className="h-5 w-5" />
               <span className="font-medium">管理相册</span>
             </a>
-            <a
-              href="/admin/ai"
-              className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              <Clock className="h-5 w-5" />
-              <span className="font-medium">AI 工作台</span>
-            </a>
+            {/* 编辑/AI 功能已移除 */}
           </div>
         </div>
       </div>

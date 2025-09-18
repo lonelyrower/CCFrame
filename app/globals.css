@@ -23,7 +23,17 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+    --surface-a: hsla(226, 100%, 97%, 0.82);
+    --surface-b: hsla(220, 86%, 96%, 0.72);
+    --surface-dark-a: hsla(223, 74%, 10%, 0.85);
+    --surface-dark-b: hsla(222, 62%, 16%, 0.72);
+    --shadow-soft: 0 20px 45px hsla(221, 73%, 52%, 0.18);
+    --shadow-soft-dark: 0 20px 45px hsla(220, 60%, 5%, 0.48);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+    --duration-short: 160ms;
+    --duration-medium: 260ms;
   }
 
   .dark {
@@ -45,18 +55,28 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --ring: 224.3 76.3% 74.1%;
   }
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground bg-background;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: var(--font-noto-sans-sc), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    transition: background-color var(--duration-medium) var(--ease-soft), color var(--duration-medium) var(--ease-soft);
+  }
+
+  ::selection {
+    @apply bg-primary text-primary-foreground;
   }
 }
 
@@ -64,19 +84,19 @@
   .masonry-container {
     column-count: 1;
     column-gap: 1rem;
-    
+
     @screen sm {
       column-count: 2;
     }
-    
+
     @screen md {
       column-count: 3;
     }
-    
+
     @screen lg {
       column-count: 4;
     }
-    
+
     @screen xl {
       column-count: 5;
     }
@@ -94,7 +114,7 @@
   .blur-load {
     background-size: cover;
     background-position: center;
-    transition: filter 0.3s;
+    transition: filter var(--duration-medium) var(--ease-soft);
   }
 
   .blur-load.loaded {
@@ -104,67 +124,88 @@
   .blur-load:not(.loaded) {
     filter: blur(10px);
   }
+
+  .glass-card {
+    @apply bg-white/65 dark:bg-white/5 border border-white/60 dark:border-white/10 backdrop-blur-md;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .dark .glass-card {
+    box-shadow: var(--shadow-soft-dark);
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
-  /* 中文字体优化 */
+
   .font-chinese {
     font-family: var(--font-noto-sans-sc), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
   }
-  
-  /* 响应式容器 */
+
   .container-responsive {
     @apply container mx-auto px-4;
-    
+
     @screen sm {
       @apply px-6;
     }
-    
+
     @screen lg {
       @apply px-8;
     }
   }
-  
-  /* 响应式网格 */
+
   .grid-responsive {
     @apply grid gap-4;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    
+
     @screen sm {
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       @apply gap-6;
     }
-    
+
     @screen lg {
       grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
       @apply gap-8;
     }
   }
-  
-  /* 卡片悬停效果 */
+
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
-  
-  /* 渐变背景 */
+
   .gradient-bg {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
-  
+
   .gradient-bg-light {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .bg-app-surface {
+    background-color: hsl(var(--background));
+    background-image: linear-gradient(180deg, hsla(var(--background) / 0.94) 0%, hsla(var(--background) / 0.98) 35%, hsl(var(--background)) 100%);
+  }
+
+  .bg-app-glow {
+    background: radial-gradient(45% 45% at 50% 50%, rgba(129, 140, 248, 0.38) 0%, rgba(129, 140, 248, 0) 100%);
+  }
+
+  .bg-app-glow-secondary {
+    background: radial-gradient(45% 45% at 50% 50%, rgba(56, 189, 248, 0.32) 0%, rgba(56, 189, 248, 0) 100%);
   }
 }

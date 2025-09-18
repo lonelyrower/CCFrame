@@ -3,19 +3,19 @@ import type { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { 
-  Search, 
-  Filter, 
-  Grid3X3, 
+import {
+  Search,
+  Filter,
+  Grid3X3,
   List,
   Image as ImageIcon
 } from 'lucide-react'
 import { PhotoWithDetails } from '@/types'
-import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { LibraryBatchGrid } from '@/components/admin/library-batch-grid'
 import { SeedDemoButton } from '@/components/admin/seed-demo-button'
 import { PhotoTagsInline } from '@/components/admin/photo-tags-inline'
 import { PhotoActions } from '@/components/admin/photo-actions'
+import { LibraryStatsBar } from '@/components/admin/library-stats-bar'
 
 interface LibraryStats {
   total: number
@@ -85,51 +85,6 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
   }
 }
 
-function StatsBar({ stats }: { stats: LibraryStats }) {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center">
-          <ImageIcon className="w-5 h-5 text-blue-600 mr-2" />
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">总照片</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center">
-          <Eye className="w-5 h-5 text-green-600 mr-2" />
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">公开</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.public}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center">
-          <EyeOff className="w-5 h-5 text-orange-600 mr-2" />
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">私密</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.private}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center">
-          <ImageIcon className="w-5 h-5 text-yellow-600 mr-2" />
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">处理中</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.processing}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // Removed server-side placeholder actions; replaced by client component PhotoActions
 
@@ -212,7 +167,7 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
           </div>
         </div>
 
-        <StatsBar stats={stats} />
+        <LibraryStatsBar stats={stats} />
 
         {photos.length === 0 ? (
           <div className="text-center py-16">

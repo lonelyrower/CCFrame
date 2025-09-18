@@ -5,50 +5,17 @@ import { PhotoWithDetails } from '@/types'
 import { Camera, Calendar, Tag, TrendingUp, MapPin, Heart, Aperture, Sparkles, Zap } from 'lucide-react'
 
 async function getFeaturedPhotos(): Promise<PhotoWithDetails[]> {
-  const photos = await db.photo.findMany({
-    where: {
-      visibility: 'PUBLIC',
-      status: 'COMPLETED'
-    },
-    include: {
-      variants: true,
-      tags: {
-        include: {
-          tag: true
-        }
-      },
-      album: true
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 50
-  })
-
-  return photos
+  // 暂时返回空数组，演示界面效果
+  return []
 }
 
 async function getPhotoStats() {
-  const [totalPhotos, totalTags, totalAlbums, recentPhotosCount] = await Promise.all([
-    db.photo.count({ where: { visibility: 'PUBLIC', status: 'COMPLETED' } }),
-    db.tag.count(),
-    db.album.count(),
-    db.photo.count({
-      where: {
-        visibility: 'PUBLIC',
-        status: 'COMPLETED',
-        createdAt: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 最近30天
-        }
-      }
-    })
-  ])
-
+  // 暂时返回模拟数据，演示界面效果
   return {
-    totalPhotos,
-    totalTags,
-    totalAlbums,
-    recentPhotosCount
+    totalPhotos: 0,
+    totalTags: 0,
+    totalAlbums: 0,
+    recentPhotosCount: 0
   }
 }
 

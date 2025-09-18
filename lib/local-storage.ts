@@ -1,0 +1,133 @@
+import fs from 'fs'
+import path from 'path'
+
+const fsp = fs.promises
+const MIME_BY_EXT: Record<string, string> = {
+  '.avif': 'image/avif',
+  '.webp': 'image/webp',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.bmp': 'image/bmp',
+  '.tif': 'image/tiff',
+  '.tiff': 'image/tiff',
+  '.svg': 'image/svg+xml',
+}
+
+export class LocalStorageManager {
+  private basePath: string
+  private initialized = false
+
+  constructor(basePath: string = './uploads') {
+    this.basePath = path.resolve(basePath)
+    this.ensureBaseDirs()
+  }
+
+  private ensureBaseDirs(): void {
+    if (this.initialized) return
+    const dirs = [
+      this.basePath,
+      path.join(this.basePath, 'originals'),
+      path.join(this.basePath, 'variants'),
+      path.join(this.basePath, 'enhanced'),
+      path.join(this.basePath, 'upscaled'),
+      path.join(this.basePath, 'no-bg'),
+    ]
+    for (const dir of dirs) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    this.initialized = true
+  }
+
+  private resolveKey(key: string): string {
+    const normalized = key.replace(/\\/g, '/')
+    const fullPath = path.join(this.basePath, normalized)
+    if (!fullPath.startsWith(this.basePath)) {
+      throw new Error(`Invalid storage key: ${key}`)
+    }
+    return fullPath
+  }
+
+  async uploadBuffer(key: string, buffer: Buffer, contentType: string): Promise<void> {
+    this.ensureBaseDirs()
+    const filePath = this.resolveKey(key)
+    const dir = path.dirname(filePath)
+    await fsp.mkdir(dir, { recursive: true })
+    await fsp.writeFile(filePath, buffer)
+  }
+
+  async downloadBuffer(key: string): Promise<Buffer> {
+    this.ensureBaseDirs()
+    const filePath = this.resolveKey(key)
+    return fsp.readFile(filePath)
+  }
+
+  async streamObject(key: string): Promise<{ stream: fs.ReadStream; contentLength?: number; contentType?: string }> {
+    this.ensureBaseDirs()
+    const filePath = this.resolveKey(key)
+    const stat = await fsp.stat(filePath)
+    const ext = path.extname(filePath).toLowerCase()
+    const contentType = MIME_BY_EXT[ext] || 'application/octet-stream'
+    const stream = fs.createReadStream(filePath)
+    return { stream, contentLength: stat.size, contentType }
+  }
+
+  async healthCheck(): Promise<{ ok: boolean; authOk: boolean; latencyMs?: number; error?: string }> {
+    const start = Date.now()
+    try {
+      this.ensureBaseDirs()
+      await fsp.access(this.basePath)
+      return { ok: true, authOk: true, latencyMs: Date.now() - start }
+    } catch (error) {
+      return {
+        ok: false,
+        authOk: true,
+        latencyMs: Date.now() - start,
+        error: error instanceof Error ? error.message : String(error),
+      }
+    }
+  }
+
+  async getPresignedDownloadUrl(key: string): Promise<string> {
+    this.ensureBaseDirs()
+    const filePath = this.resolveKey(key)
+    try {
+      await fsp.access(filePath)
+      return `/api/image/file/${key}`
+    } catch (error) {
+      throw new Error(`File not found: ${key}`)
+    }
+  }
+
+  async deleteObject(key: string): Promise<void> {
+    this.ensureBaseDirs()
+    const filePath = this.resolveKey(key)
+    try {
+      await fsp.unlink(filePath)
+    } catch {
+      // ignore missing files
+    }
+  }
+
+  getPublicUrl(key: string): string {
+    this.ensureBaseDirs()
+    return `/api/image/file/${key}`
+  }
+
+  static generateKey(prefix: string, filename: string): string {
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substring(2)
+    const ext = filename.split('.').pop()
+    return `${prefix}/${timestamp}-${random}.${ext}`
+  }
+}
+
+let globalLocalStorageManager: LocalStorageManager | null = null
+
+export function getLocalStorageManager(): LocalStorageManager {
+  if (!globalLocalStorageManager) {
+    globalLocalStorageManager = new LocalStorageManager('./uploads')
+  }
+  return globalLocalStorageManager
+}

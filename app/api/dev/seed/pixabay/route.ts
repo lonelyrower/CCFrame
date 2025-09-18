@@ -3,10 +3,16 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getStorageManager, StorageManager } from '@/lib/storage-manager'
+import { getLocalStorageManager, LocalStorageManager } from '@/lib/local-storage'
 import { ImageProcessor } from '@/lib/image-processing'
 import { ExifProcessor } from '@/lib/exif'
 
-const MAX_COUNT = 20
+// 可配置的导入数量上限
+const HARD_MAX_SEED = Number(process.env.SEED_HARD_MAX || '50')
+const CONFIG_MAX_SEED = Math.min(
+  Math.max(1, Number(process.env.SEED_MAX_COUNT || '5')),
+  HARD_MAX_SEED
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +47,9 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}))
     const query = (body.query as string) || 'nature'
-    const count = Math.min(Number(body.count || 3), 5) // 降低默认数量避免超时
+    // 允许通过环境变量配置最大导入数量，仍保留一个硬上限以防误配
+    const requested = Number(body.count || 3)
+    const count = Math.min(Math.max(1, requested), CONFIG_MAX_SEED)
     const visibility = (body.visibility as 'PUBLIC' | 'PRIVATE') || 'PUBLIC'
 
     const searchUrl = new URL('https://pixabay.com/api/')
@@ -61,7 +69,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ seeded: 0 })
     }
 
-    const storage = getStorageManager()
+    // 尝试使用配置的存储，如果初始化或上传失败则降级到本地存储
+    let storage: any
+    try {
+      storage = getStorageManager()
+    } catch (error) {
+      console.warn('Primary storage init failed, fallback to local:', error)
+      storage = getLocalStorageManager()
+    }
 
     let seeded = 0
     for (const hit of hits) {
@@ -80,8 +95,16 @@ export async function POST(request: NextRequest) {
 
         // Generate file key for original
         const ext = imageUrl.split('.').pop()?.split('?')[0] || 'jpg'
-        const originalKey = StorageManager.generateKey('originals', `pixabay_${Date.now()}.${ext}`)
-        await storage.uploadBuffer(originalKey, buffer, `image/${ext === 'jpg' ? 'jpeg' : ext}`)
+        let originalKey = (storage.generateKey || StorageManager.generateKey || LocalStorageManager.generateKey)('originals', `pixabay_${Date.now()}.${ext}`)
+        try {
+          await storage.uploadBuffer(originalKey, buffer, `image/${ext === 'jpg' ? 'jpeg' : ext}`)
+        } catch (uploadErr) {
+          // 开发环境常见：S3/MinIO 未启动或桶未创建；自动降级到本地存储
+          console.warn('Primary storage upload failed, switching to local storage:', uploadErr)
+          storage = getLocalStorageManager()
+          originalKey = (storage.generateKey || LocalStorageManager.generateKey)('originals', `pixabay_${Date.now()}.${ext}`)
+          await storage.uploadBuffer(originalKey, buffer, `image/${ext === 'jpg' ? 'jpeg' : ext}`)
+        }
 
         // Create photo record (placeholder)
         const photo = await db.photo.create({
@@ -121,8 +144,16 @@ export async function POST(request: NextRequest) {
           // Upload variants
           const variantRecords: any[] = []
           for (const v of variants) {
-            const variantKey = `variants/${photo.id}/${v.variant}.${v.format}`
-            await storage.uploadBuffer(variantKey, v.buffer, `image/${v.format}`)
+            let variantKey = `variants/${photo.id}/${v.variant}.${v.format}`
+            try {
+              await storage.uploadBuffer(variantKey, v.buffer, `image/${v.format}`)
+            } catch (variantErr) {
+              // 同样对变体上传失败做本地回退
+              console.warn('Variant upload failed, switching to local storage:', variantErr)
+              storage = getLocalStorageManager()
+              variantKey = `variants/${photo.id}/${v.variant}.${v.format}`
+              await storage.uploadBuffer(variantKey, v.buffer, `image/${v.format}`)
+            }
             variantRecords.push({ variant: v.variant, format: v.format, width: v.width, height: v.height, fileKey: variantKey, sizeBytes: v.size })
           }
           // Update photo

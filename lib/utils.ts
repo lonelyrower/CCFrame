@@ -45,7 +45,13 @@ export function slugify(text: string): string {
 }
 
 export function getImageUrl(photoId: string, variant: string = 'medium', format: string = 'webp'): string {
-  return `/api/image/serve/${photoId}/${variant}?format=${format}`
+  // 默认走流式接口，开发/内网更可靠；生产如需可显式配置 redirect
+  const mode = (process.env.NEXT_PUBLIC_IMAGE_SERVE_MODE || (process.env.NODE_ENV === 'production' ? 'redirect' : 'stream')).toLowerCase()
+  if (mode === 'redirect') {
+    return `/api/image/serve/${photoId}/${variant}?format=${format}`
+  }
+  // 流式图片接口，避免浏览器直接访问内网存储导致的连接失败
+  return `/api/image/${photoId}/${variant}?format=${format}`
 }
 
 export function getOptimizedImageUrl(
@@ -78,8 +84,6 @@ export function generateSrcSet(photoId: string, format: string = 'webp'): string
 export function toBase64(str: string): string {
   if (typeof window === 'undefined') {
     // Node.js
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     return Buffer.from(str).toString('base64')
   }
   return window.btoa(str)

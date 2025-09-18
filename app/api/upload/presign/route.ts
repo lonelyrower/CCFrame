@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getStorageManager, StorageManager } from '@/lib/storage-manager'
+import { PHOTO_STATUS } from '@/lib/constants'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { checkDuplicatePhoto } from '@/lib/photo-dedupe'
 import { db } from '@/lib/db'
+import { logger } from '@/lib/logger'
+import { uploadEventCounter } from '@/lib/prometheus'
 import { z } from 'zod'
 
 // Force dynamic rendering for this route
@@ -17,78 +22,113 @@ const uploadRequestSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  let rateHeaders: Record<string, string> | null = null
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const userId = session?.user?.id
+    if (!userId) {
+      uploadEventCounter.inc({ type: 'presign', result: 'unauthorized' })
+      logger.warn({ event: 'upload_presign_unauthorized' }, 'Upload presign blocked: unauthorized')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const rate = await rateLimit(userId, 'upload:presign', 30, 60)
+    rateHeaders = rateLimitHeaders(rate)
+    if (!rate.allowed) {
+      uploadEventCounter.inc({ type: 'presign', result: 'rate_limited' })
+      logger.warn({ userId, event: 'upload_presign_rate_limited' }, 'Upload presign rate limit exceeded')
+      const response = NextResponse.json({ error: 'Upload rate limit exceeded' }, { status: 429 })
+      for (const [key, value] of Object.entries(rateHeaders)) {
+        response.headers.set(key, value)
+      }
+      return response
     }
 
     const body = await request.json()
     const { filename, contentType, size, albumId, contentHash } = uploadRequestSchema.parse(body)
 
-    // Validate content type
     if (!contentType.startsWith('image/')) {
-      return NextResponse.json({ error: 'Invalid content type' }, { status: 400 })
+      uploadEventCounter.inc({ type: 'presign', result: 'validation_error' })
+      logger.warn({ userId, contentType, event: 'upload_presign_validation' }, 'Upload presign rejected due to invalid content type')
+      const response = NextResponse.json({ error: 'Invalid content type' }, { status: 400 })
+      if (rateHeaders) {
+        for (const [key, value] of Object.entries(rateHeaders)) {
+          response.headers.set(key, value)
+        }
+      }
+      return response
     }
 
-    // Validate album ownership if provided
     if (albumId) {
       const album = await db.album.findFirst({
-        where: { id: albumId, userId: session.user.id }
+        where: { id: albumId, userId }
       })
       if (!album) {
-        return NextResponse.json({ error: 'Album not found' }, { status: 404 })
-      }
-    }
-
-    // If frontend provided contentHash, check exact duplicate for fast-path
-    if (contentHash) {
-      const dup = await db.photo.findFirst({ where: { userId: session.user.id, contentHash, status: 'COMPLETED' }, include: { variants: true } })
-      if (dup) {
-        // Create a new completed photo referencing existing files (no upload needed)
-        const photo = await db.photo.create({
-          data: {
-            fileKey: dup.fileKey,
-            hash: dup.hash,
-            contentHash: dup.contentHash,
-            width: dup.width,
-            height: dup.height,
-            userId: session.user.id,
-            albumId,
-            status: 'COMPLETED',
-            blurhash: dup.blurhash,
-            exifJson: dup.exifJson as any,
-            takenAt: dup.takenAt,
-            location: dup.location as any,
-            variants: { createMany: { data: dup.variants.map((v: any) => ({ variant: v.variant, format: v.format, width: v.width, height: v.height, fileKey: v.fileKey, sizeBytes: v.sizeBytes })) } },
+        uploadEventCounter.inc({ type: 'presign', result: 'validation_error' })
+        logger.warn({ userId, albumId, event: 'upload_presign_album_missing' }, 'Upload presign rejected: album not found')
+        const response = NextResponse.json({ error: 'Album not found' }, { status: 404 })
+        if (rateHeaders) {
+          for (const [key, value] of Object.entries(rateHeaders)) {
+            response.headers.set(key, value)
           }
-        })
-        return NextResponse.json({ photoId: photo.id, completed: true })
+        }
+        return response
       }
     }
 
-    // Generate file key
+    if (contentHash) {
+      const dupCheck = await checkDuplicatePhoto(userId, contentHash)
+      if (dupCheck.duplicate && dupCheck.existingPhotoId) {
+        uploadEventCounter.inc({ type: 'presign', result: 'duplicate' })
+        logger.info({ userId, photoId: dupCheck.existingPhotoId, event: 'upload_presign_duplicate' }, 'Upload presign deduplicated by content hash')
+        const response = NextResponse.json({ photoId: dupCheck.existingPhotoId, completed: true, duplicate: true })
+        if (rateHeaders) {
+          for (const [key, value] of Object.entries(rateHeaders)) {
+            response.headers.set(key, value)
+          }
+        }
+        return response
+      }
+    }
+
     const fileKey = StorageManager.generateKey('originals', filename)
 
-    // Create photo record (uploading)
     const photo = await db.photo.create({
       data: {
         fileKey,
         hash: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         width: 0,
         height: 0,
-        userId: session.user.id,
+        userId,
         albumId,
-        status: 'UPLOADING'
+        status: PHOTO_STATUS.UPLOADING,
+        ...(contentHash ? { contentHash } : {})
       }
     })
 
     const storage = getStorageManager()
     const uploadUrl = await storage.getPresignedUploadUrl(fileKey, contentType)
 
-    return NextResponse.json({ photoId: photo.id, uploadUrl, fileKey })
+    uploadEventCounter.inc({ type: 'presign', result: 'success' })
+    logger.info({ userId, photoId: photo.id, size, event: 'upload_presign_success' }, 'Upload presign issued successfully')
+
+    const response = NextResponse.json({ photoId: photo.id, uploadUrl, fileKey })
+    if (rateHeaders) {
+      for (const [key, value] of Object.entries(rateHeaders)) {
+        response.headers.set(key, value)
+      }
+    }
+    return response
   } catch (error) {
-    console.error('Upload presign error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    uploadEventCounter.inc({ type: 'presign', result: 'error' })
+    logger.error({ error: message, stack: error instanceof Error ? error.stack : undefined, event: 'upload_presign_error' }, 'Upload presign error')
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    if (rateHeaders) {
+      for (const [key, value] of Object.entries(rateHeaders)) {
+        response.headers.set(key, value)
+      }
+    }
+    return response
   }
 }

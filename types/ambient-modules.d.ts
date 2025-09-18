@@ -1,14 +1,4 @@
-declare module '@google/generative-ai' {
-  export class GoogleGenerativeAI {
-    constructor(apiKey: string)
-    getGenerativeModel(opts: { model: string }): any
-  }
-}
-
-declare module 'openai' {
-  const OpenAI: any
-  export default OpenAI
-}
+// AI provider modules no longer used
 
 declare module 'workbox-precaching' {
   export const precacheAndRoute: any
@@ -24,4 +14,3 @@ declare module 'workbox-strategies' {
   export const NetworkFirst: any
   export const StaleWhileRevalidate: any
 }
-

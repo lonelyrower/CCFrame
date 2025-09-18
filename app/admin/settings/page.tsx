@@ -12,10 +12,11 @@ import {
   Eye,
   EyeOff,
   Shield,
-  Key
+  Key,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
 
 interface Settings {
   profile: {
@@ -135,7 +136,8 @@ export default function SettingsPage() {
     { id: 'security', name: '安全设置', icon: Shield },
     { id: 'site', name: '网站设置', icon: Globe },
     { id: 'storage', name: '存储设置', icon: Database },
-    { id: 'apis', name: 'API 配置', icon: Key }
+    { id: 'apis', name: 'API 配置', icon: Key },
+    { id: 'storage-strategy', name: '存储策略', icon: Database, href: '/admin/storage-settings' }
   ]
 
   return (
@@ -156,6 +158,20 @@ export default function SettingsPage() {
             <nav className="flex space-x-8 px-6">
               {tabs.map(tab => {
                 const IconComponent = tab.icon
+                if (tab.href) {
+                  return (
+                    <Link
+                      key={tab.id}
+                      href={tab.href}
+                      className="py-4 px-2 border-b-2 border-transparent font-medium text-sm transition-colors text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <IconComponent className="w-4 h-4" />
+                        <span>{tab.name}</span>
+                      </div>
+                    </Link>
+                  )
+                }
                 return (
                   <button
                     key={tab.id}

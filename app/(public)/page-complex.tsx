@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { db } from '@/lib/db'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
+import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { PhotoWithDetails } from '@/types'
 import { Camera, Calendar, Tag, TrendingUp, MapPin, Heart, Aperture, Sparkles, Zap } from 'lucide-react'
 
@@ -205,7 +206,9 @@ async function GalleryContent() {
           <p className="text-gray-600 dark:text-gray-400">发现生活中的美好时刻</p>
         </div>
         
-        <MasonryGallery photos={photos} />
+        <LightboxProvider photos={photos}>
+          <MasonryGallery photos={photos} />
+        </LightboxProvider>
       </div>
     </div>
   )

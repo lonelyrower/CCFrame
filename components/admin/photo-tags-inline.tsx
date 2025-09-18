@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Plus, X, Tag } from 'lucide-react'
 
 type Tag = { id: string; name: string; color: string }
 
@@ -42,28 +43,75 @@ export function PhotoTagsInline({ photoId, initial }: { photoId: string; initial
   }
 
   return (
-    <div className="mt-1">
-      <div className="flex flex-wrap gap-1">
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-1.5">
         {tags.map(t => (
-          <span key={t.id} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${t.color}33`, color: t.color }}>
+          <span 
+            key={t.id} 
+            className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm border transition-all duration-200 hover:scale-105" 
+            style={{ 
+              backgroundColor: `${t.color}20`, 
+              color: t.color, 
+              borderColor: `${t.color}40`,
+              boxShadow: `0 0 8px ${t.color}20`
+            }}
+          >
+            <Tag className="w-2.5 h-2.5" />
             {t.name}
-            <button className="ml-1 opacity-70 hover:opacity-100" onClick={() => remove(t.id)}>×</button>
+            <button 
+              className="ml-0.5 w-3 h-3 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-200 hover:scale-110" 
+              onClick={() => remove(t.id)}
+              title="移除标签"
+            >
+              <X className="w-2 h-2" />
+            </button>
           </span>
         ))}
+        
         {!adding ? (
-          <button className="text-[11px] px-1 py-0.5 rounded bg-white/60 hover:bg-white border" onClick={() => setAdding(true)}>+ 标签</button>
+          <button 
+            className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 hover:border-white/50 text-white transition-all duration-200 hover:scale-105 backdrop-blur-sm" 
+            onClick={() => setAdding(true)}
+            title="添加标签"
+          >
+            <Plus className="w-2.5 h-2.5" />
+            标签
+          </button>
         ) : (
           <div className="relative">
-            <input className="text-[12px] px-2 py-1 border rounded bg-white" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { add(input) } if (e.key === 'Escape') setAdding(false) }} placeholder="输入并回车" />
+            <input 
+              className="text-[11px] px-3 py-1.5 border border-white/30 rounded-full bg-white/90 backdrop-blur-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all w-28" 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              onKeyDown={(e) => { 
+                if (e.key === 'Enter') { add(input) } 
+                if (e.key === 'Escape') { setAdding(false); setInput('') }
+              }} 
+              placeholder="输入标签名"
+              autoFocus
+            />
             {suggest.length > 0 && (
-              <div className="absolute z-10 mt-1 bg-white border rounded shadow w-40 max-h-40 overflow-auto">
+              <div className="absolute z-20 mt-1 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-xl w-40 max-h-32 overflow-auto">
                 {suggest.map(s => (
-                  <div key={s.id} className="px-2 py-1 text-[12px] hover:bg-gray-100 cursor-pointer" onClick={() => add(s.name)}>
-                    {s.name}
+                  <div 
+                    key={s.id} 
+                    className="flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0" 
+                    onClick={() => add(s.name)}
+                  >
+                    <div 
+                      className="w-2.5 h-2.5 rounded-full" 
+                      style={{ backgroundColor: s.color }}
+                    />
+                    <span className="font-medium text-gray-700">{s.name}</span>
                   </div>
                 ))}
               </div>
             )}
+            {/* 点击外部关闭输入框 */}
+            <div 
+              className="fixed inset-0 z-10" 
+              onClick={() => { setAdding(false); setInput('') }}
+            />
           </div>
         )}
       </div>

@@ -47,7 +47,7 @@ export default function StorageSettingsPage() {
             <label className="block text-sm mb-1">生成尺寸（逗号分隔，例如：thumb,small,medium,large）</label>
             <input value={imageVariantNames} onChange={(e) => setImageVariantNames(e.target.value)} className="w-full px-3 py-2 border rounded" placeholder="留空表示默认 thumb,small,medium,large" />
           </div>
-          <div className="text-xs text-amber-600">并发与上传并行度（IMG_WORKER_CONCURRENCY / AI_WORKER_CONCURRENCY / UPLOAD_CONCURRENCY）需通过环境变量配置，修改后重启生效。</div>
+          <div className="text-xs text-amber-600">并发与上传并行度（IMG_WORKER_CONCURRENCY / UPLOAD_CONCURRENCY）需通过环境变量配置，修改后重启生效。</div>
           <div className="flex justify-end">
             <Button onClick={save} disabled={saving} className="px-6">{saving ? '保存中...' : '保存设置'}</Button>
           </div>
@@ -56,4 +56,3 @@ export default function StorageSettingsPage() {
     </div>
   )
 }
-

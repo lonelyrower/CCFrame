@@ -40,14 +40,10 @@ ADMIN_EMAIL="admin@yourdomain.com"
 ADMIN_PASSWORD="your-secure-password"
 ```
 
-### 可选变量 (AI功能)
+### 可选变量
 
 ```env
-OPENAI_API_KEY="sk-your-openai-key"
-ANTHROPIC_API_KEY="sk-ant-your-claude-key"  
-GOOGLE_API_KEY="your-google-key"
-CLIPDROP_API_KEY="your-clipdrop-key"      # 启用真·AI放大 / 去背景
-REMOVE_BG_API_KEY="your-removebg-key"     # 备选：去背景
+CDN_BASE_URL="https://cdn.your-domain.com"
 ```
 
 ## 🗄️ 数据库选择
@@ -125,11 +121,7 @@ vercel --force --prod
 1. 配置 S3 存储服务
 2. 或使用 Vercel Blob Storage
 
-### AI功能不工作
-
-1. 检查 API 密钥是否正确
-2. 确认 API 服务可用
-3. 查看错误日志
+### 常见问题
 
 ## 📊 功能验证清单
 
@@ -141,7 +133,7 @@ vercel --force --prod
 - [ ] 照片列表显示正确
 - [ ] 响应式设计在手机上正常
 - [ ] 暗黑模式切换正常
-- [ ] AI功能可用 (如果配置了API密钥)
+- [ ] 图片变体可生成
 
 ## 🎨 自定义配置
 

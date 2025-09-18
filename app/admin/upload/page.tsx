@@ -10,6 +10,9 @@ import toast from 'react-hot-toast'
 interface UploadFile extends File {
   id: string
   preview?: string
+  contentHash?: string
+  hashing?: boolean
+  hashProgress?: number
 }
 
 export default function UploadPage() {
@@ -51,7 +54,32 @@ export default function UploadPage() {
     })
   }
 
-  const sha256Hex = async (file: File): Promise<string> => {
+  // Incremental hashing (streaming) to provide progress for large files
+  const sha256Hex = async (file: File, onProgress?: (ratio: number) => void): Promise<string> => {
+  const chunkSize = 1024 * 256 // 256KB
+  const total = file.size
+    if (typeof window !== 'undefined' && window.crypto?.subtle) {
+      // Browser path - read full buffer (still okay for <50MB but we mimic progress)
+      const reader = file.stream().getReader()
+  const chunks: BlobPart[] = []
+      let loaded = 0
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        if (value) {
+          // value is a Uint8Array (ArrayBufferView) and valid BlobPart under lib.dom.d.ts
+          chunks.push(value)
+          loaded += value.length
+          onProgress?.(loaded / total)
+        }
+      }
+      const full = new Blob(chunks as BlobPart[])
+      const buf = await full.arrayBuffer()
+      const hashBuf = await crypto.subtle.digest('SHA-256', buf)
+      const bytes = new Uint8Array(hashBuf)
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+    }
+    // Fallback (unlikely on client) - simple full read
     const buf = await file.arrayBuffer()
     const hash = await crypto.subtle.digest('SHA-256', buf)
     const bytes = new Uint8Array(hash)
@@ -60,9 +88,20 @@ export default function UploadPage() {
 
   const uploadFile = async (file: UploadFile) => {
     try {
-      // Precompute content hash for duplicate fast-path
-      let contentHash: string | undefined
-      try { contentHash = await sha256Hex(file) } catch {}
+      // Precompute content hash with progress (duplicate fast-path)
+      if (!file.contentHash && !file.hashing) {
+        setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashing: true, hashProgress: 0 } : f))
+        try {
+          const hash = await sha256Hex(file, (r) => {
+            setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashProgress: Math.round(r * 100) } : f))
+          })
+          file.contentHash = hash
+        } catch (e) {
+          // Ignore hashing error, continue without
+        } finally {
+          setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashing: false } : f))
+        }
+      }
 
       // Request presigned URL
       const presignResponse = await fetch('/api/upload/presign', {
@@ -73,7 +112,7 @@ export default function UploadPage() {
           contentType: file.type,
           size: file.size,
           albumId: selectedAlbum || undefined,
-          contentHash
+          contentHash: file.contentHash
         })
       })
 
@@ -81,10 +120,13 @@ export default function UploadPage() {
         throw new Error('获取上传地址失败')
       }
 
-      const { photoId, uploadUrl, fileKey, completed } = await presignResponse.json()
+  const { photoId, uploadUrl, fileKey, completed, duplicate } = await presignResponse.json()
 
       if (completed) {
         setUploads(prev => new Map(prev).set(file.id, { id: file.id, filename: file.name, progress: 100, status: 'completed' }))
+        if (duplicate) {
+          toast.success(`重复文件已快速关联: ${file.name}`)
+        }
         return
       }
 
@@ -289,13 +331,19 @@ export default function UploadPage() {
                 <div key={file.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
                   <div className="flex items-start gap-3">
                     {/* Thumbnail */}
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 relative">
                       {file.preview && (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={file.preview}
                           alt={file.name}
                           className="w-full h-full object-cover"
                         />
+                      )}
+                      {file.hashing && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span className="text-[10px] text-white">Hash {file.hashProgress || 0}%</span>
+                        </div>
                       )}
                     </div>
 

@@ -1,0 +1,18 @@
+[Unit]
+Description=CCFrame Worker (BullMQ)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ccframe
+Environment=NODE_ENV=production
+Environment=START_WORKERS=true
+EnvironmentFile=/opt/ccframe/.env
+ExecStart=/usr/bin/npx tsx jobs/worker.ts
+Restart=always
+RestartSec=3
+User=www-data
+
+[Install]
+WantedBy=multi-user.target
+

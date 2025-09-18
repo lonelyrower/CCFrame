@@ -1,4 +1,4 @@
-import { Photo, Album, PhotoVariant, Tag, User, Job, EditVersion } from '@prisma/client'
+import { Photo, Album, PhotoVariant, Tag, User, Job } from '@prisma/client'
 
 export type Visibility = 'PUBLIC' | 'PRIVATE'
 
@@ -15,12 +15,6 @@ export const JobStatus = {
 export const JobTypeValues = [
   'THUMBNAIL_GENERATION',
   'EXIF_EXTRACTION',
-  'AI_ENHANCEMENT',
-  'AI_UPSCALE',
-  'AI_REMOVE_BACKGROUND',
-  'AI_STYLE_TRANSFER',
-  'AI_CLEANUP',
-  'AI_AUTO_TAG',
   'FACE_DETECTION',
 ] as const
 export type JobType = typeof JobTypeValues[number]
@@ -31,9 +25,7 @@ export interface PhotoWithDetails extends Photo {
     tag: Tag
   }>
   album?: Album | null
-  _count?: {
-    editVersions: number
-  }
+  _count?: Record<string, number>
 }
 
 export interface AlbumWithDetails extends Album {
@@ -76,15 +68,7 @@ export interface ExifData {
   }
 }
 
-export interface AITask {
-  id: string
-  type: JobType
-  status: JobStatus
-  progress: number
-  params: Record<string, any>
-  result?: Record<string, any>
-  error?: string
-}
+// AI 编辑相关类型已移除
 
 export interface UploadProgress {
   id: string

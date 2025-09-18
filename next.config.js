@@ -1,11 +1,41 @@
+const withAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
+const baseConfig = {
+  reactStrictMode: false, // 开发时禁用严格模式提升性能
+  swcMinify: process.env.NODE_ENV === 'production',
   output: 'standalone',
+  ...(process.env.NODE_ENV === 'production' && {
+    compiler: {
+      removeConsole: true,
+    },
+  }),
+  // 开发环境性能优化
+  typescript: {
+    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+  },
+  eslint: {
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
+  },
   experimental: {
-    forceSwcTransforms: false,
     serverComponentsExternalPackages: ['sharp', 'exifr'],
+    optimizePackageImports: ['lucide-react', '@aws-sdk/client-s3'],
+    // 开发环境优化：禁用慢速功能
+    ...(process.env.NODE_ENV === 'development' && {
+      webVitalsAttribution: [],
+      optimizeCss: false,
+      esmExternals: true,
+      turbo: {
+        rules: {
+          '*.svg': {
+            loaders: ['@svgr/webpack'],
+            as: '*.js',
+          },
+        },
+      },
+    }),
   },
   images: {
     // 我们已在后端生成多尺寸/格式的变体，禁用 Next 内置优化，
@@ -40,4 +70,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withAnalyzer(baseConfig)

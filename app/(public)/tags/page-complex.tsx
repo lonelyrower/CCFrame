@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 import { db } from '@/lib/db'
-import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { PhotoWithDetails } from '@/types'
 import Link from 'next/link'
 import { Tag, Hash, Image, ArrowRight } from 'lucide-react'

@@ -3,7 +3,7 @@
 ## Project Structure & Modules
 - `app/`: Next.js App Router pages, API routes under `app/api/`, admin at `app/admin/`.
 - `components/`: Reusable UI, gallery, admin components.
-- `lib/`: Core utilities (auth, db, storage, image/AI processing).
+- `lib/`: Core utilities (auth, db, storage, image processing).
 - `jobs/`: BullMQ queues and worker (`worker.ts`).
 - `prisma/`: Schema and client; run Prisma commands from repo root.
 - `scripts/`: Setup/ops utilities (e.g., `create-admin.js`, `verify-completeness.js`).
@@ -31,7 +31,7 @@
 - Always run `npm run lint` and `npm run type-check`; include output in PR if adding tests.
 
 ## Commit & PR Guidelines
-- Commit style: Conventional Commits (`feat:`, `fix:`, `chore:`) with optional scope (e.g., `feat(ai): ...`).
+- Commit style: Conventional Commits (`feat:`, `fix:`, `chore:`) with optional scope.
 - PRs must include: summary, linked issues, screenshots/GIFs for UI, and notes for schema/env changes.
 - If Prisma schema changes, describe migration impact and run `npm run db:migrate` locally.
 - For queue changes, verify locally with `START_WORKERS=true npx tsx jobs/worker.ts` and include logs.

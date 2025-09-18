@@ -10,7 +10,6 @@ import {
   Upload,
   Grid3X3,
   FolderOpen,
-  Wand2,
   Settings,
   LogOut,
   Sun,
@@ -18,7 +17,6 @@ import {
   Menu,
   X,
   BarChart3,
-  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -28,15 +26,7 @@ const adminNavItems = [
   { href: '/admin/upload', label: '上传', icon: Upload },
   { href: '/admin/library', label: '照片库', icon: Grid3X3 },
   { href: '/admin/albums', label: '相册', icon: FolderOpen },
-  { href: '/admin/albums/smart', label: '智能相册', icon: FolderOpen },
-  { href: '/admin/ai', label: 'AI 工作台', icon: Wand2 },
-  { href: '/admin/ai-enhance', label: 'AI修图', icon: Sparkles },
-  { href: '/admin/ai-generate', label: 'AI 生成', icon: Sparkles },
-  { href: '/admin/organize/duplicates', label: '整理-重复', icon: FolderOpen },
-  { href: '/admin/organize/auto-tags', label: '整理-标签', icon: FolderOpen },
   { href: '/admin/organize/manage-tags', label: '标签管理', icon: FolderOpen },
-  { href: '/admin/ai-settings', label: 'AI 设置', icon: Settings },
-  { href: '/admin/storage-settings', label: '存储策略', icon: Settings },
   { href: '/admin/settings', label: '设置', icon: Settings },
 ]
 

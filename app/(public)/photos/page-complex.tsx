@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { db } from '@/lib/db'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
+import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { PhotoWithDetails } from '@/types'
 import { 
   Grid, 
@@ -78,9 +79,6 @@ async function getPhotos(params: SearchParams): Promise<PhotoWithDetails[]> {
       break
     case 'name':
       orderBy = { album: { title: 'asc' } }
-      break
-    case 'size':
-      orderBy = { fileSize: 'desc' }
       break
   }
 
@@ -192,7 +190,6 @@ function FilterSection({ albums, tags, params }: {
           <option value="newest">最新优先</option>
           <option value="oldest">最早优先</option>
           <option value="name">按名称</option>
-          <option value="size">按大小</option>
         </select>
         
         <select 
@@ -285,7 +282,9 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
             </p>
           </div>
         ) : (
-          <MasonryGallery photos={photos} />
+          <LightboxProvider photos={photos}>
+            <MasonryGallery photos={photos} />
+          </LightboxProvider>
         )}
       </div>
     </div>
@@ -305,3 +304,4 @@ export default function PhotosPage({
 }
 
 export const dynamic = 'force-dynamic'
+

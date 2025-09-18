@@ -15,14 +15,16 @@ export async function DELETE(
     const id = params.id
     const photo = await db.photo.findFirst({
       where: { id, userId: session.user.id },
-      include: { variants: true, editVersions: true }
+      include: { variants: true }
     })
     if (!photo) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
     const storage = getStorageManager()
-    const keys: string[] = [photo.fileKey]
-    for (const v of photo.variants) keys.push(v.fileKey)
-    for (const e of photo.editVersions) keys.push(e.fileKey)
+    const keys: string[] = photo.fileKey ? [photo.fileKey] : []
+    for (const v of photo.variants) {
+      if (v.fileKey) keys.push(v.fileKey)
+    }
+    // Edited versions are no longer tracked; only remove original + variants
 
     // Delete DB first to avoid dangling references on failure
     await db.photo.delete({ where: { id } })
@@ -61,10 +63,28 @@ export async function PATCH(
       }
     }
     if (!Object.keys(data).length) return NextResponse.json({ error: 'No changes' }, { status: 400 })
-    const photo = await db.photo.findFirst({ where: { id, userId: session.user.id } })
+  const photo = await db.photo.findFirst({ where: { id, userId: session.user.id } })
     if (!photo) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     const updated = await db.photo.update({ where: { id }, data })
-    return NextResponse.json({ photo: updated })
+    const stripLocation = process.env.EXIF_STRIP_GPS_PUBLIC === 'true'
+    let out = updated as any
+    if (stripLocation && updated.visibility === 'PUBLIC' && updated.exifJson) {
+      let exif: any = null
+      if (typeof updated.exifJson === 'string') {
+        try {
+          exif = JSON.parse(updated.exifJson)
+        } catch {
+          exif = null
+        }
+      } else if (typeof updated.exifJson === 'object') {
+        exif = JSON.parse(JSON.stringify(updated.exifJson))
+      }
+      if (exif && typeof exif === 'object') {
+        if (exif.location) delete exif.location
+        out = { ...updated, exifJson: JSON.stringify(exif) }
+      }
+    }
+    return NextResponse.json({ photo: out })
   } catch (e) {
     console.error('Update photo error:', e)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -20,13 +20,16 @@ export async function POST(req: NextRequest) {
     for (const p of photos) {
       let key = ''
       const rec = p.variants.find(v => v.variant === variant && v.format === format) || p.variants.find(v => v.variant === variant) || p.variants.find(v => v.variant === 'large')
-      if (rec) key = rec.fileKey
-      else key = p.fileKey
-      try {
-        const url = await storage.getPresignedDownloadUrl(key)
-        lines.push(url)
-      } catch {
-        // skip
+      if (rec && rec.fileKey) key = rec.fileKey
+      else if (p.fileKey) key = p.fileKey
+
+      if (key) {
+        try {
+          const url = await storage.getPresignedDownloadUrl(key)
+          lines.push(url)
+        } catch {
+          // skip
+        }
       }
     }
     const content = lines.join('\n') + '\n'

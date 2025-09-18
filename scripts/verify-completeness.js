@@ -21,7 +21,6 @@ const REQUIRED_PAGES = [
   // optional page may be absent in this codebase
   // 'app/admin/albums/new/page.tsx',
   'app/admin/settings/page.tsx',
-  'app/admin/ai/page.tsx',
 ]
 
 const REQUIRED_APIS = [
@@ -44,9 +43,6 @@ const REQUIRED_APIS = [
   'app/api/upload/presign/route.ts',
   'app/api/upload/commit/route.ts',
   
-  // AI APIs
-  'app/api/ai/jobs/route.ts',
-  'app/api/ai/jobs/[id]/route.ts',
 ]
 
 const REQUIRED_COMPONENTS = [
@@ -124,7 +120,7 @@ function verifyCompleteness() {
     console.log('   ✅ 用户认证系统 (登录、会话管理)')
     console.log('   ✅ 管理后台 (控制台、上传、相册、设置)')
     console.log('   ✅ API接口完整 (CRUD操作、图片服务)')
-    console.log('   ✅ AI功能集成 (图片处理、任务队列)')
+    // AI/编辑功能已移除，专注展示与基础管理
     console.log('   ✅ PWA支持 (离线访问、缓存)')
     console.log('   ✅ Docker部署配置')
     console.log('   ✅ 响应式设计 (深色模式、多语言)')

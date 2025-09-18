@@ -3,12 +3,16 @@ const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
+const adminEmail = process.env.ADMIN_EMAIL
+const adminPassword = process.env.ADMIN_PASSWORD
+
+if (!adminEmail || !adminPassword) {
+  console.error('ADMIN_EMAIL and ADMIN_PASSWORD must be set before running this script.')
+  process.exit(1)
+}
+
 async function createAdmin() {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@local.dev'
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-
-    // Check if admin already exists
     const existingAdmin = await prisma.user.findUnique({
       where: { email: adminEmail }
     })
@@ -18,10 +22,8 @@ async function createAdmin() {
       return existingAdmin
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(adminPassword, 12)
 
-    // Create admin user
     const admin = await prisma.user.create({
       data: {
         email: adminEmail,
@@ -29,14 +31,12 @@ async function createAdmin() {
       }
     })
 
-    console.log('Admin user created successfully!')
-    console.log('Email:', adminEmail)
-    console.log('Password:', adminPassword)
-    console.log('Please change the password after first login.')
+    console.log('Admin user created successfully for', adminEmail)
+    console.log('The password supplied via ADMIN_PASSWORD has been stored securely. Please rotate it after first login.')
 
     return admin
   } catch (error) {
-    console.error('Error creating admin user:', error)
+    console.error('Error creating admin user:', error instanceof Error ? error.message : error)
     throw error
   } finally {
     await prisma.$disconnect()
