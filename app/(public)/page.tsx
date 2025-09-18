@@ -1,27 +1,63 @@
 import { Suspense } from 'react'
 import { db } from '@/lib/db'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
+import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { PhotoWithDetails } from '@/types'
 import { Camera, Calendar, Tag, TrendingUp, MapPin, Heart, Aperture, Sparkles, Zap } from 'lucide-react'
+import { EmptyPhotosState } from '@/components/ui/empty-state'
+import { StatCardSkeleton, GalleryGridSkeleton } from '@/components/ui/skeleton'
 
 async function getFeaturedPhotos(): Promise<PhotoWithDetails[]> {
-  // 暂时返回空数组，演示界面效果
-  return []
+  const photos = await db.photo.findMany({
+    where: {
+      visibility: 'PUBLIC',
+      status: 'COMPLETED'
+    },
+    include: {
+      variants: true,
+      tags: {
+        include: {
+          tag: true
+        }
+      },
+      album: true
+    },
+    orderBy: {
+      createdAt: 'desc'
+    },
+    take: 50
+  })
+
+  return photos
 }
 
 async function getPhotoStats() {
-  // 暂时返回模拟数据，演示界面效果
+  const [totalPhotos, totalTags, totalAlbums, recentPhotosCount] = await Promise.all([
+    db.photo.count({ where: { visibility: 'PUBLIC', status: 'COMPLETED' } }),
+    db.tag.count(),
+    db.album.count(),
+    db.photo.count({
+      where: {
+        visibility: 'PUBLIC',
+        status: 'COMPLETED',
+        createdAt: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 最近30天
+        }
+      }
+    })
+  ])
+
   return {
-    totalPhotos: 0,
-    totalTags: 0,
-    totalAlbums: 0,
-    recentPhotosCount: 0
+    totalPhotos,
+    totalTags,
+    totalAlbums,
+    recentPhotosCount
   }
 }
 
 function StatsCard({ icon: Icon, label, value, trend }: { icon: any, label: string, value: string, trend?: string }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 card-hover animate-fade-in-stagger">
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-primary/10 rounded-lg">
           <Icon className="w-5 h-5 text-primary" />
@@ -96,14 +132,14 @@ function GalleryLoading() {
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-gray-200 dark:bg-gray-800 rounded-xl p-6 animate-pulse">
-            <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-12 mb-2" />
-            <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-20 mb-1" />
-            <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-16" />
-          </div>
+          <StatCardSkeleton key={i} />
         ))}
       </div>
-      <MasonryGallery photos={[]} loading />
+      <div className="mb-8">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
+      </div>
+      <GalleryGridSkeleton columns={4} rows={3} />
     </div>
   )
 }
@@ -116,30 +152,17 @@ async function GalleryContent() {
 
   if (photos.length === 0) {
     return (
-      <div>
+      <div className="min-h-screen">
         <HeroSection />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="relative">
-              <div className="w-24 h-24 mx-auto relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-sm opacity-20" />
-                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-2xl shadow-lg">
-                  <Aperture className="w-12 h-12 text-white" />
-                </div>
-              </div>
-            </div>
-            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">CC Frame 即将精彩呈现</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">
-              照片正在整理中，敬请期待那些珍藏的美好回忆～
-            </p>
-          </div>
+        <div className="container mx-auto px-4 py-16">
+          <EmptyPhotosState />
         </div>
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="min-h-screen">
       <HeroSection />
       
       <div className="container mx-auto px-4 py-8">
@@ -167,13 +190,14 @@ async function GalleryContent() {
           />
         </div>
 
-
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">最新照片</h2>
           <p className="text-gray-600 dark:text-gray-400">发现生活中的美好时刻</p>
         </div>
         
-        <MasonryGallery photos={photos} />
+        <LightboxProvider photos={photos}>
+          <MasonryGallery photos={photos} />
+        </LightboxProvider>
       </div>
     </div>
   )
@@ -181,9 +205,11 @@ async function GalleryContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<GalleryLoading />}>
-      <GalleryContent />
-    </Suspense>
+    <main className="bg-gray-50 dark:bg-gray-900">
+      <Suspense fallback={<GalleryLoading />}>
+        <GalleryContent />
+      </Suspense>
+    </main>
   )
 }
 

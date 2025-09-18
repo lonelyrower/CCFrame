@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+
+import { requireAdmin } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 
 // List and create tags
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const url = new URL(req.url)
     const q = (url.searchParams.get('q') || '').trim()
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '200', 10), 1000)
 
     const where: any = {
-      photos: { some: { photo: { userId: session.user.id } } },
+      photos: { some: { photo: { userId: guard.adminUserId } } },
     }
     if (q) where.name = { contains: q }
 
@@ -34,12 +35,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const body = await req.json().catch(() => ({}))
     const name = (body.name || '').trim()
     const color = (body.color || '#6b7280').trim()
-    if (!name) return NextResponse.json({ error: '标签名必填' }, { status: 400 })
+    if (!name) return NextResponse.json({ error: '标签名称不能为空' }, { status: 400 })
     const exists = await db.tag.findUnique({ where: { name } })
     if (exists) return NextResponse.json({ error: '已存在同名标签' }, { status: 409 })
     const tag = await db.tag.create({ data: { name, color } })
@@ -49,4 +51,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

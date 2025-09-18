@@ -40,7 +40,7 @@ export default async function PublicSmartAlbumsList({ searchParams }: { searchPa
               <a key={a.id} href={`/smart/${a.id}`} className="block border rounded overflow-hidden bg-white hover:shadow">
                 <div className="aspect-video bg-gray-100">
                   {a.coverPhotoId ? (
-                    <img src={`/api/image/${a.coverPhotoId}/small?format=webp`} className="w-full h-full object-cover" />
+                    <img src={`/api/image/${a.coverPhotoId}/small?format=webp`} alt={a.title} className="w-full h-full object-cover" />
                   ) : null}
                 </div>
                 <div className="p-3">

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+
+import { requireAdmin } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const id = params.id
     const body = await req.json().catch(() => ({}))
     const data: any = {}
@@ -30,8 +31,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const id = params.id
     const url = new URL(req.url)
     const reassignTo = url.searchParams.get('reassignTo')
@@ -39,7 +41,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     if (reassignTo) {
       // Move assignments for current user's photos
       const pts = await db.photoTag.findMany({
-        where: { tagId: id, photo: { userId: session.user.id } },
+        where: { tagId: id, photo: { userId: guard.adminUserId } },
         select: { photoId: true }
       })
       for (const pt of pts) {
@@ -61,4 +63,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

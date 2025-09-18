@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core'
-import { cleanupOutdatedCaches, precacheAndRoute, matchPrecache } from 'workbox-precaching'
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { registerRoute, setCatchHandler } from 'workbox-routing'
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
@@ -24,13 +24,14 @@ self.addEventListener('message', (event) => {
   }
 })
 
-setCatchHandler(async ({ event }) => {
+setCatchHandler(async ({ event }: { event: FetchEvent }) => {
   if (event.request.mode === 'navigate') {
-    return (await matchPrecache(OFFLINE_PAGE)) ?? Response.error()
+    const response = await caches.match(OFFLINE_PAGE)
+    return response ?? Response.error()
   }
 
   if (event.request.destination === 'image') {
-    const fallback = await matchPrecache(OFFLINE_IMAGE_PLACEHOLDER)
+    const fallback = await caches.match(OFFLINE_IMAGE_PLACEHOLDER)
     if (fallback) return fallback
   }
 
@@ -39,7 +40,7 @@ setCatchHandler(async ({ event }) => {
 
 // HTML shell: network first so最新内容仍优先，再回退缓存
 registerRoute(
-  ({ request }) => request.mode === 'navigate',
+  ({ request }: { request: Request }) => request.mode === 'navigate',
   new NetworkFirst({
     cacheName: 'pages',
     networkTimeoutSeconds: 5,
@@ -52,7 +53,7 @@ registerRoute(
 
 // Next.js 构建产物使用 CacheFirst，减少重复下载
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/_next/static'),
+  ({ url }: { url: URL }) => url.pathname.startsWith('/_next/static'),
   new CacheFirst({
     cacheName: 'next-static-assets',
     plugins: [
@@ -64,7 +65,7 @@ registerRoute(
 
 // JS / CSS / 字体等静态资源：SWR 确保更新及时
 registerRoute(
-  ({ request }) =>
+  ({ request }: { request: Request }) =>
     request.destination === 'script' ||
     request.destination === 'style' ||
     request.destination === 'font',
@@ -79,7 +80,7 @@ registerRoute(
 
 // Google Fonts 样式表：快速更新
 registerRoute(
-  ({ url }) => url.origin === 'https://fonts.googleapis.com',
+  ({ url }: { url: URL }) => url.origin === 'https://fonts.googleapis.com',
   new StaleWhileRevalidate({
     cacheName: 'google-fonts-styles',
   })
@@ -87,7 +88,7 @@ registerRoute(
 
 // Google Fonts 字体文件：长效缓存
 registerRoute(
-  ({ url }) => url.origin === 'https://fonts.gstatic.com',
+  ({ url }: { url: URL }) => url.origin === 'https://fonts.gstatic.com',
   new CacheFirst({
     cacheName: 'google-fonts-webfonts',
     plugins: [
@@ -99,7 +100,7 @@ registerRoute(
 
 // 图片资源：缓存优先并限制体积
 registerRoute(
-  ({ request, url }) => request.destination === 'image' || url.pathname.startsWith('/api/image/'),
+  ({ request, url }: { request: Request; url: URL }) => request.destination === 'image' || url.pathname.startsWith('/api/image/'),
   new CacheFirst({
     cacheName: 'images',
     plugins: [
@@ -111,7 +112,7 @@ registerRoute(
 
 // API 请求：网络优先，离线时使用缓存数据
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
+  ({ url }: { url: URL }) => url.pathname.startsWith('/api/'),
   new NetworkFirst({
     cacheName: 'api',
     networkTimeoutSeconds: 3,
@@ -123,8 +124,8 @@ registerRoute(
 )
 
 // 处理后台同步（占位）
-self.addEventListener('sync', (event: any) => {
+self.addEventListener('sync', (event: SyncEvent) => {
   if (event.tag === 'upload-photos') {
-    console.log('[PWA] Background sync: upload-photos')
+    // Handle background sync for photo uploads
   }
 })

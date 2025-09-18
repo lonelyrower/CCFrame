@@ -40,7 +40,7 @@ function toResponse(stream: Readable, contentType: string, cacheHeader: string, 
   if (typeof contentLength === 'number') {
     headers.set('Content-Length', contentLength.toString())
   }
-  return new NextResponse(Readable.toWeb(stream), { headers })
+  return new NextResponse(Readable.toWeb(stream) as BodyInit, { headers })
 }
 
 async function tryLocalStream(key: string, cacheHeader: string, contentType: string) {

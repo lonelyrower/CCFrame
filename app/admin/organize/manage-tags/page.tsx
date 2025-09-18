@@ -150,7 +150,7 @@ export default function ManageTagsPage() {
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">受影响照片样例</div>
             <div className="grid grid-cols-6 gap-2">
               {sampleIds.map(id => (
-                <img key={id} src={`/api/image/${id}/thumb?format=webp`} className="w-full h-auto rounded" />
+                <img key={id} src={`/api/image/${id}/thumb?format=webp`} alt={`Photo sample for tag management`} className="w-full h-auto rounded" />
               ))}
             </div>
           </div>

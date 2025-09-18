@@ -52,7 +52,10 @@
       "Bash(dos2unix:*)",
       "Bash(sed:*)",
       "Bash(npm test:*)",
-      "Bash(pg_isready:*)"
+      "Bash(pg_isready:*)",
+      "Bash(npm outdated)",
+      "Bash(npm update:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

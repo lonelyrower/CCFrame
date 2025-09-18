@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+
+import { requireAdmin } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const body = await req.json().catch(() => ({}))
     const ids: string[] = Array.isArray(body.ids) ? body.ids.slice(0, 500) : []
     const variant: string = body.variant || 'large'
     const format: string = (body.format || 'jpeg').toLowerCase()
     if (ids.length === 0) return NextResponse.json({ error: 'No ids' }, { status: 400 })
 
-    const photos = await db.photo.findMany({ where: { id: { in: ids }, userId: session.user.id }, include: { variants: true } })
+    const photos = await db.photo.findMany({ where: { id: { in: ids }, userId: guard.adminUserId }, include: { variants: true } })
     const storage = getStorageManager()
     const lines: string[] = []
     for (const p of photos) {
@@ -39,4 +40,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

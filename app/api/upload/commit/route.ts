@@ -63,6 +63,12 @@ export async function POST(request: NextRequest) {
       return attachHeaders(NextResponse.json({ error: 'Photo is not in uploading state' }, { status: 400 }))
     }
 
+    if (photo.fileKey !== fileKey) {
+      uploadEventCounter.inc({ type: 'commit', result: 'validation_error' })
+      logger.warn({ userId: sessionUserId, photoId, event: 'upload_commit_filekey_mismatch' }, 'Upload commit rejected due to file key mismatch')
+      return attachHeaders(NextResponse.json({ error: 'Invalid fileKey' }, { status: 400 }))
+    }
+
     await db.photo.update({
       where: { id: photoId },
       data: { status: PHOTO_STATUS.PROCESSING }

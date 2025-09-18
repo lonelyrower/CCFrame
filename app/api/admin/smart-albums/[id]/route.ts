@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+
+import { requireAdmin } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const id = params.id
-    const album = await db.smartAlbum.findFirst({ where: { id, userId: session.user.id } })
+    const album = await db.smartAlbum.findFirst({ where: { id, userId: guard.adminUserId } })
     if (!album) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json({ album })
   } catch (e) {
@@ -19,8 +20,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const id = params.id
     const body = await req.json().catch(() => ({}))
     const data: any = {}
@@ -39,8 +41,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const id = params.id
     await db.smartAlbum.delete({ where: { id } })
     return NextResponse.json({ ok: true })

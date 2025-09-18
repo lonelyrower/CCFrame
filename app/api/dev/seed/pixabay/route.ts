@@ -14,6 +14,19 @@ const CONFIG_MAX_SEED = Math.min(
   HARD_MAX_SEED
 )
 
+const SEED_TOKEN = process.env.SEED_TOKEN || ''
+const SEED_ALLOWED_IPS = (process.env.SEED_ALLOWED_IPS || '')
+  .split(',')
+  .map(ip => ip.trim())
+  .filter(Boolean)
+
+function extractClientIp(request: NextRequest): string | null {
+  return request.ip
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')?.trim()
+    || null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -21,15 +34,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Restrict to dev or require token
-    const token = request.headers.get('x-seed-token') || ''
-    const expectedToken = process.env.DEV_SEED_TOKEN || 'dev-seed-123'  // 默认token
-    const allowInProd = token === expectedToken
-    if (process.env.NODE_ENV === 'production' && !allowInProd) {
-      return NextResponse.json({ 
-        error: 'Forbidden in production - valid seed token required',
-        hint: 'Make sure DEV_SEED_TOKEN is configured and x-seed-token header is provided'
-      }, { status: 403 })
+    if (process.env.NODE_ENV === 'production') {
+      return new NextResponse('Not Found', { status: 404 })
+    }
+
+    if (!SEED_TOKEN) {
+      console.error('SEED_TOKEN is not configured; refusing seed request')
+      return NextResponse.json({ error: 'Seed feature not configured' }, { status: 500 })
+    }
+
+    const providedToken = request.headers.get('x-seed-token') || ''
+    if (providedToken !== SEED_TOKEN) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const clientIp = extractClientIp(request)
+    if (SEED_ALLOWED_IPS.length > 0 && (!clientIp || !SEED_ALLOWED_IPS.includes(clientIp))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Try to get API key from user's settings first, then fallback to environment variable

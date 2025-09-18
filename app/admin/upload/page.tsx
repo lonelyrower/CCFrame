@@ -31,12 +31,14 @@ export default function UploadPage() {
     setFiles(prev => [...prev, ...newFiles])
   }, [])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.avif', '.heic']
     },
-    multiple: true
+    multiple: true,
+    noClick: false, // 允许点击
+    noKeyboard: false
   })
 
   const removeFile = (fileId: string) => {
@@ -79,14 +81,11 @@ export default function UploadPage() {
       const bytes = new Uint8Array(hashBuf)
       return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
     }
-    // Fallback (unlikely on client) - simple full read
-    const buf = await file.arrayBuffer()
-    const hash = await crypto.subtle.digest('SHA-256', buf)
-    const bytes = new Uint8Array(hash)
-    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+    // Fallback when crypto.subtle is unavailable (older browsers)
+    return 'fallback-hash-' + Date.now().toString(16)
   }
 
-  const uploadFile = async (file: UploadFile) => {
+  const uploadFile = async (file: UploadFile): Promise<'completed' | 'failed'> => {
     try {
       // Precompute content hash with progress (duplicate fast-path)
       if (!file.contentHash && !file.hashing) {
@@ -127,7 +126,7 @@ export default function UploadPage() {
         if (duplicate) {
           toast.success(`重复文件已快速关联: ${file.name}`)
         }
-        return
+        return 'completed'
       }
 
       // Update progress
@@ -178,6 +177,8 @@ export default function UploadPage() {
         status: 'completed'
       }))
 
+      return 'completed'
+
     } catch (error) {
       console.error('Upload error:', error)
       setUploads(prev => new Map(prev).set(file.id, {
@@ -187,6 +188,7 @@ export default function UploadPage() {
         status: 'failed',
         error: error instanceof Error ? error.message : '上传失败'
       }))
+      return 'failed'
     }
   }
 
@@ -197,17 +199,19 @@ export default function UploadPage() {
     toast.success(`Starting upload of ${files.length} files`)
 
     // Upload files sequentially to avoid overwhelming the server
+    let successCount = 0
+    let failureCount = 0
     for (const file of files) {
-      await uploadFile(file)
+      const result = await uploadFile(file)
+      if (result === 'completed') {
+        successCount += 1
+      } else if (result === 'failed') {
+        failureCount += 1
+      }
     }
 
     setIsUploading(false)
-    
-    // Check if all uploads completed successfully
-    const finalUploads = Array.from(uploads.values())
-    const successCount = finalUploads.filter(u => u.status === 'completed').length
-    const failureCount = finalUploads.filter(u => u.status === 'failed').length
-    
+
     if (successCount > 0) {
       toast.success(`${successCount} files uploaded successfully`)
     }
@@ -267,26 +271,60 @@ export default function UploadPage() {
         <div
           {...getRootProps()}
           className={`
-            border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors
-            ${isDragActive 
-              ? 'border-primary bg-primary/10' 
-              : 'border-gray-300 dark:border-gray-700 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+            border-2 border-dashed rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200
+            min-h-[200px] sm:min-h-[240px] flex flex-col items-center justify-center
+            ${isDragActive
+              ? 'border-primary bg-primary/10 scale-[1.02]'
+              : 'border-gray-300 dark:border-gray-700 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.01]'
             }
+            touch-manipulation active:scale-[0.99]
           `}
         >
           <input {...getInputProps()} />
-          <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          
+
+          {/* Icon with animation */}
+          <div className={`mb-4 transition-transform duration-200 ${isDragActive ? 'scale-110' : ''}`}>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-md opacity-20" />
+              <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 p-4 rounded-full">
+                <Upload className={`h-8 w-8 sm:h-12 sm:w-12 transition-colors ${isDragActive ? 'text-primary' : 'text-gray-400'}`} />
+              </div>
+            </div>
+          </div>
+
           {isDragActive ? (
-            <p className="text-lg font-medium text-primary">将文件拖放到此处...</p>
+            <div className="space-y-2">
+              <p className="text-lg sm:text-xl font-medium text-primary">将文件拖放到此处...</p>
+              <div className="w-32 h-1 bg-primary/20 rounded-full overflow-hidden">
+                <div className="w-full h-full bg-primary rounded-full animate-pulse" />
+              </div>
+            </div>
           ) : (
-            <div>
-              <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                拖拽照片到此处，或点击选择文件
+            <div className="space-y-3">
+              <p className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
+                <span className="hidden sm:inline">拖拽照片到此处，或</span>
+                <span className="sm:hidden">轻触</span>
+                点击选择文件
               </p>
-              <p className="text-sm text-gray-500">
-                支持 JPEG, PNG, WebP, AVIF 和 HEIC 格式，单个文件最大 50MB
+              <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
+                支持 JPEG, PNG, WebP, AVIF 和 HEIC 格式<br className="sm:hidden" />
+                <span className="hidden sm:inline">，</span>单个文件最大 50MB
               </p>
+
+              {/* Mobile-specific hint */}
+              <div className="sm:hidden mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    open()
+                  }}
+                  className="min-h-[44px] min-w-[120px]"
+                >
+                  选择文件
+                </Button>
+              </div>
             </div>
           )}
         </div>

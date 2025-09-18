@@ -285,10 +285,10 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
         {items.map(photo => (
           <div key={photo.id} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/50 dark:border-gray-600/50">
             {/* 主图片 */}
-            <img 
-              src={`/api/image/${photo.id}/small`} 
-              alt={photo.albumTitle || 'Photo'} 
-              className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110" 
+            <img
+              src={`/api/image/${photo.id}/small`}
+              alt={photo.albumTitle || 'Photo thumbnail'}
+              className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
             />
 
             {/* 选择框 - 改为现代化设计 */}

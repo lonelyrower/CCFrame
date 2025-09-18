@@ -157,6 +157,181 @@
     font-family: var(--font-noto-sans-sc), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
   }
 
+  /* 安全区域支持 */
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  /* 增强的主题切换动画 */
+  .theme-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 改进的毛玻璃效果 */
+  .glass-enhanced {
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .dark .glass-enhanced {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* 触摸友好的点击区域 */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  @media (max-width: 640px) {
+    .touch-target {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
+
+  /* 增强的微交互动画 */
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  .animate-fade-in-stagger {
+    animation: fade-in 0.4s ease-out;
+  }
+
+  .animate-fade-in-stagger:nth-child(2) { animation-delay: 0.1s; }
+  .animate-fade-in-stagger:nth-child(3) { animation-delay: 0.2s; }
+  .animate-fade-in-stagger:nth-child(4) { animation-delay: 0.3s; }
+  .animate-fade-in-stagger:nth-child(5) { animation-delay: 0.4s; }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.5s ease-out;
+  }
+
+  @keyframes scale-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slide-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bounce-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* 悬停增强效果 */
+  .hover-lift {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .hover-lift:hover {
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 按钮点击反馈 */
+  .button-press {
+    transition: transform 0.1s ease-out;
+  }
+
+  .button-press:active {
+    transform: scale(0.95);
+  }
+
+  /* 卡片悬停效果 */
+  .card-hover {
+    transition: all 0.2s ease-out;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .card-hover:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 聚焦状态增强 */
+  .focus-ring {
+    transition: box-shadow 0.15s ease-out;
+  }
+
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--primary), 0.1), 0 0 0 1px rgba(var(--primary), 0.3);
+  }
+
+  /* 减少动画偏好 */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-scale-in,
+    .animate-slide-up,
+    .animate-fade-in,
+    .animate-fade-in-stagger,
+    .animate-bounce-in,
+    .hover-lift,
+    .button-press,
+    .card-hover {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
   .container-responsive {
     @apply container mx-auto px-4;
 

@@ -12,10 +12,17 @@ export interface DedupeResult {
  */
 export async function checkDuplicatePhoto(userId: string, contentHash: string): Promise<DedupeResult> {
   if (!contentHash) return { duplicate: false }
+
   const existing = await db.photo.findFirst({
-    where: { userId, contentHash },
-    select: { id: true, status: true }
+    where: {
+      userId,
+      contentHash,
+      status: { in: [PHOTO_STATUS.PROCESSING, PHOTO_STATUS.COMPLETED] }
+    },
+    select: { id: true },
+    orderBy: { createdAt: 'desc' }
   })
+
   if (!existing) return { duplicate: false }
   return { duplicate: true, existingPhotoId: existing.id }
 }

@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { db } from '@/lib/db'
 import { PhotoWithDetails } from '@/types'
-import { Calendar, Clock, MapPin } from 'lucide-react'
+import { Calendar, Clock, MapPin, Camera } from 'lucide-react'
 import Image from 'next/image'
 import { getImageUrl } from '@/lib/utils'
 
@@ -12,8 +12,48 @@ interface TimelineGroup {
 }
 
 async function getTimelinePhotos(): Promise<TimelineGroup[]> {
-  // 暂时返回空数据，演示界面效果
-  return []
+  const photos = await db.photo.findMany({
+    where: {
+      visibility: 'PUBLIC',
+      status: 'COMPLETED'
+    },
+    include: {
+      variants: true,
+      tags: {
+        include: {
+          tag: true
+        }
+      },
+      album: true
+    },
+    orderBy: {
+      takenAt: 'desc'
+    },
+    take: 200
+  })
+
+  // 按日期分组
+  const groupedPhotos = photos.reduce((groups, photo) => {
+    const date = photo.takenAt || photo.createdAt
+    const dateKey = date.toISOString().split('T')[0] // YYYY-MM-DD
+    
+    if (!groups[dateKey]) {
+      groups[dateKey] = []
+    }
+    groups[dateKey].push(photo)
+    return groups
+  }, {} as Record<string, PhotoWithDetails[]>)
+
+  // 转换为时间线格式并排序
+  const timelineGroups: TimelineGroup[] = Object.entries(groupedPhotos)
+    .map(([date, photos]) => ({
+      date,
+      displayDate: formatDisplayDate(new Date(date)),
+      photos
+    }))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  return timelineGroups
 }
 
 function formatDisplayDate(date: Date): string {
@@ -36,7 +76,7 @@ function formatDisplayDate(date: Date): string {
   return `${year}年${month}月${day}日`
 }
 
-function TimelineItem({ group }: { group: TimelineGroup }) {
+function TimelineItem({ group, index }: { group: TimelineGroup; index: number }) {
   const mainPhoto = group.photos[0]
   const additionalPhotos = group.photos.slice(1)
   
@@ -250,10 +290,11 @@ async function TimelineContent() {
         ) : (
           <div className="max-w-4xl mx-auto">
             <div className="space-y-0">
-              {timelineGroups.map((group) => (
+              {timelineGroups.map((group, index) => (
                 <TimelineItem 
                   key={group.date} 
-                  group={group}
+                  group={group} 
+                  index={index}
                 />
               ))}
             </div>

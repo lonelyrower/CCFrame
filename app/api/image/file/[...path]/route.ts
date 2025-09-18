@@ -45,7 +45,7 @@ export async function GET(
     })
     headers.set('Content-Length', stat.size.toString())
 
-    return new NextResponse(Readable.toWeb(stream), { headers })
+    return new NextResponse(Readable.toWeb(stream) as BodyInit, { headers })
   } catch (error) {
     const err = error as NodeJS.ErrnoException
     if (err.code !== 'ENOENT') {

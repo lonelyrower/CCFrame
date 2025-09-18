@@ -53,7 +53,7 @@ export default function DuplicatesPage() {
     }
   }
 
-  useEffect(() => { scan() }, [])
+  useEffect(() => { scan() }, [limit, threshold])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -82,7 +82,7 @@ export default function DuplicatesPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   {c.ids.map((id) => (
                     <label key={id} className={`relative block aspect-square rounded overflow-hidden border ${id === c.primaryId ? 'border-green-500' : 'border-gray-200 dark:border-gray-700'}`}>
-                      <img src={`/api/image/${id}/thumb?format=webp`} className="w-full h-full object-cover" />
+                      <img src={`/api/image/${id}/thumb?format=webp`} alt={`Duplicate photo ${id}`} className="w-full h-full object-cover" />
                       {id !== c.primaryId && (
                         <input type="checkbox" className="absolute top-2 left-2 w-4 h-4" checked={!!selected[id]} onChange={() => toggle(id)} />
                       )}

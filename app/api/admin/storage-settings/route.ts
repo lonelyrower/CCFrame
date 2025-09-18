@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+
+import { requireAdmin } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: '未授权访问' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const s = await db.appSettings.findUnique({ where: { id: 'singleton' } })
     return NextResponse.json({
       imageFormats: s?.imageFormats || '',
@@ -20,8 +21,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: '未授权访问' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (guard instanceof NextResponse) return guard
+
     const body = await req.json().catch(() => ({}))
     const imageFormats = (body.imageFormats || '').trim()
     const imageVariantNames = (body.imageVariantNames || '').trim()
@@ -37,4 +39,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 })
   }
 }
-

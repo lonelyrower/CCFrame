@@ -100,7 +100,7 @@ async function RecentPhotos() {
             {photo.variants[0] && (
               <img
                 src={`/api/image/${photo.id}/thumb?format=webp`}
-                alt={photo.album?.title || 'Photo'}
+                alt={photo.album?.title || 'Recent photo thumbnail'}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               />
             )}

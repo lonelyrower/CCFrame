@@ -190,7 +190,7 @@ const startImageWorker = async () => {
     },
     {
       connection: redis ?? undefined,
-      concurrency: 3,
+      concurrency,
     }
   )
 }
@@ -211,4 +211,5 @@ export async function ensureWorkers() {
 }
 
 export type { Queue }
+
 

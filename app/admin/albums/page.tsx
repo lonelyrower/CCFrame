@@ -65,7 +65,7 @@ function AlbumCard({ album }: { album: Album }) {
         {album.coverPhoto ? (
           <img
             src={`/api/image/${album.coverPhoto.id}/medium`}
-            alt={album.title}
+            alt={`Album cover for ${album.title}`}
             className="w-full h-full object-cover"
           />
         ) : (

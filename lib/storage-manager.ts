@@ -329,7 +329,6 @@ export function getStorageManager(): StorageManager | any {
     const isDev = process.env.NODE_ENV !== 'production'
 
     if (process.env.STORAGE_PROVIDER === 'local') {
-      console.log('Using local storage manager (explicit)')
       return getLocalStorageManager()
     }
 
@@ -345,7 +344,6 @@ export function getStorageManager(): StorageManager | any {
       const minioIncomplete = provider === 'minio' && (!s3Endpoint || !s3Bucket || !s3Key || !s3Secret)
       const awsIncomplete = provider === 'aws' && (!awsBucket || !awsKey || !awsSecret)
       if (minioIncomplete || awsIncomplete) {
-        console.log('Using local storage manager (dev fallback due to incomplete S3 config)')
         return getLocalStorageManager()
       }
     }

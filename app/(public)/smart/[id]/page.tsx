@@ -30,7 +30,7 @@ export default async function PublicSmartAlbumPage({ params }: { params: { id: s
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {photos.map((p) => (
-              <img key={p.id} src={`/api/image/${p.id}/small?format=webp`} className="w-full h-auto rounded" />
+              <img key={p.id} src={`/api/image/${p.id}/small?format=webp`} alt={`Photo ${p.id}`} className="w-full h-auto rounded" />
             ))}
           </div>
         )}

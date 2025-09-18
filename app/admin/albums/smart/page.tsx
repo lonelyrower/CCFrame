@@ -155,7 +155,7 @@ export default function SmartAlbumsPage() {
                 <div key={a.id} className="border rounded p-3 flex items-center justify-between gap-3">
                   <div className="w-20 h-14 rounded overflow-hidden bg-gray-100 hidden sm:block">
                     {a.coverPhotoId ? (
-                      <img src={`/api/image/${a.coverPhotoId}/thumb?format=webp`} className="w-full h-full object-cover" />
+                      <img src={`/api/image/${a.coverPhotoId}/thumb?format=webp`} alt={`Cover photo for smart album ${a.title}`} className="w-full h-full object-cover" />
                     ) : null}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ export default function SmartAlbumsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[70vh] overflow-auto">
                   {photos.map((p: any) => (
                     <div key={p.id} className="relative group">
-                      <img src={`/api/image/${p.id}/small?format=webp`} className="w-full h-auto rounded" />
+                      <img src={`/api/image/${p.id}/small?format=webp`} alt={`Photo preview for smart album`} className="w-full h-auto rounded" />
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100">
                         <Button size="sm" onClick={() => setCover(modal!.id, p.id)}>设为封面</Button>
                       </div>
