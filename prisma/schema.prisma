@@ -19,10 +19,11 @@ model User {
   pixabayApiKey String?  @map("pixabay_api_key")
   createdAt     DateTime @default(now()) @map("created_at")
   
-  albums  Album[]
-  photos  Photo[]
-  jobs    Job[]
-  audits  Audit[]
+  albums       Album[]
+  photos       Photo[]
+  jobs         Job[]
+  audits       Audit[]
+  smartAlbums  SmartAlbum[]
   
   @@map("users")
 }
@@ -68,11 +69,12 @@ model Photo {
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   album Album? @relation(fields: [albumId], references: [id], onDelete: SetNull)
   
-  variants     PhotoVariant[]
-  tags         PhotoTag[]
-  faces        Face[]
-  albumCovers  Album[]        @relation("AlbumCover")
-  editVersions EditVersion[]
+  variants            PhotoVariant[]
+  tags                PhotoTag[]
+  faces               Face[]
+  albumCovers         Album[]        @relation("AlbumCover")
+  smartAlbumCovers    SmartAlbum[]   @relation("SmartAlbumCover")
+  editVersions        EditVersion[]
   
   @@index([userId])
   @@index([albumId])
@@ -187,8 +189,8 @@ model SmartAlbum {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  coverPhoto Photo? @relation(fields: [coverPhotoId], references: [id])
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coverPhoto Photo?  @relation("SmartAlbumCover", fields: [coverPhotoId], references: [id])
 
   @@map("smart_albums")
 }
@@ -204,3 +206,4 @@ model AppSettings {
 
   @@map("app_settings")
 }
+

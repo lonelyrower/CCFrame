@@ -54,7 +54,8 @@ describe('PhotoModal tag optimistic updates', () => {
 
   it('rolls back tag on failure', async () => {
     ;(fetch as jest.Mock).mockImplementationOnce(() => new Promise(resolve => setTimeout(() => resolve({ ok: false }), 0)))
-    renderModal()
+    const photoWithTag = { ...basePhoto, tags: [{ tag: { id: 't1', name: 'landscape' } }] }
+    renderModal(photoWithTag)
 
     const editBtn = await screen.findByRole('button', { name: /edit/i })
     await act(async () => { fireEvent.click(editBtn) })

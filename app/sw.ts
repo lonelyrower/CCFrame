@@ -1,13 +1,24 @@
 /// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
-import { registerRoute, setCatchHandler } from 'workbox-routing'
+import { registerRoute } from 'workbox-routing'
+import { setCatchHandler } from 'workbox-routing/setCatchHandler'
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 
 declare const self: ServiceWorkerGlobalScope & typeof globalThis
 declare const __WB_MANIFEST: Array<{ url: string; revision?: string }>
+
+interface SyncEvent extends ExtendableEvent {
+  readonly tag: string
+}
+
+declare global {
+  interface ServiceWorkerGlobalScopeEventMap {
+    sync: SyncEvent
+  }
+}
 
 clientsClaim()
 
@@ -24,13 +35,13 @@ self.addEventListener('message', (event) => {
   }
 })
 
-setCatchHandler(async ({ event }: { event: FetchEvent }) => {
-  if (event.request.mode === 'navigate') {
+setCatchHandler(async ({ request }) => {
+  if (request.mode === 'navigate') {
     const response = await caches.match(OFFLINE_PAGE)
     return response ?? Response.error()
   }
 
-  if (event.request.destination === 'image') {
+  if (request.destination === 'image') {
     const fallback = await caches.match(OFFLINE_IMAGE_PLACEHOLDER)
     if (fallback) return fallback
   }

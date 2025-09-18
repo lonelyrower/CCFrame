@@ -245,7 +245,7 @@ export class StorageManager {
       }
       const authOk = !this.isAuthError(info)
       return {
-        ok: authOk,
+        ok: false,
         authOk,
         latencyMs: Date.now() - start,
         error: info.message,

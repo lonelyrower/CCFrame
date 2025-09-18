@@ -1,5 +1,6 @@
 import { GET } from '@/app/api/metrics/route'
 import { metricsRegistry, uploadEventCounter } from '@/lib/prometheus'
+import { NextRequest } from 'next/server'
 
 describe('Metrics route', () => {
   beforeEach(() => {
@@ -9,7 +10,7 @@ describe('Metrics route', () => {
   it('returns Prometheus formatted metrics', async () => {
     uploadEventCounter.inc({ type: 'presign', result: 'success' })
 
-    const response = await GET(new Request('http://localhost:3000/api/metrics'))
+    const response = await GET(new NextRequest('http://localhost:3000/api/metrics'))
     expect(response.status).toBe(200)
     expect(response.headers.get('Content-Type')).toContain('text/plain')
 

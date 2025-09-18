@@ -1,6 +1,5 @@
 const photoStore = new Map<string, any>()
 const mockStorage = { getPresignedUploadUrl: jest.fn() }
-const mockGenerateKey = jest.fn(() => 'originals/generated-key.jpg')
 const queueAdd = jest.fn()
 
 jest.mock('next-auth', () => ({
@@ -34,6 +33,9 @@ jest.mock('@/lib/db', () => ({
         return record
       }),
     },
+    album: {
+      findFirst: jest.fn(async ({ where }: any) => ({ id: where.id, userId: where.userId, name: 'Test Album' })),
+    },
     audit: {
       create: jest.fn(async () => ({})),
     },
@@ -42,7 +44,7 @@ jest.mock('@/lib/db', () => ({
 
 jest.mock('@/lib/storage-manager', () => ({
   getStorageManager: jest.fn(() => mockStorage),
-  StorageManager: { generateKey: mockGenerateKey },
+  StorageManager: { generateKey: jest.fn(() => 'originals/generated-key.jpg') },
 }))
 
 jest.mock('@/lib/photo-dedupe', () => ({
@@ -61,7 +63,7 @@ import { uploadEventCounter, metricsRegistry } from '@/lib/prometheus'
 import { getServerSession } from 'next-auth'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { checkDuplicatePhoto } from '@/lib/photo-dedupe'
-import { getStorageManager } from '@/lib/storage-manager'
+import { getStorageManager, StorageManager } from '@/lib/storage-manager'
 import { imageProcessingQueue } from '@/jobs/queue'
 
 const mockedGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
@@ -78,6 +80,8 @@ const getCounterValue = async (type: string, result: string) => {
 }
 
 describe('Upload API routes', () => {
+  const mockGenerateKey = StorageManager.generateKey as jest.Mock
+
   beforeEach(() => {
     photoStore.clear()
     metricsRegistry.resetMetrics()
@@ -146,18 +150,19 @@ describe('Upload API routes', () => {
         filename: 'photo.jpg',
         contentType: 'image/jpeg',
         size: 1024,
+        albumId: 'album-1',
       }
       const presignResponse = await uploadPresign({ json: jest.fn().mockResolvedValue(presignBody) } as any)
-      const { photoId } = await presignResponse.json()
+      const { photoId, fileKey } = await presignResponse.json()
       mockedRateLimit.mockResolvedValue({ allowed: true, remaining: 10, limit: 10, resetIn: 60 })
-      const commitBody = { photoId, fileKey: 'generated-key.jpg' }
+      const commitBody = { photoId, fileKey }
       const commitResponse = await uploadCommit({ json: jest.fn().mockResolvedValue(commitBody) } as any)
       expect(commitResponse.status).toBe(200)
       const commitPayload = await commitResponse.json()
       expect(commitPayload).toEqual({ success: true })
       expect(mockedQueueAdd).toHaveBeenCalledWith(
         'process-image',
-        expect.objectContaining({ photoId, fileKey: 'generated-key.jpg', userId: 'user-1' }),
+        expect.objectContaining({ photoId, fileKey, userId: 'user-1' }),
       )
       expect(await getCounterValue('presign', 'success')).toBe(1)
       expect(await getCounterValue('commit', 'success')).toBe(1)
