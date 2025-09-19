@@ -216,7 +216,7 @@ export default function NotFound() {
           <div className="text-center space-y-4">
             <div className="glass-card rounded-2xl px-6 py-4 inline-block">
               <p className="text-gray-600 dark:text-gray-400 italic">
-                "有时候迷路，是为了发现更美的风景"
+                有时候迷路，是为了发现更美的风景
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">— 某位摄影师的箴言</p>
             </div>

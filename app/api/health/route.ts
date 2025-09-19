@@ -6,12 +6,7 @@ import { getImageTimingAverages, getEmbeddingMetrics, getSemanticApiMetrics } fr
 import { getSemanticConfig } from '@/lib/semantic-config'
 import { storageHealthCounter, dbHealthCounter, redisHealthCounter } from '@/lib/prometheus'
 
-let version = '0.0.0'
-try {
-  // dynamic require to avoid bundler issues if types missing
-  // @ts-ignore
-  version = require('../../../../package.json').version || version
-} catch {}
+const version = process.env.npm_package_version || '0.1.0'
 
 export const dynamic = 'force-dynamic'
 
