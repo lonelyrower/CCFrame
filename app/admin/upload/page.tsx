@@ -22,12 +22,17 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
-      ...file,
-      id: Math.random().toString(36).substring(7),
-      preview: URL.createObjectURL(file)
-    }))
-    
+    const newFiles = acceptedFiles.map(file => {
+      // 确保文件对象有有效的size属性
+      const validatedSize = file.size || 0
+      return {
+        ...file,
+        id: Math.random().toString(36).substring(7),
+        preview: URL.createObjectURL(file),
+        size: validatedSize // 显式设置size确保它是数字
+      }
+    })
+
     setFiles(prev => [...prev, ...newFiles])
   }, [])
 
@@ -396,7 +401,7 @@ export default function UploadPage() {
                         {file.name}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {(file.size / 1024 / 1024).toFixed(1)} MB
+                        {file.size && !isNaN(file.size) ? (file.size / 1024 / 1024).toFixed(1) : '0.0'} MB
                       </p>
                       
                       {/* Upload Status */}

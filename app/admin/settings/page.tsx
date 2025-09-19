@@ -96,13 +96,13 @@ export default function SettingsPage() {
       if (section === 'profile') {
         const email = settings.profile.email.trim()
         if (!email) {
-          toast.error('�������ʼ�')
+          toast.error('请输入邮箱')
           setIsLoading(false)
           return
         }
 
         if (settings.profile.newPassword && settings.profile.newPassword !== settings.profile.confirmPassword) {
-          toast.error('�������������������')
+          toast.error('新密码和确认密码不匹配')
           setIsLoading(false)
           return
         }
@@ -120,10 +120,10 @@ export default function SettingsPage() {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}))
-          throw new Error(error.error || '��������ʧ��')
+          throw new Error(error.error || '保存设置失败')
         }
 
-        toast.success('����������ɹ�')
+        toast.success('个人资料已保存')
         setSettings(prev => ({
           ...prev,
           profile: {
@@ -152,10 +152,10 @@ export default function SettingsPage() {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}))
-          throw new Error(error.error || '��վ�������ʧ��')
+          throw new Error(error.error || '网站设置保存失败')
         }
 
-        toast.success('��վ�����ѱ���')
+        toast.success('网站设置已保存')
         return
       }
 
@@ -173,10 +173,10 @@ export default function SettingsPage() {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}))
-          throw new Error(error.error || '�洢�������ʧ��')
+          throw new Error(error.error || '存储设置保存失败')
         }
 
-        toast.success('�洢�����ѱ���')
+        toast.success('存储设置已保存')
         return
       }
 
@@ -193,17 +193,17 @@ export default function SettingsPage() {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}))
-          throw new Error(error.error || 'API���ñ���ʧ��')
+          throw new Error(error.error || 'API设置保存失败')
         }
 
-        toast.success('API�����ѱ���')
+        toast.success('API设置已保存')
         return
       }
 
-      throw new Error('�޷������ô���')
+      throw new Error('未知的设置类型')
     } catch (error) {
-      console.error('��������ʧ��:', error)
-      toast.error(error instanceof Error ? error.message : '����ʧ��')
+      console.error('保存设置失败:', error)
+      toast.error(error instanceof Error ? error.message : '保存失败')
     } finally {
       setIsLoading(false)
     }
@@ -295,6 +295,103 @@ export default function SettingsPage() {
 
           {/* Tab Content */}
           <div className="p-6">
+            {activeTab === 'security' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    会话管理
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    管理你的登录会话和安全设置
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                  <div className="flex items-start space-x-3">
+                    <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                        当前会话状态
+                      </h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        您当前已登录。会话将在浏览器关闭或长时间不活动后自动过期。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+                    安全建议
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          定期更改密码，使用强密码（至少8位，包含字母、数字和特殊字符）
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          在公共设备上使用后及时退出登录
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          保持系统和浏览器的最新版本
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+                    隐私设置
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          允许搜索引擎索引公开内容
+                        </label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          如果关闭，将在页面添加 noindex 标签
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        defaultChecked={true}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          记录访问日志
+                        </label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          用于安全分析和性能优化
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        defaultChecked={true}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div className="space-y-6">
                 <div>

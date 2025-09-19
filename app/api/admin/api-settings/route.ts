@@ -42,6 +42,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'API设置已保存',
       pixabayApiKey: (user as any)?.pixabayApiKey || '',
+    }, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      }
     })
   } catch (error) {
     console.error('保存API设置失败:', error)

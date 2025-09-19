@@ -117,6 +117,12 @@ export class LocalStorageManager {
     }
   }
 
+  async getPresignedUploadUrl(key: string, contentType: string): Promise<string> {
+    this.ensureBaseDirs()
+    // 对于本地存储，我们返回一个特殊的URL，指向本地上传API
+    return `/api/upload/local?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(contentType)}`
+  }
+
   async getPresignedDownloadUrl(key: string): Promise<string> {
     this.ensureBaseDirs()
     const filePath = this.resolveKey(key)

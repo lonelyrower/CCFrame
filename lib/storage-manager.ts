@@ -115,8 +115,8 @@ export class StorageManager {
       return await getSignedUrl(this.client, command, { expiresIn: 3600 })
     } catch (error) {
       const fallback = this.ensureFallback('getPresignedUploadUrl', error)
-      if (fallback) {
-        throw new Error('STORAGE_PRESIGN_UNAVAILABLE_FALLBACK')
+      if (fallback && typeof fallback.getPresignedUploadUrl === 'function') {
+        return await fallback.getPresignedUploadUrl(key, contentType)
       }
       throw error
     }
