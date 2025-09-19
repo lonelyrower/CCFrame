@@ -160,21 +160,19 @@ async function getFilterOptions() {
 
 function PhotosLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
-        </div>
-        <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 mb-6 animate-pulse">
-          <div className="flex gap-4">
-            <div className="flex-1 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-            <div className="w-32 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-            <div className="w-32 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-          </div>
-        </div>
-        <MasonryGallery photos={[]} loading />
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
       </div>
+      <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 mb-6 animate-pulse">
+        <div className="flex gap-4">
+          <div className="flex-1 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
+          <div className="w-32 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
+          <div className="w-32 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
+        </div>
+      </div>
+      <MasonryGallery photos={[]} loading />
     </div>
   )
 }
@@ -190,33 +188,31 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
   ])
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">ȫ����Ƭ</h1>
-          <p className="text-gray-600 dark:text-gray-400">�� {photos.length} ����Ƭ����¼�����е�����˲��</p>
-        </div>
-
-        <PhotosFilters
-          albums={filterOptions.albums}
-          tags={filterOptions.tags}
-          params={normalized}
-        />
-
-        {photos.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Grid className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">û���ҵ�ƥ�����Ƭ</h3>
-            <p className="text-gray-600 dark:text-gray-400">���Ե������������������������</p>
-          </div>
-        ) : (
-          <LightboxProvider photos={photos}>
-            <MasonryGallery photos={photos} />
-          </LightboxProvider>
-        )}
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">全部照片</h1>
+        <p className="text-gray-600 dark:text-gray-400">共 {photos.length} 张照片，记录着生活中的美好瞬间</p>
       </div>
+
+      <PhotosFilters
+        albums={filterOptions.albums}
+        tags={filterOptions.tags}
+        params={normalized}
+      />
+
+      {photos.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Grid className="w-12 h-12 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">没有找到匹配的照片</h3>
+          <p className="text-gray-600 dark:text-gray-400">请尝试调整搜索条件或浏览其他分类</p>
+        </div>
+      ) : (
+        <LightboxProvider photos={photos}>
+          <MasonryGallery photos={photos} />
+        </LightboxProvider>
+      )}
     </div>
   )
 }

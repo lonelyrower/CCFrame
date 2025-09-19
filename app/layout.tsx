@@ -33,9 +33,6 @@ export default function RootLayout({
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(129,140,248,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(76,106,255,0.12),_transparent_55%)]" />
             </div>
 
-            <div className="fixed right-4 top-4 sm:right-6 sm:top-6 z-50 safe-area-inset">
-              <ThemeToggle />
-            </div>
 
             <main className="relative z-10">
               {children}

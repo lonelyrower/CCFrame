@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { db } from '@/lib/db'
+import { db, isDatabaseConfigured } from '@/lib/db'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { SemanticSearchPanel } from '@/components/gallery/semantic-search-panel'
 import { getSemanticConfig } from '@/lib/semantic-config'
@@ -7,6 +7,10 @@ import { PhotoWithDetails } from '@/types'
 import { Camera, Calendar, Tag, TrendingUp, MapPin, Heart, Aperture, Sparkles, Zap } from 'lucide-react'
 
 async function getFeaturedPhotos(): Promise<PhotoWithDetails[]> {
+  if (!isDatabaseConfigured) {
+    return []
+  }
+
   const photos = await db.photo.findMany({
     where: {
       visibility: 'PUBLIC',
@@ -31,6 +35,15 @@ async function getFeaturedPhotos(): Promise<PhotoWithDetails[]> {
 }
 
 async function getPhotoStats() {
+  if (!isDatabaseConfigured) {
+    return {
+      totalPhotos: 0,
+      totalTags: 0,
+      totalAlbums: 0,
+      recentPhotosCount: 0
+    }
+  }
+
   const [totalPhotos, totalTags, totalAlbums, recentPhotosCount] = await Promise.all([
     db.photo.count({ where: { visibility: 'PUBLIC', status: 'COMPLETED' } }),
     db.tag.count(),

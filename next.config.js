@@ -7,6 +7,10 @@ const baseConfig = {
   reactStrictMode: false, // 开发时禁用严格模式提升性能
   swcMinify: process.env.NODE_ENV === 'production',
   output: 'standalone',
+  // 允许外网访问开发服务器
+  ...(process.env.NODE_ENV === 'development' && {
+    allowedDevOrigins: ['172.22.230.246'],
+  }),
   ...(process.env.NODE_ENV === 'production' && {
     compiler: {
       removeConsole: true,

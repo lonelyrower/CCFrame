@@ -176,44 +176,42 @@ function TagCloud({ tags }: { tags: TagWithCount[] }) {
 
 function TagsLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
-        </div>
-        
-        <div className="bg-gray-200 dark:bg-gray-800 rounded-xl p-6 mb-8 animate-pulse">
-          <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-24 mb-4" />
-          <div className="flex flex-wrap gap-3">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="h-8 bg-gray-300 dark:bg-gray-700 rounded-full" style={{width: Math.random() * 60 + 60}} />
-            ))}
-          </div>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse">
-              <div className="p-6 border-b border-gray-300 dark:border-gray-600">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-lg" />
-                  <div>
-                    <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20 mb-1" />
-                    <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-16" />
-                  </div>
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {Array.from({ length: 6 }).map((_, j) => (
-                    <div key={j} className="aspect-square bg-gray-300 dark:bg-gray-700 rounded-lg" />
-                  ))}
+      <div className="bg-gray-200 dark:bg-gray-800 rounded-xl p-6 mb-8 animate-pulse">
+        <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-24 mb-4" />
+        <div className="flex flex-wrap gap-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="h-8 bg-gray-300 dark:bg-gray-700 rounded-full" style={{width: Math.random() * 60 + 60}} />
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse">
+            <div className="p-6 border-b border-gray-300 dark:border-gray-600">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-lg" />
+                <div>
+                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20 mb-1" />
+                  <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-16" />
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            <div className="p-4">
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <div key={j} className="aspect-square bg-gray-300 dark:bg-gray-700 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -223,43 +221,41 @@ async function TagsContent() {
   const tags = await getTags()
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
-            标签分类
-          </h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+          标签分类
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          通过标签发现和整理你的照片，共 {tags.length} 个标签
+        </p>
+      </div>
+
+      {tags.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Tag className="w-12 h-12 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+            暂时还没有标签
+          </h3>
           <p className="text-gray-600 dark:text-gray-400">
-            通过标签发现和整理你的照片，共 {tags.length} 个标签
+            开始为你的照片添加标签来更好地组织它们
           </p>
         </div>
-
-        {tags.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Tag className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-              暂时还没有标签
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              开始为你的照片添加标签来更好地组织它们
-            </p>
+      ) : (
+        <>
+          <div className="mb-8">
+            <TagCloud tags={tags} />
           </div>
-        ) : (
-          <>
-            <div className="mb-8">
-              <TagCloud tags={tags} />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tags.map(tag => (
-                <TagCard key={tag.id} tag={tag} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {tags.map(tag => (
+              <TagCard key={tag.id} tag={tag} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

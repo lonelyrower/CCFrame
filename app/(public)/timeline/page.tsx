@@ -224,8 +224,7 @@ function TimelineItem({ group, index }: { group: TimelineGroup; index: number })
 
 function TimelineLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
           <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
@@ -264,8 +263,7 @@ async function TimelineContent() {
   const timelineGroups = await getTimelinePhotos()
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
             时间线
@@ -311,7 +309,6 @@ async function TimelineContent() {
             </div>
           </div>
         )}
-      </div>
     </div>
   )
 }
