@@ -11,7 +11,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const photo = await db.photo.findFirst({ where: { id: params.id, userId: session.user.id } })
     if (!photo) return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
 
-    await db.photoTag.delete({ where: { photoId_tagId: { photoId: photo.id, tagId: params.tagId } } })
+    await db.photoTag.deleteMany({ where: { photoId: photo.id, tagId: params.tagId } })
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     return NextResponse.json({ error: 'Failed to detach tag' }, { status: 500 })

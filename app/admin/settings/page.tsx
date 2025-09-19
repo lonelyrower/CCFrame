@@ -75,9 +75,111 @@ export default function SettingsPage() {
 
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    const email = session?.user?.email || ''
+    setSettings(prev => (
+      prev.profile.email === email
+        ? prev
+        : {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              email,
+            },
+          }
+    ))
+  }, [session?.user?.email])
+
   const handleSave = async (section: keyof Settings) => {
     setIsLoading(true)
     try {
+      if (section === 'profile') {
+        const email = settings.profile.email.trim()
+        if (!email) {
+          toast.error('�������ʼ�')
+          setIsLoading(false)
+          return
+        }
+
+        if (settings.profile.newPassword && settings.profile.newPassword !== settings.profile.confirmPassword) {
+          toast.error('�������������������')
+          setIsLoading(false)
+          return
+        }
+
+        const response = await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            section: 'profile',
+            email,
+            currentPassword: settings.profile.currentPassword || undefined,
+            newPassword: settings.profile.newPassword || undefined,
+          })
+        })
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}))
+          throw new Error(error.error || '��������ʧ��')
+        }
+
+        toast.success('����������ɹ�')
+        setSettings(prev => ({
+          ...prev,
+          profile: {
+            ...prev.profile,
+            email,
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+          }
+        }))
+        return
+      }
+
+      if (section === 'site') {
+        const response = await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            section: 'site',
+            title: settings.site.title,
+            description: settings.site.description,
+            defaultVisibility: settings.site.defaultVisibility,
+            allowPublicAccess: settings.site.allowPublicAccess,
+          })
+        })
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}))
+          throw new Error(error.error || '��վ�������ʧ��')
+        }
+
+        toast.success('��վ�����ѱ���')
+        return
+      }
+
+      if (section === 'storage') {
+        const response = await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            section: 'storage',
+            autoDeleteFailed: settings.storage.autoDeleteFailed,
+            maxUploadSize: settings.storage.maxUploadSize,
+            compressionQuality: settings.storage.compressionQuality,
+          })
+        })
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}))
+          throw new Error(error.error || '�洢�������ʧ��')
+        }
+
+        toast.success('�洢�����ѱ���')
+        return
+      }
+
       if (section === 'apis') {
         const response = await fetch('/api/admin/api-settings', {
           method: 'POST',
@@ -90,19 +192,18 @@ export default function SettingsPage() {
         })
 
         if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error || 'API设置保存失败')
+          const error = await response.json().catch(() => ({}))
+          throw new Error(error.error || 'API���ñ���ʧ��')
         }
 
-        toast.success('API设置已保存')
-      } else {
-        // Simulate API call for other sections
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        toast.success('设置已保存')
+        toast.success('API�����ѱ���')
+        return
       }
+
+      throw new Error('�޷������ô���')
     } catch (error) {
-      console.error('保存设置失败:', error)
-      toast.error(error instanceof Error ? error.message : '保存失败')
+      console.error('��������ʧ��:', error)
+      toast.error(error instanceof Error ? error.message : '����ʧ��')
     } finally {
       setIsLoading(false)
     }
@@ -519,3 +620,4 @@ export default function SettingsPage() {
     </div>
   )
 }
+

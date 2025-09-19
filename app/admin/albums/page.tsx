@@ -1,19 +1,21 @@
 import { Suspense } from 'react'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { NextResponse } from 'next/server'
+import { redirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { 
-  FolderOpen, 
-  Plus, 
-  Edit, 
-  Trash2, 
+
+import { db } from '@/lib/db'
+import {
+  FolderOpen,
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   EyeOff,
   Image as ImageIcon,
   Calendar
 } from 'lucide-react'
+import { requireAdmin } from '@/lib/admin-auth'
 
 interface Album {
   id: string
@@ -31,10 +33,24 @@ interface Album {
 }
 
 async function getAlbums(): Promise<Album[]> {
-  const session = await getServerSession(authOptions)
-  if (!session) return []
+  const guard = await requireAdmin()
+
+  if (guard instanceof NextResponse) {
+    if (guard.status === 401) {
+      redirect('/admin/login')
+    }
+
+    if (guard.status === 403) {
+      redirect('/admin/login?error=forbidden')
+    }
+
+    throw new Error('Admin access required')
+  }
 
   return await db.album.findMany({
+    where: {
+      userId: guard.adminUserId
+    },
     include: {
       _count: {
         select: {

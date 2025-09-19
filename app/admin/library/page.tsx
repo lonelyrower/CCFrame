@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
 import type { Prisma } from '@prisma/client'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import { redirect } from 'next/navigation'
+
 import { db } from '@/lib/db'
 import {
   Search,
@@ -16,6 +17,7 @@ import { SeedDemoButton } from '@/components/admin/seed-demo-button'
 import { PhotoTagsInline } from '@/components/admin/photo-tags-inline'
 import { PhotoActions } from '@/components/admin/photo-actions'
 import { LibraryStatsBar } from '@/components/admin/library-stats-bar'
+import { requireAdmin } from '@/lib/admin-auth'
 
 interface LibraryStats {
   total: number
@@ -29,10 +31,18 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
   stats: LibraryStats
   hasMore: boolean
 }> {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return { photos: [], stats: { total: 0, public: 0, private: 0, processing: 0 }, hasMore: false }
+  const guard = await requireAdmin()
+  if (guard instanceof NextResponse) {
+    if (guard.status === 401) {
+      redirect('/admin/login')
+    }
+    if (guard.status === 403) {
+      redirect('/admin/login?error=forbidden')
+    }
+    throw new Error('Admin access required')
   }
+
+  const adminUserId = guard.adminUserId
 
   const where: Prisma.PhotoWhereInput | undefined = filter
     ? {
@@ -44,6 +54,11 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
         ],
       }
     : undefined
+
+  const baseWhere: Prisma.PhotoWhereInput = {
+    userId: adminUserId,
+    ...(where ?? {}),
+  }
 
   const [photos, stats] = await Promise.all([
     db.photo
@@ -57,7 +72,7 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
           },
           album: true,
         },
-        where,
+        where: baseWhere,
         orderBy: {
           createdAt: 'desc',
         },
@@ -66,10 +81,10 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
       })
       .then((rows) => rows as unknown as PhotoWithDetails[]),
     Promise.all([
-      db.photo.count({ where: { status: 'COMPLETED' } }),
-      db.photo.count({ where: { visibility: 'PUBLIC', status: 'COMPLETED' } }),
-      db.photo.count({ where: { visibility: 'PRIVATE', status: 'COMPLETED' } }),
-      db.photo.count({ where: { status: { in: ['UPLOADING', 'PROCESSING'] } } })
+      db.photo.count({ where: { userId: adminUserId, status: 'COMPLETED' } }),
+      db.photo.count({ where: { userId: adminUserId, visibility: 'PUBLIC', status: 'COMPLETED' } }),
+      db.photo.count({ where: { userId: adminUserId, visibility: 'PRIVATE', status: 'COMPLETED' } }),
+      db.photo.count({ where: { userId: adminUserId, status: { in: ['UPLOADING', 'PROCESSING'] } } })
     ]).then(([total, publicCount, privateCount, processing]) => ({
       total,
       public: publicCount,

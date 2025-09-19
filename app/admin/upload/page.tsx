@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 interface UploadFile extends File {
   id: string
   preview?: string
-  contentHash?: string
+  contentHash?: string | null
   hashing?: boolean
   hashProgress?: number
 }
@@ -57,9 +57,8 @@ export default function UploadPage() {
   }
 
   // Incremental hashing (streaming) to provide progress for large files
-  const sha256Hex = async (file: File, onProgress?: (ratio: number) => void): Promise<string> => {
-  const chunkSize = 1024 * 256 // 256KB
-  const total = file.size
+  const sha256Hex = async (file: File, onProgress?: (ratio: number) => void): Promise<string | null> => {
+    const total = file.size
     if (typeof window !== 'undefined' && window.crypto?.subtle) {
       // Browser path - read full buffer (still okay for <50MB but we mimic progress)
       const reader = file.stream().getReader()
@@ -82,7 +81,7 @@ export default function UploadPage() {
       return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
     }
     // Fallback when crypto.subtle is unavailable (older browsers)
-    return 'fallback-hash-' + Date.now().toString(16)
+    return null
   }
 
   const uploadFile = async (file: UploadFile): Promise<'completed' | 'failed'> => {
@@ -97,22 +96,28 @@ export default function UploadPage() {
           file.contentHash = hash
         } catch (e) {
           // Ignore hashing error, continue without
+          file.contentHash = null
         } finally {
           setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashing: false } : f))
         }
       }
 
       // Request presigned URL
+      const presignPayload: Record<string, unknown> = {
+        filename: file.name,
+        contentType: file.type,
+        size: file.size,
+        albumId: selectedAlbum || undefined,
+      }
+
+      if (file.contentHash && file.contentHash.length === 64) {
+        presignPayload.contentHash = file.contentHash
+      }
+
       const presignResponse = await fetch('/api/upload/presign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          size: file.size,
-          albumId: selectedAlbum || undefined,
-          contentHash: file.contentHash
-        })
+        body: JSON.stringify(presignPayload)
       })
 
       if (!presignResponse.ok) {

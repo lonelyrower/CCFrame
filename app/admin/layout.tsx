@@ -1,7 +1,8 @@
-import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+
 import { AdminNav } from '@/components/admin/admin-nav'
+import { requireAdmin } from '@/lib/admin-auth'
 
 // Force dynamic rendering for admin pages
 export const dynamic = 'force-dynamic'
@@ -11,10 +12,18 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
+  const guard = await requireAdmin()
 
-  if (!session) {
-    redirect('/admin/login')
+  if (guard instanceof NextResponse) {
+    if (guard.status === 401) {
+      redirect('/admin/login')
+    }
+
+    if (guard.status === 403) {
+      redirect('/admin/login?error=forbidden')
+    }
+
+    throw new Error('Admin access required')
   }
 
   return (
