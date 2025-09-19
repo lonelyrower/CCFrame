@@ -15,7 +15,7 @@ describe('rateLimit utilities', () => {
   })
 
   it('allows requests when redis connection is missing', async () => {
-    jest.doMock('@/lib/redis', () => ({ redis: null }))
+    jest.doMock('@/lib/redis', () => ({ getRedis: () => Promise.resolve(null) }))
     const { rateLimit } = await import('../rate-limit')
 
     const result = await rateLimit('user-1', 'auth:login', 5, 60)
@@ -26,7 +26,7 @@ describe('rateLimit utilities', () => {
   it('enforces limit and sets ttl via redis', async () => {
     const incr = jest.fn().mockResolvedValueOnce(1).mockResolvedValueOnce(6)
     const expire = jest.fn().mockResolvedValue(undefined)
-    jest.doMock('@/lib/redis', () => ({ redis: { incr, expire } }))
+    jest.doMock('@/lib/redis', () => ({ getRedis: () => Promise.resolve({ incr, expire }) }))
 
     mockDateNow(1_700_000_000_000)
     const { rateLimit } = await import('../rate-limit')
@@ -50,7 +50,7 @@ describe('rateLimit utilities', () => {
   it('fails open when redis throws errors', async () => {
     const incr = jest.fn().mockRejectedValue(new Error('redis down'))
     const expire = jest.fn()
-    jest.doMock('@/lib/redis', () => ({ redis: { incr, expire } }))
+    jest.doMock('@/lib/redis', () => ({ getRedis: () => Promise.resolve({ incr, expire }) }))
 
     const { rateLimit } = await import('../rate-limit')
 
@@ -61,7 +61,7 @@ describe('rateLimit utilities', () => {
   })
 
   it('extracts client ip from forwarded headers with fallback', async () => {
-    jest.doMock('@/lib/redis', () => ({ redis: null }))
+    jest.doMock('@/lib/redis', () => ({ getRedis: () => Promise.resolve(null) }))
     const { getClientIp } = await import('../rate-limit')
     const request = new Request('http://example.com', {
       headers: new Headers({
@@ -77,7 +77,7 @@ describe('rateLimit utilities', () => {
   })
 
   it('clamps negative values in rateLimitHeaders', async () => {
-    jest.doMock('@/lib/redis', () => ({ redis: null }))
+    jest.doMock('@/lib/redis', () => ({ getRedis: () => Promise.resolve(null) }))
     const { rateLimitHeaders } = await import('../rate-limit')
     const headers = rateLimitHeaders({ allowed: false, remaining: -3, limit: 20, resetIn: -10 })
 

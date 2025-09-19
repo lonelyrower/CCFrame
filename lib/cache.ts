@@ -1,4 +1,4 @@
-import { redis } from './redis'
+import { getRedis } from './redis'
 
 // Simple JSON cache wrapper with graceful fallback if Redis unavailable.
 // For read-heavy pages (home, stats) to reduce query latency.
@@ -11,8 +11,9 @@ export interface CacheOptions {
 
 export async function cacheGet<T = any>(key: string): Promise<T | null> {
   try {
-    if (!redis) throw new Error('Redis not available')
-    const raw = await redis.get(key)
+    const client = await getRedis()
+    if (!client) throw new Error('Redis not available')
+    const raw = await client.get(key)
     if (!raw) return null
     return JSON.parse(raw) as T
   } catch {
@@ -26,8 +27,9 @@ export async function cacheGet<T = any>(key: string): Promise<T | null> {
 export async function cacheSet<T = any>(key: string, val: T, opts: CacheOptions) {
   const ttl = Math.max(1, opts.ttlSeconds)
   try {
-    if (!redis) throw new Error('Redis not available')
-    await redis.setex(key, ttl, JSON.stringify(val))
+    const client = await getRedis()
+    if (!client) throw new Error('Redis not available')
+    await client.setex(key, ttl, JSON.stringify(val))
   } catch {
     memStore.set(key, { exp: Date.now() + ttl * 1000, val })
   }

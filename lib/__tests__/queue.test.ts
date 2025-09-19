@@ -14,7 +14,7 @@ jest.mock('bullmq', () => {
   return { Queue: FakeQueue }
 })
 
-jest.mock('@/lib/redis', () => ({ redis: {} }))
+jest.mock('@/lib/redis', () => ({ getRedis: () => Promise.resolve({}) }))
 
 describe('imageProcessingQueue', () => {
   test('adds job to underlying queue', async () => {

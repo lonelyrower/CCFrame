@@ -50,7 +50,8 @@ let _embeddingQueue: Queue | null = null
 async function getImageQueue(): Promise<Queue> {
   if (_imageQueue) return _imageQueue
   const { Queue } = await import('bullmq')
-  const { redis } = await import('@/lib/redis')
+  const { getRedis } = await import('@/lib/redis')
+  const redis = await getRedis()
   if (!redis) {
     throw new Error('Redis connection not configured (set REDIS_URL)')
   }
@@ -69,7 +70,8 @@ async function getImageQueue(): Promise<Queue> {
 async function getEmbeddingQueue(): Promise<Queue> {
   if (_embeddingQueue) return _embeddingQueue
   const { Queue } = await import('bullmq')
-  const { redis } = await import('@/lib/redis')
+  const { getRedis } = await import('@/lib/redis')
+  const redis = await getRedis()
   if (!redis) {
     throw new Error('Redis connection not configured (set REDIS_URL)')
   }
@@ -115,7 +117,8 @@ interface ImageProcessingJobData {
 // Image processing worker
 const startImageWorker = async () => {
   const { Worker } = await import('bullmq')
-  const { redis } = await import('@/lib/redis')
+  const { getRedis } = await import('@/lib/redis')
+  const redis = await getRedis()
   if (!redis) {
     throw new Error('Redis connection not configured (set REDIS_URL)')
   }
@@ -238,7 +241,8 @@ const startImageWorker = async () => {
 // Embedding worker (初期：随机向量占位 / 调用外部模型留接口)
 const startEmbeddingWorker = async () => {
   const { Worker } = await import('bullmq')
-  const { redis } = await import('@/lib/redis')
+  const { getRedis } = await import('@/lib/redis')
+  const redis = await getRedis()
   if (!redis) {
     throw new Error('Redis connection not configured (set REDIS_URL)')
   }

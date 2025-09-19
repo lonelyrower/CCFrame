@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
-import { redis } from '@/lib/redis'
+import { getRedis } from '@/lib/redis'
 import { getImageTimingAverages, getEmbeddingMetrics, getSemanticApiMetrics } from '@/lib/metrics'
 import { getSemanticConfig } from '@/lib/semantic-config'
 import { storageHealthCounter, dbHealthCounter, redisHealthCounter } from '@/lib/prometheus'
@@ -84,12 +84,18 @@ export async function GET() {
 
   // Redis
   try {
+    const redis = await getRedis()
     if (redis) {
       const t0 = Date.now()
       await redis.ping()
       result.services.redis.ok = true
       result.services.redis.latencyMs = Date.now() - t0
       redisHealthCounter.inc({ status: 'success' })
+    } else if (process.env.REDIS_URL) {
+      result.services.redis.ok = false
+      result.redisError = 'Redis unavailable'
+      result.ok = false
+      redisHealthCounter.inc({ status: 'error' })
     } else {
       result.services.redis.ok = false
       result.redisError = 'Redis not configured'
@@ -99,6 +105,7 @@ export async function GET() {
     result.services.redis.ok = false
     result.redisError = e instanceof Error ? e.message : String(e)
     redisHealthCounter.inc({ status: 'error' })
+    result.ok = false
   }
 
   result.metrics.imageProcessing = getImageTimingAverages()

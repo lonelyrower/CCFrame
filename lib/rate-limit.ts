@@ -1,9 +1,10 @@
-import { redis } from './redis'
+import { getRedis } from './redis'
 
 export type RateLimitResult = { allowed: boolean; remaining: number; limit: number; resetIn: number }
 
 // Simple sliding window via fixed window buckets
 export async function rateLimit(userId: string, key: string, limit: number, windowSec: number): Promise<RateLimitResult> {
+  const redis = await getRedis()
   if (!redis) {
     return { allowed: true, remaining: limit, limit, resetIn: windowSec }
   }
@@ -12,9 +13,9 @@ export async function rateLimit(userId: string, key: string, limit: number, wind
     const windowStart = Math.floor(now / windowSec) * windowSec
     const redisKey = `rl:${key}:${userId}:${windowStart}`
     const ttl = windowSec + 1
-    const count = await redis!.incr(redisKey)
+    const count = await redis.incr(redisKey)
     if (count === 1) {
-      await redis!.expire(redisKey, ttl)
+      await redis.expire(redisKey, ttl)
     }
     const remaining = Math.max(0, limit - count)
     const allowed = count <= limit
