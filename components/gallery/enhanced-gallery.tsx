@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 import { motion, useInView, useMotionValue, useTransform, AnimatePresence } from 'framer-motion'
 import { PhotoWithDetails } from '@/types'
-import { getImageUrl, generateSrcSet, toBase64 } from '@/lib/utils'
+import { getImageUrl, toBase64 } from '@/lib/utils'
 import { PhotoModal } from './photo-modal'
 import { useOptionalLightbox } from './lightbox-context'
 
@@ -13,21 +13,23 @@ interface EnhancedGalleryProps {
   loading?: boolean
 }
 
+const GRID_GAP = 16
+
 // 智能瀑布流布局算法
-function useSmartMasonryLayout(photos: PhotoWithDetails[], columns: number) {
+function useSmartMasonryLayout(photos: PhotoWithDetails[], columns: number, columnWidth: number) {
   return useMemo(() => {
     if (columns === 0) return []
 
+    const effectiveWidth = columnWidth > 0 ? columnWidth : 320
     const columnHeights = new Array(columns).fill(0)
-    const layout = photos.map((photo, index) => {
-      // 找到最短的列
+
+    return photos.map((photo, index) => {
       const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights))
+      const hasValidSize = photo.width > 0 && photo.height > 0
+      const aspectRatio = hasValidSize ? photo.height / photo.width : 1
+      const scaledHeight = aspectRatio * effectiveWidth
 
-      // 计算缩放比例（基于列宽）
-      const aspectRatio = photo.height / photo.width
-      const scaledHeight = aspectRatio * 300 + Math.random() * 50 - 25 // 添加一些随机性
-
-      columnHeights[shortestColumn] += scaledHeight + 16 // gap
+      columnHeights[shortestColumn] += scaledHeight + GRID_GAP
 
       return {
         ...photo,
@@ -36,9 +38,7 @@ function useSmartMasonryLayout(photos: PhotoWithDetails[], columns: number) {
         index
       }
     })
-
-    return layout
-  }, [photos, columns])
+  }, [photos, columns, columnWidth])
 }
 
 export function EnhancedGallery({ photos, loading = false }: EnhancedGalleryProps) {
@@ -51,27 +51,38 @@ export function EnhancedGallery({ photos, loading = false }: EnhancedGalleryProp
   const prev = lb?.prev ?? (() => {})
 
   const [columns, setColumns] = useState(1)
+  const [columnWidth, setColumnWidth] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollY = useMotionValue(0)
 
-  const layout = useSmartMasonryLayout(photos, columns)
+  const layout = useSmartMasonryLayout(photos, columns, columnWidth)
 
   // 响应式列数
   useEffect(() => {
     const updateColumns = () => {
       if (!containerRef.current) return
       const width = containerRef.current.offsetWidth
-      if (width < 640) setColumns(1)
-      else if (width < 768) setColumns(2)
-      else if (width < 1024) setColumns(3)
-      else if (width < 1280) setColumns(4)
-      else setColumns(5)
+      let nextColumns = 1
+      if (width < 640) nextColumns = 1
+      else if (width < 768) nextColumns = 2
+      else if (width < 1024) nextColumns = 3
+      else if (width < 1280) nextColumns = 4
+      else nextColumns = 5
+
+      setColumns(nextColumns)
+      if (nextColumns > 0) {
+        const totalGap = GRID_GAP * Math.max(0, nextColumns - 1)
+        const available = Math.max(width - totalGap, 0)
+        const computedWidth = available / nextColumns
+        setColumnWidth(Number.isFinite(computedWidth) ? computedWidth : width)
+      }
     }
 
     updateColumns()
     window.addEventListener('resize', updateColumns)
     return () => window.removeEventListener('resize', updateColumns)
   }, [])
+
 
   // 滚动监听
   useEffect(() => {
@@ -92,7 +103,7 @@ export function EnhancedGallery({ photos, loading = false }: EnhancedGalleryProp
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${columns}, 1fr)`,
-            gap: '16px',
+            gap: `${GRID_GAP}px`,
             alignItems: 'start'
           }}
         >
@@ -139,18 +150,20 @@ function PhotoCard({
   scrollY: any
   onOpen: (id: string) => void
 }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLButtonElement>(null)
   const isInView = useInView(ref, { once: true, margin: "100px" })
   const [imageLoaded, setImageLoaded] = useState(false)
   const [hover, setHover] = useState(false)
 
-  // 视差效果
+  // 进入视口时增加轻微浮动感
   const y = useTransform(scrollY, [0, 1000], [0, -50])
   const rotateX = useTransform(scrollY, [0, 1000], [0, 2])
+  const accessibleLabel = photo.album?.title || photo.tags[0]?.tag?.name || "查看照片"
 
   return (
-    <motion.div
+    <motion.button
       ref={ref}
+      type="button"
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
       transition={{
@@ -165,15 +178,16 @@ function PhotoCard({
         transition: { type: "spring", stiffness: 300, damping: 30 }
       }}
       style={{ y, rotateX }}
-      className="group cursor-pointer relative"
+      className="group relative w-full cursor-pointer rounded-xl bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       data-lightbox-return
       onClick={() => onOpen(photo.id)}
       onHoverStart={() => setHover(true)}
       onHoverEnd={() => setHover(false)}
+      aria-label={accessibleLabel}
     >
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 shadow-lg hover:shadow-2xl transition-shadow duration-500">
 
-        {/* 主图片 */}
+        {/* 照片 */}
         <div className="relative overflow-hidden">
           <AnimatePresence>
             {!imageLoaded && (
@@ -182,7 +196,7 @@ function PhotoCard({
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <div className="animate-pulse bg-gray-300 dark:bg-gray-600 w-8 h-8 rounded-full"></div>
+                <div className="animate-pulse bg-gray-300 dark:bg-gray-600 w-8 h-8 rounded-full" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -197,7 +211,7 @@ function PhotoCard({
           >
             <Image
               src={getImageUrl(photo.id, 'small', 'webp')}
-              alt={photo.album?.title || 'Photo'}
+              alt={photo.album?.title || photo.tags[0]?.tag?.name || 'Photo'}
               width={photo.width}
               height={photo.height}
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
@@ -225,10 +239,10 @@ function PhotoCard({
           </motion.div>
         </div>
 
-        {/* 渐变遮罩 */}
+        {/* 遮罩 */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* 悬浮信息 */}
+        {/* 信息 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: hover ? 1 : 0, y: hover ? 0 : 20 }}
@@ -260,14 +274,13 @@ function PhotoCard({
           )}
         </motion.div>
 
-        {/* 加载指示器 */}
         {!imageLoaded && (
           <div className="absolute top-2 right-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
           </div>
         )}
       </div>
-    </motion.div>
+    </motion.button>
   )
 }
 
@@ -276,17 +289,23 @@ function EnhancedGallerySkeleton() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={i}
-            className="animate-pulse bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-xl"
-            style={{
-              height: `${200 + Math.random() * 200}px`,
-              animationDelay: `${i * 100}ms`
-            }}
-          />
-        ))}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const heights = [220, 260, 240, 300, 280]
+          const height = heights[i % heights.length]
+          return (
+            <div
+              key={i}
+              className="animate-pulse bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-xl"
+              style={{
+                height: `${height}px`,
+                animationDelay: `${i * 80}ms`
+              }}
+            />
+          )
+        })}
       </div>
     </div>
   )
 }
+
+

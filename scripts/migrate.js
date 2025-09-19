@@ -10,6 +10,11 @@ const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
+const VISIBILITY = {
+  PUBLIC: 'PUBLIC',
+  PRIVATE: 'PRIVATE',
+}
+
 async function main() {
   console.log('🚀 开始数据库迁移和初始化...')
   
@@ -73,7 +78,6 @@ async function main() {
       })
       
       if (!defaultAlbum) {
-        const { VISIBILITY } = require('../lib/constants')
         await prisma.album.create({
           data: {
             title: '默认相册',

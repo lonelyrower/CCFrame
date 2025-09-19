@@ -51,8 +51,11 @@ async function getImageQueue(): Promise<Queue> {
   if (_imageQueue) return _imageQueue
   const { Queue } = await import('bullmq')
   const { redis } = await import('@/lib/redis')
+  if (!redis) {
+    throw new Error('Redis connection not configured (set REDIS_URL)')
+  }
   _imageQueue = new Queue('image-processing', {
-    connection: redis ?? undefined,
+    connection: redis,
     defaultJobOptions: {
       removeOnComplete: 50,
       removeOnFail: 50,
@@ -67,8 +70,11 @@ async function getEmbeddingQueue(): Promise<Queue> {
   if (_embeddingQueue) return _embeddingQueue
   const { Queue } = await import('bullmq')
   const { redis } = await import('@/lib/redis')
+  if (!redis) {
+    throw new Error('Redis connection not configured (set REDIS_URL)')
+  }
   _embeddingQueue = new Queue('embedding-generation', {
-    connection: redis ?? undefined,
+    connection: redis,
     defaultJobOptions: {
       removeOnComplete: 100,
       removeOnFail: 50,
@@ -110,6 +116,9 @@ interface ImageProcessingJobData {
 const startImageWorker = async () => {
   const { Worker } = await import('bullmq')
   const { redis } = await import('@/lib/redis')
+  if (!redis) {
+    throw new Error('Redis connection not configured (set REDIS_URL)')
+  }
   const concurrency = Math.max(1, parseInt(process.env.IMG_WORKER_CONCURRENCY || '3', 10))
   return new Worker(
     'image-processing',
@@ -220,7 +229,7 @@ const startImageWorker = async () => {
     }
     },
     {
-      connection: redis ?? undefined,
+      connection: redis,
       concurrency: 3,
     }
   )
@@ -230,6 +239,9 @@ const startImageWorker = async () => {
 const startEmbeddingWorker = async () => {
   const { Worker } = await import('bullmq')
   const { redis } = await import('@/lib/redis')
+  if (!redis) {
+    throw new Error('Redis connection not configured (set REDIS_URL)')
+  }
   const { savePhotoEmbedding, DEFAULT_EMBEDDING_DIM } = await import('@/lib/embeddings')
   const { generatePhotoEmbedding } = await import('@/lib/embedding-provider')
   const { recordEmbeddingGeneration } = await import('@/lib/metrics')
@@ -259,7 +271,7 @@ const startEmbeddingWorker = async () => {
       logger.warn({ photoId, err: String(e), ms }, 'embedding generation failed')
       return { success: false, error: String(e) }
     }
-  }, { connection: redis ?? undefined, concurrency: 2 })
+  }, { connection: redis, concurrency: 2 })
 }
 
 // AI worker removed
@@ -278,4 +290,3 @@ export async function ensureWorkers() {
 }
 
 export type { Queue }
-

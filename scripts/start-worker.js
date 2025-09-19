@@ -33,9 +33,11 @@ const workerPath = pickWorkerEntry()
 
 console.log('Starting worker via tsx:', workerPath)
 try {
+  const env = { ...process.env, START_WORKERS: process.env.START_WORKERS || 'true' }
   execSync(`${tsxPath} --tsconfig tsconfig.json ${workerPath}`, {
     stdio: 'inherit',
     cwd: process.cwd(),
+    env,
   })
 } catch (error) {
   console.error('Worker failed:', error && error.message ? error.message : error)

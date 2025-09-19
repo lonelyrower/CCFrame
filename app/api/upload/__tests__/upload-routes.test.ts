@@ -88,6 +88,7 @@ describe('Upload API routes', () => {
     jest.clearAllMocks()
     mockStorage.getPresignedUploadUrl.mockReset()
     mockGenerateKey.mockReset()
+    mockGenerateKey.mockImplementation(() => 'originals/generated-key.jpg')
     mockedRateLimit.mockResolvedValue({ allowed: true, remaining: 10, limit: 10, resetIn: 60 })
     mockedRateLimitHeaders.mockReturnValue({})
     mockedDuplicateCheck.mockResolvedValue({ duplicate: false })
@@ -169,3 +170,4 @@ describe('Upload API routes', () => {
     })
   })
 })
+

@@ -19,8 +19,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "出现错误",
-  message = "抱歉，发生了一些问题",
+  title = "发生错误",
+  message = "抱歉，加载内容时出现了问题。",
   error,
   showRetry = true,
   showHome = false,
@@ -60,23 +60,20 @@ export function ErrorState({
   return (
     <div className={cn("text-center", sizeConfig.container, className)}>
       <div className="max-w-md mx-auto">
-        {/* Error Icon */}
+        {/* 错误图标 */}
         <div className="relative mx-auto mb-6">
           <div className={cn("mx-auto relative", sizeConfig.iconWrapper)}>
-            {/* Animated background */}
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-full animate-pulse" />
 
-            {/* Main background */}
             <div className="relative bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/50 dark:to-orange-950/50 rounded-full border border-red-200 dark:border-red-800 flex items-center justify-center h-full w-full">
               <AlertTriangle className={cn(
                 "text-red-500 dark:text-red-400",
                 sizeConfig.icon
-              )} />
+              )} aria-hidden />
             </div>
           </div>
         </div>
 
-        {/* Title */}
         <h3 className={cn(
           "font-semibold mb-2 text-gray-900 dark:text-white",
           sizeConfig.title
@@ -84,7 +81,6 @@ export function ErrorState({
           {title}
         </h3>
 
-        {/* Message */}
         <p className={cn(
           "text-gray-600 dark:text-gray-400 mb-6",
           sizeConfig.message
@@ -92,11 +88,10 @@ export function ErrorState({
           {message}
         </p>
 
-        {/* Error details (development only) */}
         {error && process.env.NODE_ENV === 'development' && (
           <details className="mb-6 text-left">
             <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-              错误详情
+              查看错误详情
             </summary>
             <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-auto text-red-600 dark:text-red-400">
               {typeof error === 'string' ? error : error.message}
@@ -105,7 +100,6 @@ export function ErrorState({
           </details>
         )}
 
-        {/* Action buttons */}
         <div className="flex flex-wrap justify-center gap-3">
           {showRetry && onRetry && (
             <Button
@@ -113,8 +107,9 @@ export function ErrorState({
               variant="default"
               size={size === "sm" ? "sm" : "default"}
               className="min-w-[100px]"
+              aria-label="重新尝试"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
               重试
             </Button>
           )}
@@ -124,8 +119,9 @@ export function ErrorState({
               onClick={onBack}
               variant="outline"
               size={size === "sm" ? "sm" : "default"}
+              aria-label="返回上一页"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden />
               返回
             </Button>
           )}
@@ -135,8 +131,9 @@ export function ErrorState({
               onClick={onHome}
               variant="ghost"
               size={size === "sm" ? "sm" : "default"}
+              aria-label="返回首页"
             >
-              <Home className="w-4 h-4 mr-2" />
+              <Home className="w-4 h-4 mr-2" aria-hidden />
               首页
             </Button>
           )}
@@ -146,12 +143,12 @@ export function ErrorState({
   )
 }
 
-// 专用错误状态变体
+// 常用错误态封装
 export function NetworkErrorState({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorState
       title="网络连接异常"
-      message="请检查网络连接后重试"
+      message="请检查网络状态后再试一次。"
       showRetry
       onRetry={onRetry}
     />
@@ -162,7 +159,7 @@ export function UploadErrorState({ onRetry, onBack }: { onRetry?: () => void; on
   return (
     <ErrorState
       title="上传失败"
-      message="文件上传过程中出现问题，请重试"
+      message="文件上传过程中出现了问题，请重试。"
       showRetry
       showBack
       onRetry={onRetry}
@@ -176,7 +173,7 @@ export function NotFoundErrorState({ onHome }: { onHome?: () => void }) {
   return (
     <ErrorState
       title="页面不存在"
-      message="抱歉，您访问的页面不存在或已被移动"
+      message="抱歉，你访问的页面不存在或已被移动。"
       showHome
       onHome={onHome}
     />
@@ -187,9 +184,10 @@ export function UnauthorizedErrorState({ onHome }: { onHome?: () => void }) {
   return (
     <ErrorState
       title="访问被拒绝"
-      message="您没有权限访问此内容"
+      message="你没有权限访问该内容。"
       showHome
       onHome={onHome}
     />
   )
 }
+

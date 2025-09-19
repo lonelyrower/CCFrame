@@ -14,11 +14,11 @@ describe('Lightbox accessibility & tags inline edit', () => {
         <PhotoModal photo={photos[0]} photos={photos} onClose={() => {}} onNext={() => {}} onPrevious={() => {}} />
       </LightboxProvider>
     )
-    const editButton = await findByRole('button', { name: 'Edit' })
+    const editButton = await findByRole('button', { name: '编辑' })
     fireEvent.click(editButton)
-    expect(queryByPlaceholderText('Add tag')).toBeTruthy()
-    const doneButton = await findByRole('button', { name: 'Done' })
+    expect(queryByPlaceholderText('添加标签')).toBeTruthy()
+    const doneButton = await findByRole('button', { name: '完成' })
     fireEvent.click(doneButton)
-    expect(queryByPlaceholderText('Add tag')).toBeFalsy()
+    expect(queryByPlaceholderText('添加标签')).toBeFalsy()
   })
 })

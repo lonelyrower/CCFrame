@@ -54,18 +54,17 @@ export function EmptyState({
   return (
     <div className={cn("text-center", sizeConfig.container, className)}>
       <div className="max-w-md mx-auto">
-        {/* Icon with gradient background */}
+        {/* 图标带渐变背景 */}
         <div className="relative mx-auto mb-6">
           <div className={cn(
             "mx-auto relative",
             sizeConfig.iconWrapper
           )}>
-            {/* Gradient background blur */}
+            {/* 背景模糊光晕 */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-sm" />
 
-            {/* Main background */}
+            {/* 主背景 */}
             <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center h-full w-full">
-              {/* Icon with gradient */}
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-[1px] opacity-20" />
                 <Icon className={cn(
@@ -77,7 +76,7 @@ export function EmptyState({
           </div>
         </div>
 
-        {/* Content */}
+        {/* 文案 */}
         <h3 className={cn(
           "font-semibold mb-2 text-gray-900 dark:text-white",
           sizeConfig.title
@@ -92,7 +91,7 @@ export function EmptyState({
           {description}
         </p>
 
-        {/* Action button */}
+        {/* 操作按钮 */}
         {action && (
           <Button
             onClick={action.onClick}
@@ -108,13 +107,13 @@ export function EmptyState({
   )
 }
 
-// 专用空状态变体
+// 常用空状态场景
 export function EmptyPhotosState({ onUpload }: { onUpload?: () => void }) {
   return (
     <EmptyState
       icon={Camera}
       title="暂无照片"
-      description="还没有上传任何照片，快来分享你的美好时刻吧"
+      description="你还没有上传任何照片，点击下方按钮即可开始。"
       action={onUpload ? {
         label: "上传照片",
         onClick: onUpload
@@ -128,9 +127,9 @@ export function EmptySearchState({ onReset }: { onReset?: () => void }) {
     <EmptyState
       icon={Search}
       title="没有找到匹配的照片"
-      description="尝试调整搜索条件或浏览其他内容"
+      description="试试调整筛选条件或换一个关键词再试一次。"
       action={onReset ? {
-        label: "重置搜索",
+        label: "重置筛选",
         onClick: onReset,
         variant: "outline"
       } : undefined}
@@ -144,9 +143,9 @@ export function EmptyAlbumsState({ onCreate }: { onCreate?: () => void }) {
     <EmptyState
       icon={FolderOpen}
       title="暂无相册"
-      description="创建相册来更好地组织你的照片"
+      description="创建一个新的相册来整理和分享你的照片。"
       action={onCreate ? {
-        label: "创建相册",
+        label: "新建相册",
         onClick: onCreate
       } : undefined}
     />
@@ -157,9 +156,11 @@ export function EmptyTagsState() {
   return (
     <EmptyState
       icon={Tag}
-      title="暂无标签"
-      description="为照片添加标签，更便于查找和分类"
+      title="暂时没有标签"
+      description="为照片添加标签，方便日后查找与分类。"
       size="sm"
     />
   )
 }
+
+

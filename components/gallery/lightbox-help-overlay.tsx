@@ -8,21 +8,21 @@ interface LightboxHelpOverlayProps {
 }
 
 const KEYBOARD_SHORTCUTS = [
-  { keys: '← / A', description: 'Previous photo' },
-  { keys: '→ / D', description: 'Next photo' },
-  { keys: 'Esc', description: 'Close viewer' },
-  { keys: 'H / ?', description: 'Toggle help' },
-  { keys: '+ / =', description: 'Zoom in' },
-  { keys: '- / _', description: 'Zoom out' },
-  { keys: 'Double click', description: 'Toggle zoom' },
-  { keys: 'Drag', description: 'Pan while zoomed' },
+  { keys: '方向键左 / A', description: '上一张照片' },
+  { keys: '方向键右 / D', description: '下一张照片' },
+  { keys: 'Esc', description: '关闭预览' },
+  { keys: 'H / ?', description: '切换帮助' },
+  { keys: '+ / =', description: '放大' },
+  { keys: '- / _', description: '缩小' },
+  { keys: 'Double click', description: '双击切换缩放' },
+  { keys: 'Drag', description: '拖拽浏览' },
 ]
 
 const TOUCH_GESTURES = [
-  { gesture: 'Pinch', description: 'Zoom in/out' },
-  { gesture: 'Double tap', description: 'Toggle zoom' },
-  { gesture: 'One-finger drag', description: 'Pan when zoomed' },
-  { gesture: 'Two-finger swipe', description: 'Switch photo (next/prev)' },
+  { gesture: '双指捏合', description: '放大或缩小' },
+  { gesture: '双击', description: '双击切换缩放' },
+  { gesture: '单指拖拽', description: '拖拽查看缩放状态' },
+  { gesture: '双指滑动', description: '切换上一/下一张' },
 ]
 
 export function LightboxHelpOverlay({ open, onClose }: LightboxHelpOverlayProps) {
@@ -48,24 +48,24 @@ export function LightboxHelpOverlay({ open, onClose }: LightboxHelpOverlayProps)
           >
             <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Viewer Shortcuts</h3>
-                <p className="text-xs text-white/60">Press Esc or click outside to return</p>
+                <h3 className="text-lg font-semibold">查看快捷键</h3>
+                <p className="text-xs text-white/60">按下 ? 或点击空白区退出</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
                 className="self-start rounded-full border border-white/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/70 transition hover:text-white"
               >
-                Close
+                关闭
               </button>
             </header>
 
             <section className="space-y-3">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-white/70">Keyboard</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-white/70">键盘</h4>
               <ul className="grid gap-3 text-sm sm:grid-cols-2">
                 {KEYBOARD_SHORTCUTS.map(item => (
                   <li key={item.keys} className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3">
-                    <kbd className="min-w-[72px] rounded-lg bg-black/40 px-3 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                    <kbd className="min-w-[96px] rounded-lg bg-black/40 px-3 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white">
                       {item.keys}
                     </kbd>
                     <span className="text-white/80">{item.description}</span>
@@ -75,7 +75,7 @@ export function LightboxHelpOverlay({ open, onClose }: LightboxHelpOverlayProps)
             </section>
 
             <section className="space-y-3">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-white/70">Touch & Trackpad</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-white/70">触摸 & 触控板</h4>
               <ul className="grid gap-3 text-sm sm:grid-cols-2">
                 {TOUCH_GESTURES.map(item => (
                   <li key={item.gesture} className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3">
@@ -93,3 +93,5 @@ export function LightboxHelpOverlay({ open, onClose }: LightboxHelpOverlayProps)
     </AnimatePresence>
   )
 }
+
+

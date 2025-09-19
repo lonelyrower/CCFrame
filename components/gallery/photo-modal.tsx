@@ -2,19 +2,32 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight, Calendar, Camera, MapPin } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Calendar, Camera, MapPin, HelpCircle } from 'lucide-react'
 import { PhotoWithDetails } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { PhotoZoomCanvas } from './photo-zoom-canvas'
 import dynamic from 'next/dynamic'
 // Defer heavy sub-components to reduce initial bundle
-const PhotoFilmstrip = dynamic(() => import('./photo-filmstrip').then(m => m.PhotoFilmstrip), { ssr: false, loading: () => <div className="h-16 flex items-center justify-center text-xs text-gray-400">Loading filmstrip...</div> })
 import { usePrefetchPhotos } from './use-prefetch-photos'
 import { useLightbox } from './lightbox-context'
 import { useFocusTrap } from './use-focus-trap'
 import { usePhotoTags } from './use-photo-tags'
+import { LightboxHelpOverlay } from './lightbox-help-overlay'
 
+const LABELS = {
+  dialog: String.fromCharCode(0x7167, 0x7247, 0x9884, 0x89c8),
+  prev: String.fromCharCode(0x4e0a, 0x4e00, 0x5f20, 0x7167, 0x7247),
+  next: String.fromCharCode(0x4e0b, 0x4e00, 0x5f20, 0x7167, 0x7247),
+  close: String.fromCharCode(0x5173, 0x95ed),
+  help: String.fromCharCode(0x67e5, 0x770b, 0x5feb, 0x6377, 0x952e),
+  counterPrefix: String.fromCharCode(0x7b2c),
+  counterSuffix: String.fromCharCode(0x5f20),
+  counterTotal: String.fromCharCode(0x5171),
+  filmstripLoading: String.fromCharCode(0x6b63, 0x5728, 0x52a0, 0x8f7d, 0x7f29, 0x7565, 0x56fe, 0x2026),
+}
+
+const PhotoFilmstrip = dynamic(() => import('./photo-filmstrip').then(m => m.PhotoFilmstrip), { ssr: false, loading: () => <div className="h-16 flex items-center justify-center text-xs text-gray-400">{LABELS.filmstripLoading}</div> })
 interface PhotoModalProps {
   photo: PhotoWithDetails
   photos: PhotoWithDetails[]
@@ -58,32 +71,34 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
         className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm"
         onClick={onClose}
       >
-  <div ref={dialogRef} className="absolute inset-0 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Photo lightbox">
+  <div ref={dialogRef} className="absolute inset-0 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={LABELS.dialog}>
           {/* Navigation Buttons */}
           {photos.length > 1 && (
             <>
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={LABELS.prev}
                 className="absolute left-4 z-10 bg-black/20 hover:bg-black/40 text-white"
                 onClick={(e) => {
                   e.stopPropagation()
                   onPrevious()
                 }}
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-6 w-6" aria-hidden />
               </Button>
               
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={LABELS.next}
                 className="absolute right-4 z-10 bg-black/20 hover:bg-black/40 text-white"
                 onClick={(e) => {
                   e.stopPropagation()
                   onNext()
                 }}
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-6 w-6" aria-hidden />
               </Button>
             </>
           )}
@@ -93,23 +108,25 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-10 bg-black/20 hover:bg-black/40 text-white"
-            onClick={onClose}
+            onClick={(e) => { e.stopPropagation(); onClose() }}
+            aria-label={LABELS.close}
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6" aria-hidden />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="absolute top-4 right-16 z-10 bg-black/20 hover:bg-black/40 text-white px-2"
+            size="icon"
+            className="absolute top-4 right-16 z-10 bg-black/20 hover:bg-black/40 text-white"
             onClick={(e) => { e.stopPropagation(); toggleHelp() }}
+            aria-label={LABELS.help}
           >
-            ?
+            <HelpCircle className="h-5 w-5" aria-hidden />
           </Button>
 
           {/* Photo Counter */}
           {photos.length > 1 && (
             <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-sm">
-              {currentIndex + 1} of {photos.length}
+              {`${LABELS.counterPrefix}${currentIndex + 1}${LABELS.counterSuffix} / ${LABELS.counterTotal}${photos.length}${LABELS.counterSuffix}`}
             </div>
           )}
 
@@ -133,7 +150,7 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
                   {/* Basic Info */}
                   <div>
                     <h2 className="text-2xl font-bold mb-2">
-                      {photo.album?.title || 'Untitled'}
+                      {photo.album?.title || '未命名'}
                     </h2>
                     {photo.album?.description && (
                       <p className="text-gray-600 dark:text-gray-400">
@@ -165,17 +182,17 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
                   {exifData && (
                     <div className="space-y-2">
                       <button onClick={() => toggleSection('exif')} className="flex items-center justify-between w-full text-sm font-medium">
-                        <span className="flex items-center gap-2"><Camera className="h-4 w-4" />Camera Details</span>
-                        <span className="text-xs opacity-60">{collapse.exif ? 'Show' : 'Hide'}</span>
+                        <span className="flex items-center gap-2"><Camera className="h-4 w-4" />相机信息</span>
+                        <span className="text-xs opacity-60">{collapse.exif ? '展开' : '收起'}</span>
                       </button>
                       {!collapse.exif && (
                         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 pl-6">
-                          {exifData.camera && <div>Camera: {exifData.camera}</div>}
-                          {exifData.lens && <div>Lens: {exifData.lens}</div>}
-                          {exifData.focalLength && <div>Focal Length: {exifData.focalLength}mm</div>}
-                          {exifData.aperture && <div>Aperture: f/{exifData.aperture}</div>}
-                          {exifData.shutterSpeed && <div>Shutter: {exifData.shutterSpeed}s</div>}
-                          {exifData.iso && <div>ISO: {exifData.iso}</div>}
+                          {exifData.camera && <div>相机： {exifData.camera}</div>}
+                          {exifData.lens && <div>镜头： {exifData.lens}</div>}
+                          {exifData.focalLength && <div>焦距： {exifData.focalLength}mm</div>}
+                          {exifData.aperture && <div>光圈： f/{exifData.aperture}</div>}
+                          {exifData.shutterSpeed && <div>快门： {exifData.shutterSpeed}s</div>}
+                          {exifData.iso && <div>ISO： {exifData.iso}</div>}
                         </div>
                       )}
                     </div>
@@ -186,10 +203,10 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
                     <div className="space-y-2">
                       <div className="flex items-center justify-between w-full text-sm font-medium">
                         <button onClick={() => toggleSection('tags')} className="flex items-center gap-2">
-                          <span>Tags</span>
-                          <span className="text-xs opacity-60">{collapse.tags ? 'Show' : 'Hide'}</span>
+                          <span>标签</span>
+                          <span className="text-xs opacity-60">{collapse.tags ? '展开' : '收起'}</span>
                         </button>
-                        <button className="text-xs underline" onClick={toggleEditing}>{editingTags ? 'Done' : 'Edit'}</button>
+                        <button className="text-xs underline" onClick={toggleEditing}>{editingTags ? '完成' : '编辑'}</button>
                       </div>
                       {!collapse.tags && (
                         <div className="flex flex-wrap gap-2 items-center">
@@ -210,7 +227,7 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
                                 )}
                                 {editingTags && !pending && (
                                   <button
-                                    aria-label="Remove tag"
+                                    aria-label="移除标签"
                                     className="text-red-500 opacity-0 group-hover:opacity-100 transition text-[10px]"
                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeTag(tag.id) }}
                                   >✕</button>
@@ -220,7 +237,7 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
                           })}
                           {editingTags && (
                             <form onSubmit={(e) => { e.preventDefault(); addTag() }} className="flex items-center gap-1">
-                              <input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="Add tag" className="h-6 px-2 text-xs rounded border border-gray-300 dark:border-gray-600 bg-transparent" />
+                              <input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="添加标签" className="h-6 px-2 text-xs rounded border border-gray-300 dark:border-gray-600 bg-transparent" />
                               <button type="submit" className="text-xs px-2 h-6 rounded bg-primary text-white">+</button>
                             </form>
                           )}
@@ -276,26 +293,8 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
               {photos.length > 1 && <PhotoFilmstrip />}
             </div>
           </motion.div>
-          {helpOpen && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white p-8" onClick={(e) => { e.stopPropagation(); toggleHelp() }}>
-              <div className="max-w-lg w-full space-y-4 text-sm">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Keyboard Shortcuts</h3>
-                  <span className="text-xs opacity-70">Press ? or click to close</span>
-                </div>
-                <ul className="grid grid-cols-2 gap-3">
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">← / A</kbd> Prev photo</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">→ / D</kbd> Next photo</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">Esc</kbd> Close viewer</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">?/H</kbd> Toggle help</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">+</kbd> Zoom in</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">-</kbd> Zoom out</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">Double Click</kbd> Zoom toggle</li>
-                  <li><kbd className="px-2 py-1 bg-white/10 rounded">Drag</kbd> Pan when zoomed</li>
-                </ul>
-              </div>
-            </div>
-          )}
+          <LightboxHelpOverlay open={helpOpen} onClose={() => toggleHelp()} />
+
         </div>
       </motion.div>
     </AnimatePresence>

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --no-warnings
+#!/usr/bin/env tsx
 import 'dotenv/config'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
@@ -142,9 +142,17 @@ async function run() {
 }
 
 if (require.main === module) {
-  run().catch(e => {
-    console.error(e)
-    process.exit(1)
-  })
+  run()
+    .catch(e => {
+      console.error(e)
+      process.exit(1)
+    })
+    .finally(async () => {
+      try {
+        await db.$disconnect()
+      } catch {
+        // ignore
+      }
+    })
 }
 

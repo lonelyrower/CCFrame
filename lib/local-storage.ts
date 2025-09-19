@@ -63,6 +63,11 @@ export class LocalStorageManager {
     return fsp.readFile(filePath)
   }
 
+  // Compatibility alias used by some CLI脚本
+  async getObjectBuffer(key: string): Promise<Buffer> {
+    return this.downloadBuffer(key)
+  }
+
   async streamObject(key: string): Promise<{ stream: fs.ReadStream; contentLength?: number; contentType?: string }> {
     this.ensureBaseDirs()
     const filePath = this.resolveKey(key)
@@ -71,6 +76,29 @@ export class LocalStorageManager {
     const contentType = MIME_BY_EXT[ext] || 'application/octet-stream'
     const stream = fs.createReadStream(filePath)
     return { stream, contentLength: stat.size, contentType }
+  }
+
+  async *listObjects(prefix: string): AsyncGenerator<string> {
+    this.ensureBaseDirs()
+    const startDir = path.join(this.basePath, prefix)
+    try {
+      const stack: string[] = [startDir]
+      while (stack.length) {
+        const dir = stack.pop() as string
+        const entries = await fsp.readdir(dir, { withFileTypes: true } as any)
+        for (const ent of entries as any) {
+          const full = path.join(dir, ent.name)
+          if (ent.isDirectory()) {
+            stack.push(full)
+          } else if (ent.isFile()) {
+            const rel = path.relative(this.basePath, full).replace(/\\\\/g, '/').replace(/\\/g, '/')
+            yield rel
+          }
+        }
+      }
+    } catch {
+      // If directory does not exist, yield nothing
+    }
   }
 
   async healthCheck(): Promise<{ ok: boolean; authOk: boolean; latencyMs?: number; error?: string }> {

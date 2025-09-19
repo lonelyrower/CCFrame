@@ -80,7 +80,7 @@ export function PhotosFilters({ albums, tags, params }: PhotosFiltersProps) {
             <input
               type="search"
               name="search"
-              placeholder="搜索照片、相册或标签..."
+              placeholder="搜索照片、相册或标签…"
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary"

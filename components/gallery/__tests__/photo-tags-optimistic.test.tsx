@@ -30,6 +30,13 @@ function renderModal(photo = basePhoto) {
   )
 }
 
+const openTagEditor = async () => {
+  await screen.findByText((content) => content.includes('标签'))
+  const editBtn = screen.getAllByRole('button').find(btn => btn.textContent?.includes('编辑'))
+  if (!editBtn) throw new Error('编辑 button not found')
+  await act(async () => { fireEvent.click(editBtn) })
+}
+
 describe('PhotoModal tag optimistic updates', () => {
   beforeEach(() => {
     photoTagsStore.clear()
@@ -38,17 +45,16 @@ describe('PhotoModal tag optimistic updates', () => {
 
   it('adds a tag optimistically and replaces temp id after success', async () => {
     ;(fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => ({ tag: { id: 'real-1', name: 'bird', color: '#111' } }) })
-    renderModal()
+    const photoWithTag = { ...basePhoto, tags: [{ tag: { id: 'seed', name: 'seed' } }] }
+    renderModal(photoWithTag)
 
-    const editBtn = await screen.findByRole('button', { name: /edit/i })
-    await act(async () => { fireEvent.click(editBtn) })
+    await openTagEditor()
 
-    const input = screen.getByPlaceholderText(/add tag/i)
+    const input = screen.getByPlaceholderText('添加标签')
     fireEvent.change(input, { target: { value: 'bird' } })
     await act(async () => { fireEvent.submit(input.closest('form')!) })
 
     await waitFor(() => expect(screen.queryAllByText('bird').length).toBeGreaterThan(0))
-
     await waitFor(() => expect(fetch).toHaveBeenCalled())
   })
 
@@ -57,10 +63,9 @@ describe('PhotoModal tag optimistic updates', () => {
     const photoWithTag = { ...basePhoto, tags: [{ tag: { id: 't1', name: 'landscape' } }] }
     renderModal(photoWithTag)
 
-    const editBtn = await screen.findByRole('button', { name: /edit/i })
-    await act(async () => { fireEvent.click(editBtn) })
+    await openTagEditor()
 
-    const input = screen.getByPlaceholderText(/add tag/i)
+    const input = screen.getByPlaceholderText('添加标签')
     fireEvent.change(input, { target: { value: 'failtag' } })
     await act(async () => { fireEvent.submit(input.closest('form')!) })
 

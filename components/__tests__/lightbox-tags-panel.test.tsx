@@ -26,7 +26,7 @@ describe('LightboxTagsPanel', () => {
   it('renders existing tags', () => {
     render(<LightboxTagsPanel {...baseProps} tags={tags} />)
 
-    expect(screen.getByText(/Tags for/)).toBeInTheDocument()
+    expect(screen.getByText('“Sunset” 的标签')).toBeInTheDocument()
     expect(screen.getByText('Nature')).toBeInTheDocument()
     expect(screen.getByText('Evening')).toBeInTheDocument()
   })
@@ -34,7 +34,7 @@ describe('LightboxTagsPanel', () => {
   it('calls toggleEditing when edit button pressed', () => {
     render(<LightboxTagsPanel {...baseProps} tags={tags} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }))
+    fireEvent.click(screen.getByRole('button', { name: '编辑' }))
 
     expect(baseProps.toggleEditing).toHaveBeenCalledTimes(1)
   })
@@ -42,7 +42,7 @@ describe('LightboxTagsPanel', () => {
   it('submits new tag value when editing enabled', async () => {
     render(<LightboxTagsPanel {...baseProps} editing tags={tags} />)
 
-    const input = screen.getByPlaceholderText('Add tag')
+    const input = screen.getByPlaceholderText('添加标签')
     fireEvent.change(input, { target: { value: 'Golden hour' } })
     fireEvent.submit(input.closest('form')!)
 
@@ -59,8 +59,8 @@ describe('LightboxTagsPanel', () => {
 
     render(<LightboxTagsPanel {...baseProps} tags={tags} />)
 
-    expect(screen.getByText('Suggested tags')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /add tag Golden hour/i }))
+    expect(screen.getByText('推荐标签')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '添加标签 Golden hour' }))
 
     await waitFor(() => {
       expect(baseProps.addTag).toHaveBeenCalledWith('Golden hour')

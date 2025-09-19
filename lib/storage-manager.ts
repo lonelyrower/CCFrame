@@ -1,5 +1,5 @@
 import { Readable } from 'stream'
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getLocalStorageManager, LocalStorageManager } from './local-storage'
 
@@ -171,6 +171,11 @@ export class StorageManager {
     }
   }
 
+  // Compatibility alias used by some CLI脚本
+  async getObjectBuffer(key: string): Promise<Buffer> {
+    return this.downloadBuffer(key)
+  }
+
   async streamObject(key: string): Promise<{ stream: Readable; contentLength?: number; contentType?: string }> {
     try {
       const command = new GetObjectCommand({
@@ -217,6 +222,37 @@ export class StorageManager {
       const fallback = this.ensureFallback('deleteObject', error)
       if (!fallback) throw error
       await fallback.deleteObject(key)
+    }
+  }
+
+  // List objects under a prefix (used by maintenance scripts)
+  async *listObjects(prefix: string): AsyncGenerator<string> {
+    try {
+      let continuationToken: string | undefined = undefined
+      do {
+        const res: import('@aws-sdk/client-s3').ListObjectsV2CommandOutput = await this.client.send(
+          new ListObjectsV2Command({
+            Bucket: this.config.bucket,
+            Prefix: prefix,
+            ContinuationToken: continuationToken,
+            MaxKeys: 1000,
+          })
+        )
+        const contents = res.Contents || []
+        for (const obj of contents) {
+          if (obj.Key) yield obj.Key
+        }
+        continuationToken = res.IsTruncated ? res.NextContinuationToken : undefined
+      } while (continuationToken)
+    } catch (error) {
+      const fallback = this.ensureFallback('listObjects', error)
+      if (fallback && typeof (fallback as any).listObjects === 'function') {
+        for await (const key of (fallback as any).listObjects(prefix)) {
+          yield key as string
+        }
+        return
+      }
+      throw error
     }
   }
 
