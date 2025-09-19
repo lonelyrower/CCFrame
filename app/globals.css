@@ -385,4 +385,49 @@
   .bg-app-glow-secondary {
     background: radial-gradient(45% 45% at 50% 50%, rgba(56, 189, 248, 0.32) 0%, rgba(56, 189, 248, 0) 100%);
   }
+
+  /* 主题切换组件动画 */
+  .animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  /* 404页面浮动动画 */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0.6;
+    }
+    25% {
+      transform: translateY(-10px) translateX(5px);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(-5px) translateX(-3px);
+      opacity: 0.8;
+    }
+    75% {
+      transform: translateY(-15px) translateX(2px);
+      opacity: 1;
+    }
+  }
+
+  /* 径向渐变背景 */
+  .bg-gradient-radial {
+    background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
+  }
 }

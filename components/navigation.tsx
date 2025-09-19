@@ -3,12 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
-import { 
-  Sun, 
-  Moon, 
-  Menu, 
+import {
+  Sun,
+  Moon,
+  Menu,
   X,
   Camera,
   Grid3X3,
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle'
 
 const publicNavItems = [
   { href: '/', label: '首页', icon: Camera },
@@ -31,7 +31,6 @@ const publicNavItems = [
 export function Navigation() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -87,9 +86,7 @@ export function Navigation() {
             </div>
 
             <div className="hidden md:flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Sun className="h-5 w-5" />
-              </Button>
+              <div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
               <Link href="/admin/login">
                 <Button variant="outline" size="sm">
                   登录
@@ -98,9 +95,7 @@ export function Navigation() {
             </div>
 
             <div className="md:hidden flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Sun className="h-5 w-5" />
-              </Button>
+              <div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
@@ -161,17 +156,7 @@ export function Navigation() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
             {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            <AnimatedThemeToggle />
 
             {/* Admin Link */}
             {session ? (
@@ -192,17 +177,7 @@ export function Navigation() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            <AnimatedThemeToggle />
             
             <Button
               variant="ghost"

@@ -55,7 +55,8 @@
       "Bash(pg_isready:*)",
       "Bash(npm outdated)",
       "Bash(npm update:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git diff:*)"
     ],
     "deny": [],
     "ask": []
