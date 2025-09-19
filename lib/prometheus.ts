@@ -7,6 +7,13 @@ type PrometheusBundle = {
   storageHealthCounter: Counter
   dbHealthCounter: Counter
   redisHealthCounter: Counter
+  embeddingGenerationHistogram: Histogram
+  embeddingGenerationCounter: Counter
+  embeddingProviderHistogram: Histogram
+  embeddingProviderErrorCounter: Counter
+  semanticApiLatencyHistogram: Histogram
+  semanticCacheCounter: Counter
+  semanticFallbackCounter: Counter
 }
 
 const globalScope = globalThis as unknown as { __ccframePrometheus?: PrometheusBundle }
@@ -49,6 +56,51 @@ if (!globalScope.__ccframePrometheus) {
       labelNames: ['status'],
       registers: [registry],
     }),
+    embeddingGenerationHistogram: new Histogram({
+      name: 'ccframe_embedding_generation_duration_seconds',
+      help: 'Embedding generation durations grouped by model & status',
+      labelNames: ['model', 'status'],
+      buckets: histogramBucketsSeconds,
+      registers: [registry],
+    }),
+    embeddingGenerationCounter: new Counter({
+      name: 'ccframe_embedding_generation_total',
+      help: 'Embedding generation attempts grouped by model & status',
+      labelNames: ['model', 'status'],
+      registers: [registry],
+    }),
+    embeddingProviderHistogram: new Histogram({
+      name: 'ccframe_embedding_provider_duration_seconds',
+      help: 'External embedding provider latency grouped by provider & status',
+      labelNames: ['provider', 'status'],
+      buckets: histogramBucketsSeconds,
+      registers: [registry],
+    }),
+    embeddingProviderErrorCounter: new Counter({
+      name: 'ccframe_embedding_provider_errors_total',
+      help: 'Embedding provider error count grouped by provider & error label',
+      labelNames: ['provider', 'error'],
+      registers: [registry],
+    }),
+    semanticApiLatencyHistogram: new Histogram({
+      name: 'ccframe_semantic_api_latency_seconds',
+      help: 'Semantic search API latency grouped by cache status',
+      labelNames: ['cached'],
+      buckets: histogramBucketsSeconds,
+      registers: [registry],
+    }),
+    semanticCacheCounter: new Counter({
+      name: 'ccframe_semantic_cache_events_total',
+      help: 'Semantic search cache events grouped by status',
+      labelNames: ['status'],
+      registers: [registry],
+    }),
+    semanticFallbackCounter: new Counter({
+      name: 'ccframe_semantic_fallback_total',
+      help: 'Semantic pgvector fallback events grouped by result',
+      labelNames: ['result'],
+      registers: [registry],
+    }),
   }
 }
 
@@ -60,3 +112,10 @@ export const uploadEventCounter = bundle.uploadEventCounter
 export const storageHealthCounter = bundle.storageHealthCounter
 export const dbHealthCounter = bundle.dbHealthCounter
 export const redisHealthCounter = bundle.redisHealthCounter
+export const embeddingGenerationHistogram = bundle.embeddingGenerationHistogram
+export const embeddingGenerationCounter = bundle.embeddingGenerationCounter
+export const embeddingProviderHistogram = bundle.embeddingProviderHistogram
+export const embeddingProviderErrorCounter = bundle.embeddingProviderErrorCounter
+export const semanticApiLatencyHistogram = bundle.semanticApiLatencyHistogram
+export const semanticCacheCounter = bundle.semanticCacheCounter
+export const semanticFallbackCounter = bundle.semanticFallbackCounter

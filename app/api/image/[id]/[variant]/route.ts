@@ -5,6 +5,7 @@ import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
 import { getLocalStorageManager } from '@/lib/local-storage'
 import { Readable } from 'stream'
+import type { ReadableStream as WebReadableStream } from 'stream/web'
 
 interface Params {
   params: {
@@ -40,7 +41,8 @@ function toResponse(stream: Readable, contentType: string, cacheHeader: string, 
   if (typeof contentLength === 'number') {
     headers.set('Content-Length', contentLength.toString())
   }
-  return new NextResponse(Readable.toWeb(stream) as BodyInit, { headers })
+  const webStream = Readable.toWeb(stream) as unknown as WebReadableStream<Uint8Array>
+  return new NextResponse(webStream as ReadableStream<Uint8Array>, { headers })
 }
 
 async function tryLocalStream(key: string, cacheHeader: string, contentType: string) {

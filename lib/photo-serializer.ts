@@ -1,4 +1,4 @@
-import type { Photo, PhotoVariant, PhotoTag, Tag } from '@prisma/client'
+import type { Photo, PhotoVariant, Tag } from '@prisma/client'
 
 export interface SerializedPhotoMinimal {
   id: string
@@ -18,8 +18,46 @@ export interface SerializedPhotoFull extends SerializedPhotoMinimal {
   createdAt: string
 }
 
+type PhotoWithRelations = Photo & {
+  variants?: PhotoVariant[]
+  tags?: Array<{ tag: Tag }>
+  location?: unknown
+  exifJson?: unknown
+}
+
+function parseJsonValue<T>(value: unknown): T | null {
+  if (value === null || value === undefined) return null
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T
+    } catch {
+      return null
+    }
+  }
+  if (typeof value === 'object') {
+    return value as T
+  }
+  return null
+}
+
+function cloneJson<T>(value: T | null): T | null {
+  if (value === null || value === undefined) return null
+  try {
+    return JSON.parse(JSON.stringify(value)) as T
+  } catch {
+    return value
+  }
+}
+
+function toISOStringOrNull(value: Date | string | null | undefined): string | null {
+  if (!value) return null
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString()
+}
+
 export function serializePhoto(
-  photo: any,
+  photo: PhotoWithRelations,
   opts: { mode?: 'minimal' | 'full'; includeVariants?: boolean; stripLocation?: boolean } = {}
 ): SerializedPhotoMinimal | SerializedPhotoFull {
   const mode = opts.mode || 'minimal'
@@ -29,27 +67,42 @@ export function serializePhoto(
     height: photo.height,
     blurhash: photo.blurhash || null,
   }
+
   if (opts.includeVariants && photo.variants) {
-    base.variants = photo.variants.map((v: any) => ({ variant: v.variant, format: v.format, width: v.width, height: v.height }))
+    base.variants = photo.variants.map((v) => ({
+      variant: v.variant,
+      format: v.format,
+      width: v.width,
+      height: v.height,
+    }))
   }
+
   if (mode === 'minimal') return base
-  let exif: any = null
-  if (photo.exifJson) {
-    try { exif = JSON.parse(photo.exifJson) } catch {}
+
+  const parsedExif = parseJsonValue<Record<string, unknown>>(photo.exifJson)
+  const exif = cloneJson(parsedExif)
+  if (opts.stripLocation && exif && typeof exif === 'object' && 'location' in exif) {
+    delete (exif as Record<string, unknown>).location
   }
-  if (opts.stripLocation && exif?.location) delete exif.location
+
+  const rawLocation = opts.stripLocation
+    ? null
+    : photo.location ?? (parsedExif && typeof parsedExif === 'object' ? (parsedExif as any).location : null)
+  const location = opts.stripLocation ? null : cloneJson(rawLocation)
+
   return {
     ...base,
-    takenAt: photo.takenAt ? new Date(photo.takenAt).toISOString() : null,
-    location: !opts.stripLocation ? (exif?.location || null) : null,
+    takenAt: toISOStringOrNull(photo.takenAt ?? null),
+    location,
     exif,
-    tags: photo.tags ? photo.tags.map((t: any) => ({ id: t.tag.id, name: t.tag.name, color: t.tag.color })) : [],
+    tags: photo.tags ? photo.tags.map(({ tag }) => ({ id: tag.id, name: tag.name, color: tag.color })) : [],
     albumId: photo.albumId || null,
     visibility: photo.visibility,
-    createdAt: photo.createdAt ? new Date(photo.createdAt).toISOString() : new Date().toISOString(),
+    createdAt: toISOStringOrNull(photo.createdAt) || new Date().toISOString(),
   }
 }
 
-export function serializePhotos(list: any[], opts: Parameters<typeof serializePhoto>[1]) {
-  return list.map(p => serializePhoto(p, opts))
+export function serializePhotos(list: PhotoWithRelations[], opts: Parameters<typeof serializePhoto>[1]) {
+  return list.map((p) => serializePhoto(p, opts))
 }
+

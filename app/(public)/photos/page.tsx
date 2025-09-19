@@ -1,19 +1,13 @@
 import { Suspense } from 'react'
+import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { LightboxProvider } from '@/components/gallery/lightbox-context'
-import { PhotoWithDetails } from '@/types'
-import { 
-  Grid, 
-  List, 
-  Calendar, 
-  MapPin, 
-  Filter,
-  Search,
-  SlidersHorizontal
-} from 'lucide-react'
+import { PhotosFilters } from '@/components/gallery/photos-filters'
+import type { PhotoWithDetails } from '@/types'
+import { Grid } from 'lucide-react'
 
-interface SearchParams {
+type SearchParams = {
   view?: string
   sort?: string
   album?: string
@@ -21,83 +15,82 @@ interface SearchParams {
   search?: string
 }
 
+const SORT_VALUES = new Set(['newest', 'oldest', 'name'])
+
+function normalizeSort(value?: string) {
+  if (value && SORT_VALUES.has(value)) return value as 'newest' | 'oldest' | 'name'
+  return 'newest'
+}
+
 async function getPhotos(params: SearchParams): Promise<PhotoWithDetails[]> {
-  const { sort = 'newest', album, tag, search } = params
-  
-  const where: any = {
+  const sort = normalizeSort(params.sort)
+  const where: Prisma.PhotoWhereInput = {
     visibility: 'PUBLIC',
-    status: 'COMPLETED'
+    status: 'COMPLETED',
   }
-  
-  if (album) {
-    where.albumId = album
+
+  if (params.album) {
+    where.albumId = params.album
   }
-  
-  if (tag) {
+
+  if (params.tag) {
     where.tags = {
       some: {
         tag: {
           name: {
-            contains: tag,
-            mode: 'insensitive'
-          }
-        }
-      }
+            contains: params.tag,
+            mode: 'insensitive',
+          },
+        },
+      },
     }
   }
-  
-  if (search) {
-    where.OR = [
-      {
-        album: {
-          title: {
-            contains: search,
-            mode: 'insensitive'
-          }
-        }
-      },
-      {
-        tags: {
-          some: {
-            tag: {
-              name: {
-                contains: search,
-                mode: 'insensitive'
-              }
-            }
-          }
-        }
-      }
-    ]
-  }
-  
-  let orderBy: any = { createdAt: 'desc' }
-  
-  switch (sort) {
-    case 'oldest':
-      orderBy = { createdAt: 'asc' }
-      break
-    case 'name':
-      orderBy = { album: { title: 'asc' } }
-      break
+
+  if (params.search) {
+    const term = params.search.trim()
+    if (term) {
+      where.OR = [
+        {
+          album: {
+            title: {
+              contains: term,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
+          tags: {
+            some: {
+              tag: {
+                name: {
+                  contains: term,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        },
+      ]
+    }
   }
 
-  const photos = await db.photo.findMany({
+  let orderBy: Prisma.PhotoOrderByWithRelationInput = { createdAt: 'desc' }
+  if (sort === 'oldest') {
+    orderBy = { createdAt: 'asc' }
+  } else if (sort === 'name') {
+    orderBy = { album: { title: 'asc' } }
+  }
+
+  return db.photo.findMany({
     where,
     include: {
       variants: true,
-      tags: {
-        include: {
-          tag: true
-        }
-      },
-      album: true
+      tags: { include: { tag: true } },
+      album: true,
     },
     orderBy,
-    take: 100
+    take: 100,
   })
-
-  return photos
 }
 
 async function getFilterOptions() {
@@ -111,20 +104,21 @@ async function getFilterOptions() {
             photos: {
               where: {
                 visibility: 'PUBLIC',
-                status: 'COMPLETED'
-              }
-            }
-          }
-        }
+                status: 'COMPLETED',
+              },
+            },
+          },
+        },
       },
       where: {
         photos: {
           some: {
             visibility: 'PUBLIC',
-            status: 'COMPLETED'
-          }
-        }
-      }
+            status: 'COMPLETED',
+          },
+        },
+      },
+      orderBy: { title: 'asc' },
     }),
     db.tag.findMany({
       select: {
@@ -136,92 +130,32 @@ async function getFilterOptions() {
               where: {
                 photo: {
                   visibility: 'PUBLIC',
-                  status: 'COMPLETED'
-                }
-              }
-            }
-          }
-        }
+                  status: 'COMPLETED',
+                },
+              },
+            },
+          },
+        },
       },
       where: {
         photos: {
           some: {
             photo: {
               visibility: 'PUBLIC',
-              status: 'COMPLETED'
-            }
-          }
-        }
-      }
-    })
+              status: 'COMPLETED',
+            },
+          },
+        },
+      },
+      orderBy: { photos: { _count: 'desc' } },
+      take: 100,
+    }),
   ])
-  
-  return { albums, tags }
-}
 
-function FilterSection({ albums, tags, params }: { 
-  albums: any[], 
-  tags: any[], 
-  params: SearchParams 
-}) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
-      <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-60">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="搜索照片、相册或标签..."
-              defaultValue={params.search || ''}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                         focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-        </div>
-        
-        <select 
-          defaultValue={params.sort || 'newest'}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-primary/20 focus:border-primary"
-        >
-          <option value="newest">最新优先</option>
-          <option value="oldest">最早优先</option>
-          <option value="name">按名称</option>
-        </select>
-        
-        <select 
-          defaultValue={params.album || ''}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-primary/20 focus:border-primary"
-        >
-          <option value="">所有相册</option>
-          {albums.map(album => (
-            <option key={album.id} value={album.id}>
-              {album.title} ({album._count.photos})
-            </option>
-          ))}
-        </select>
-        
-        <select 
-          defaultValue={params.tag || ''}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-primary/20 focus:border-primary"
-        >
-          <option value="">所有标签</option>
-          {tags.map(tag => (
-            <option key={tag.id} value={tag.name}>
-              {tag.name} ({tag._count.photos})
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  )
+  return {
+    albums: albums.map((album) => ({ id: album.id, title: album.title, count: album._count.photos })),
+    tags: tags.map((tag) => ({ id: tag.id, name: tag.name, count: tag._count.photos })),
+  }
 }
 
 function PhotosLoading() {
@@ -246,27 +180,27 @@ function PhotosLoading() {
 }
 
 async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
+  const normalized = {
+    ...searchParams,
+    sort: normalizeSort(searchParams.sort),
+  }
   const [photos, filterOptions] = await Promise.all([
-    getPhotos(searchParams),
-    getFilterOptions()
+    getPhotos(normalized),
+    getFilterOptions(),
   ])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
-            全部照片
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            共 {photos.length} 张照片，记录生活中的美好瞬间
-          </p>
+          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">ȫ����Ƭ</h1>
+          <p className="text-gray-600 dark:text-gray-400">�� {photos.length} ����Ƭ����¼�����е�����˲��</p>
         </div>
 
-        <FilterSection 
+        <PhotosFilters
           albums={filterOptions.albums}
           tags={filterOptions.tags}
-          params={searchParams}
+          params={normalized}
         />
 
         {photos.length === 0 ? (
@@ -274,12 +208,8 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
             <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
               <Grid className="w-12 h-12 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-              没有找到匹配的照片
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              尝试调整搜索条件或浏览其他内容
-            </p>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">û���ҵ�ƥ�����Ƭ</h3>
+            <p className="text-gray-600 dark:text-gray-400">���Ե������������������������</p>
           </div>
         ) : (
           <LightboxProvider photos={photos}>
@@ -291,11 +221,7 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
   )
 }
 
-export default function PhotosPage({ 
-  searchParams 
-}: { 
-  searchParams: SearchParams 
-}) {
+export default function PhotosPage({ searchParams }: { searchParams: SearchParams }) {
   return (
     <Suspense fallback={<PhotosLoading />}>
       <PhotosContent searchParams={searchParams} />

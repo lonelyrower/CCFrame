@@ -46,6 +46,7 @@ async function reuseDuplicatePhoto(params: { userId: string; contentHash: string
 
 // Queue for processing uploaded images
 let _imageQueue: Queue | null = null
+let _embeddingQueue: Queue | null = null
 async function getImageQueue(): Promise<Queue> {
   if (_imageQueue) return _imageQueue
   const { Queue } = await import('bullmq')
@@ -62,6 +63,21 @@ async function getImageQueue(): Promise<Queue> {
   return _imageQueue
 }
 
+async function getEmbeddingQueue(): Promise<Queue> {
+  if (_embeddingQueue) return _embeddingQueue
+  const { Queue } = await import('bullmq')
+  const { redis } = await import('@/lib/redis')
+  _embeddingQueue = new Queue('embedding-generation', {
+    connection: redis ?? undefined,
+    defaultJobOptions: {
+      removeOnComplete: 100,
+      removeOnFail: 50,
+      attempts: 2,
+      backoff: { type: 'fixed', delay: 3000 }
+    }
+  })
+  return _embeddingQueue
+}
 
 export const imageProcessingQueue = {
   add: async (...args: Parameters<Queue['add']>) => {
@@ -71,6 +87,13 @@ export const imageProcessingQueue = {
   },
 }
 
+export const embeddingQueue = {
+  add: async (...args: Parameters<Queue['add']>) => {
+    const q = await getEmbeddingQueue()
+    // @ts-ignore
+    return q.add(...args)
+  }
+}
 
 // Queue for AI tasks
 // AI 相关功能与队列已移除，专注于上传与展示
@@ -177,7 +200,15 @@ const startImageWorker = async () => {
 
       await job.updateProgress(100)
 
-      return { success: true, variants: variantRecords.length }
+      // 在更新 photo 后调度嵌入生成（延迟以便主事务完成）
+      try {
+        const eq = await getEmbeddingQueue()
+        await eq.add('generate', { photoId, userId }, { delay: 1000 })
+      } catch (e) {
+        logger.warn({ photoId, err: String(e) }, 'failed to enqueue embedding job')
+      }
+
+      return { success: true, variants: variantRecords.length, embeddingQueued: true }
     } catch (error) {
       // Mark photo as failed
       await db.photo.update({
@@ -190,11 +221,46 @@ const startImageWorker = async () => {
     },
     {
       connection: redis ?? undefined,
-      concurrency,
+      concurrency: 3,
     }
   )
 }
 
+// Embedding worker (初期：随机向量占位 / 调用外部模型留接口)
+const startEmbeddingWorker = async () => {
+  const { Worker } = await import('bullmq')
+  const { redis } = await import('@/lib/redis')
+  const { savePhotoEmbedding, DEFAULT_EMBEDDING_DIM } = await import('@/lib/embeddings')
+  const { generatePhotoEmbedding } = await import('@/lib/embedding-provider')
+  const { recordEmbeddingGeneration } = await import('@/lib/metrics')
+  const { getSemanticConfig } = await import('@/lib/semantic-config')
+  return new Worker('embedding-generation', async (job: Job<{ photoId: string; userId: string }>) => {
+    const { photoId } = job.data
+    const cfg = getSemanticConfig()
+    if (!cfg.enabled) {
+      return { skipped: true, reason: 'semantic disabled' }
+    }
+    const photo = await db.photo.findUnique({ where: { id: photoId } })
+    if (!photo || photo.status !== PHOTO_STATUS.COMPLETED) {
+      return { skipped: true, reason: 'photo not completed' }
+    }
+  const dim = cfg.dim || DEFAULT_EMBEDDING_DIM
+    const t0 = Date.now()
+    try {
+      const { embedding, model, provider } = await generatePhotoEmbedding(photoId, { dim, model: cfg.model })
+      await savePhotoEmbedding(photoId, embedding, { model })
+      const ms = Date.now() - t0
+      recordEmbeddingGeneration({ ms, ok: true, model })
+      logger.info({ photoId, model, dim, provider, ms }, 'embedding generated')
+      return { success: true }
+    } catch (e) {
+      const ms = Date.now() - t0
+      recordEmbeddingGeneration({ ms, ok: false, model: cfg.model })
+      logger.warn({ photoId, err: String(e), ms }, 'embedding generation failed')
+      return { success: false, error: String(e) }
+    }
+  }, { connection: redis ?? undefined, concurrency: 2 })
+}
 
 // AI worker removed
 
@@ -206,10 +272,10 @@ export async function ensureWorkers() {
   if (workersStarted) return
   if (process.env.START_WORKERS === 'true') {
     await startImageWorker()
+    await startEmbeddingWorker()
     workersStarted = true
   }
 }
 
 export type { Queue }
-
 

@@ -1,5 +1,6 @@
 "use client"
 
+import NextImage from 'next/image'
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
@@ -35,6 +36,9 @@ export function ProgressiveImage({
   const [isInView, setIsInView] = useState(priority)
   const imgRef = useRef<HTMLImageElement>(null)
   const placeholderRef = useRef<HTMLDivElement>(null)
+
+  const sizeProps = width && height ? { width, height } : { fill: true as const }
+  const resolvedSizes = sizes ?? (width && height ? undefined : '100vw')
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -101,7 +105,7 @@ export function ProgressiveImage({
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'blur(10px)',
-          transform: 'scale(1.1)' // Slightly larger to hide blur edges
+          transform: 'scale(1.1)'
         }}
       />
 
@@ -112,19 +116,20 @@ export function ProgressiveImage({
 
       {/* Main image */}
       {isInView && !hasError && (
-        <img
+        <NextImage
           ref={imgRef}
           src={src}
           alt={alt}
-          sizes={sizes}
           onLoad={handleLoad}
           onError={handleError}
           className={cn(
-            "absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-out",
+            "absolute inset-0 object-cover transition-opacity duration-500 ease-out",
             imageLoaded ? "opacity-100" : "opacity-0"
           )}
           loading={priority ? "eager" : "lazy"}
-          decoding="async"
+          priority={priority}
+          {...sizeProps}
+          {...(resolvedSizes ? { sizes: resolvedSizes } : {})}
         />
       )}
 
@@ -174,7 +179,6 @@ export function useBlurDataURL(src: string) {
         const dataURL = canvas.toDataURL('image/jpeg', 0.1)
         setBlurDataURL(dataURL)
       } catch (error) {
-        // Fallback if canvas toDataURL fails (CORS, etc.)
         console.warn('Failed to generate blur data URL:', error)
       }
     }
@@ -203,7 +207,7 @@ export function GalleryImage({
   priority?: boolean
 } & Omit<ProgressiveImageProps, 'src' | 'alt'>) {
   const src = `/api/image/${photoId}/${variant}?format=${format}`
-  const blurSrc = `/api/image/${photoId}/thumb?format=jpeg` // Small JPEG for blur
+  const blurSrc = `/api/image/${photoId}/thumb?format=jpeg`
 
   return (
     <ProgressiveImage
@@ -216,3 +220,4 @@ export function GalleryImage({
     />
   )
 }
+

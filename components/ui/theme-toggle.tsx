@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Laptop2, Moon, SunMedium } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -22,13 +22,13 @@ export function ThemeToggle() {
 
   useEffect(() => setMounted(true), [])
 
-  const handleThemeChange = (newTheme: string) => {
+  const handleThemeChange = useCallback((newTheme: string) => {
     setIsChanging(true)
     setTheme(newTheme)
 
     // 添加短暂延迟以显示动画效果
     setTimeout(() => setIsChanging(false), 300)
-  }
+  }, [setTheme])
 
   // 键盘快捷键支持 (Ctrl/Cmd + Shift + T)
   useEffect(() => {
@@ -44,7 +44,7 @@ export function ThemeToggle() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [theme, mounted])
+  }, [theme, mounted, handleThemeChange])
 
   if (!mounted) {
     return (
@@ -115,3 +115,4 @@ export function ThemeToggle() {
     </div>
   )
 }
+

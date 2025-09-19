@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { Suspense } from 'react'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -96,12 +97,14 @@ async function RecentPhotos() {
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       {recentPhotos.map((photo) => (
         <div key={photo.id} className="group relative">
-          <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+          <div className="relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
             {photo.variants[0] && (
-              <img
+              <Image
                 src={`/api/image/${photo.id}/thumb?format=webp`}
                 alt={photo.album?.title || 'Recent photo thumbnail'}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                fill
+                sizes="(min-width: 1024px) 18vw, (min-width: 768px) 30vw, 45vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-200"
               />
             )}
           </div>
@@ -289,3 +292,4 @@ export default async function AdminDashboard() {
     </div>
   )
 }
+

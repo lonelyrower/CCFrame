@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { db } from '@/lib/db'
 import { buildPhotoWhereFromRule } from '@/lib/smart-albums'
 
@@ -30,7 +31,15 @@ export default async function PublicSmartAlbumPage({ params }: { params: { id: s
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {photos.map((p) => (
-              <img key={p.id} src={`/api/image/${p.id}/small?format=webp`} alt={`Photo ${p.id}`} className="w-full h-auto rounded" />
+              <div key={p.id} className="relative aspect-square">
+                <Image
+                  src={`/api/image/${p.id}/small?format=webp`}
+                  alt={`Photo ${p.id}`}
+                  fill
+                  sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
+                  className="rounded object-cover"
+                />
+              </div>
             ))}
           </div>
         )}

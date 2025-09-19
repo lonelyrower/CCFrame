@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
 import { redis } from '@/lib/redis'
-import { getImageTimingAverages } from '@/lib/metrics'
+import { getImageTimingAverages, getEmbeddingMetrics, getSemanticApiMetrics } from '@/lib/metrics'
+import { getSemanticConfig } from '@/lib/semantic-config'
 import { storageHealthCounter, dbHealthCounter, redisHealthCounter } from '@/lib/prometheus'
 
 let version = '0.0.0'
@@ -106,6 +107,27 @@ export async function GET() {
   }
 
   result.metrics.imageProcessing = getImageTimingAverages()
+  const embMetrics = getEmbeddingMetrics()
+  result.metrics.embeddings = embMetrics
+  if (embMetrics.provider) {
+    result.metrics.embeddingProviders = embMetrics.provider
+  }
+  result.metrics.semanticApi = getSemanticApiMetrics()
+  result.semantic = { mode: getSemanticConfig().mode }
+  try {
+    const orphanRows = await db.$queryRawUnsafe(
+      'SELECT count(*)::int AS c FROM photo_embeddings e LEFT JOIN photos p ON p.id = e.photo_id WHERE p.id IS NULL'
+    ) as any[]
+    const missingRows = await db.$queryRawUnsafe(
+      'SELECT count(*)::int AS c FROM photos p WHERE NOT EXISTS (SELECT 1 FROM photo_embeddings e WHERE e.photo_id = p.id)'
+    ) as any[]
+    result.metrics.embeddingLifecycle = {
+      orphanCount: orphanRows?.[0]?.c ?? 0,
+      missingCount: missingRows?.[0]?.c ?? 0,
+    }
+  } catch (e) {
+    result.metrics.embeddingLifecycleError = (e as Error).message
+  }
 
   result.latencyMs = Date.now() - start
   const status = result.ok ? 200 : 503

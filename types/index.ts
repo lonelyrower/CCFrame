@@ -1,23 +1,16 @@
 import { Photo, Album, PhotoVariant, Tag, User, Job } from '@prisma/client'
+import { JOB_STATUS, JOB_TYPE, type JobStatus as JobStatusLiteral, type JobType as JobTypeLiteral, type Visibility, VISIBILITY } from '@/lib/constants'
 
-export type Visibility = 'PUBLIC' | 'PRIVATE'
+export type { Visibility }
+export type JobStatus = JobStatusLiteral
+export type JobType = JobTypeLiteral
+export { VISIBILITY }
 
-export const JobStatusValues = ['PENDING', 'RUNNING', 'COMPLETED', 'FAILED'] as const
-export type JobStatus = typeof JobStatusValues[number]
+export const JobStatusValues = Object.values(JOB_STATUS) as readonly JobStatus[]
+export const JobStatus = JOB_STATUS
 
-export const JobStatus = {
-  PENDING: 'PENDING',
-  RUNNING: 'RUNNING', 
-  COMPLETED: 'COMPLETED',
-  FAILED: 'FAILED'
-} as const
-
-export const JobTypeValues = [
-  'THUMBNAIL_GENERATION',
-  'EXIF_EXTRACTION',
-  'FACE_DETECTION',
-] as const
-export type JobType = typeof JobTypeValues[number]
+export const JobTypeValues = Object.values(JOB_TYPE) as readonly JobType[]
+export const JobType = JOB_TYPE
 
 export interface PhotoWithDetails extends Photo {
   variants: PhotoVariant[]
@@ -68,7 +61,7 @@ export interface ExifData {
   }
 }
 
-// AI 编辑相关类型已移除
+// AI �༭����������Ƴ�
 
 export interface UploadProgress {
   id: string
@@ -77,3 +70,4 @@ export interface UploadProgress {
   status: 'uploading' | 'processing' | 'completed' | 'failed'
   error?: string
 }
+

@@ -1,8 +1,9 @@
 import { Suspense } from 'react'
 import { db } from '@/lib/db'
 import { PhotoWithDetails } from '@/types'
+import Image from 'next/image'
 import Link from 'next/link'
-import { Tag, Hash, Image, ArrowRight } from 'lucide-react'
+import { Tag, Hash, ArrowRight } from 'lucide-react'
 
 interface TagWithCount {
   id: string
@@ -118,11 +119,13 @@ function TagCard({ tag }: { tag: TagWithCount }) {
         <div className="p-4">
           <div className="grid grid-cols-3 gap-2">
             {tag.photos.slice(0, 6).map((photo) => (
-              <div key={photo.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                <img
+              <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                <Image
                   src={`/api/image/${photo.id}/thumb`}
                   alt={photo.album?.title || 'Photo thumbnail'}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                  fill
+                  sizes="(min-width: 1024px) 8vw, (min-width: 768px) 10vw, 33vw"
+                  className="object-cover hover:scale-105 transition-transform duration-200"
                 />
               </div>
             ))}

@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import Image from 'next/image'
 import Link from 'next/link'
 import { 
   FolderOpen, 
@@ -63,10 +64,12 @@ function AlbumCard({ album }: { album: Album }) {
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-video bg-gray-100 dark:bg-gray-700 relative">
         {album.coverPhoto ? (
-          <img
+          <Image
             src={`/api/image/${album.coverPhoto.id}/medium`}
             alt={`Album cover for ${album.title}`}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 100vw"
+            className="object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -234,3 +237,4 @@ export default function AlbumsPage() {
 }
 
 export const dynamic = 'force-dynamic'
+
