@@ -23,26 +23,27 @@ export function LightboxProvider({ photos, children }: { photos: PhotoWithDetail
   const [isOpen, setIsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
 
-  // Guard against empty photos array
-  if (!photos || photos.length === 0) {
-    return <LightboxContext.Provider value={null}>{children}</LightboxContext.Provider>
-  }
+  // Safe access to photos - ensure we have valid data
+  const safePhotos = photos || []
+  const hasPhotos = safePhotos.length > 0
 
   const go = useCallback((i: number) => {
+    if (!hasPhotos) return
     setIndex((prev) => {
       if (i < 0) return 0
-      if (i >= photos.length) return photos.length - 1
+      if (i >= safePhotos.length) return safePhotos.length - 1
       return i
     })
-  }, [photos.length])
+  }, [safePhotos.length, hasPhotos])
 
   const open = useCallback((id: string) => {
-    const i = photos.findIndex(p => p.id === id)
+    if (!hasPhotos) return
+    const i = safePhotos.findIndex(p => p.id === id)
     if (i >= 0) {
       setIndex(i)
       setIsOpen(true)
     }
-  }, [photos])
+  }, [safePhotos, hasPhotos])
 
   const next = useCallback(() => go(index + 1), [go, index])
   const prev = useCallback(() => go(index - 1), [go, index])
@@ -51,7 +52,7 @@ export function LightboxProvider({ photos, children }: { photos: PhotoWithDetail
 
   // Keyboard shortcuts
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !hasPhotos) return
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { close(); return }
       if (e.key === '?') { toggleHelp(); return }
@@ -76,21 +77,26 @@ export function LightboxProvider({ photos, children }: { photos: PhotoWithDetail
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [isOpen, helpOpen, next, prev, close, toggleHelp])
+  }, [isOpen, helpOpen, next, prev, close, toggleHelp, hasPhotos])
 
-  const value = useMemo(() => ({
-    photos,
-    index,
-    current: photos[index] || photos[0],
-    go,
-    next,
-    prev,
-    close,
-    open,
-    isOpen,
-    helpOpen,
-    toggleHelp,
-  }), [photos, index, go, next, prev, close, open, isOpen, helpOpen, toggleHelp])
+  const value = useMemo(() => {
+    if (!hasPhotos) {
+      return null
+    }
+    return {
+      photos: safePhotos,
+      index,
+      current: safePhotos[index] || safePhotos[0],
+      go,
+      next,
+      prev,
+      close,
+      open,
+      isOpen,
+      helpOpen,
+      toggleHelp,
+    }
+  }, [safePhotos, index, go, next, prev, close, open, isOpen, helpOpen, toggleHelp, hasPhotos])
 
   return <LightboxContext.Provider value={value}>{children}</LightboxContext.Provider>
 }
