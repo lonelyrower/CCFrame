@@ -35,6 +35,8 @@ interface Settings {
     autoDeleteFailed: boolean
     maxUploadSize: number
     compressionQuality: number
+    imageFormats: string
+    imageVariantNames: string
   }
   apis: {
     pixabayApiKey: string
@@ -66,7 +68,9 @@ export default function SettingsPage() {
     storage: {
       autoDeleteFailed: true,
       maxUploadSize: 50, // MB
-      compressionQuality: 85
+      compressionQuality: 85,
+      imageFormats: '',
+      imageVariantNames: ''
     },
     apis: {
       pixabayApiKey: ''
@@ -160,7 +164,8 @@ export default function SettingsPage() {
       }
 
       if (section === 'storage') {
-        const response = await fetch('/api/settings', {
+        // Save basic storage settings
+        const basicResponse = await fetch('/api/settings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -171,9 +176,24 @@ export default function SettingsPage() {
           })
         })
 
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}))
+        if (!basicResponse.ok) {
+          const error = await basicResponse.json().catch(() => ({}))
           throw new Error(error.error || '存储设置保存失败')
+        }
+
+        // Save image processing strategy settings
+        const strategyResponse = await fetch('/api/admin/storage-settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageFormats: settings.storage.imageFormats,
+            imageVariantNames: settings.storage.imageVariantNames,
+          })
+        })
+
+        if (!strategyResponse.ok) {
+          const error = await strategyResponse.json().catch(() => ({}))
+          throw new Error(error.error || '图片处理策略保存失败')
         }
 
         toast.success('存储设置已保存')
@@ -227,9 +247,30 @@ export default function SettingsPage() {
     }
   }
 
+  // Load storage strategy settings
+  const loadStorageSettings = async () => {
+    try {
+      const response = await fetch('/api/admin/storage-settings')
+      if (response.ok) {
+        const data = await response.json()
+        setSettings(prev => ({
+          ...prev,
+          storage: {
+            ...prev.storage,
+            imageFormats: data.imageFormats || '',
+            imageVariantNames: data.imageVariantNames || ''
+          }
+        }))
+      }
+    } catch (error) {
+      console.error('加载存储设置失败:', error)
+    }
+  }
+
   // Load settings on component mount
   useEffect(() => {
     loadApiSettings()
+    loadStorageSettings()
   }, [])
 
   const tabs = [
@@ -237,8 +278,7 @@ export default function SettingsPage() {
     { id: 'security', name: '安全设置', icon: Shield },
     { id: 'site', name: '网站设置', icon: Globe },
     { id: 'storage', name: '存储设置', icon: Database },
-    { id: 'apis', name: 'API 配置', icon: Key },
-    { id: 'storage-strategy', name: '存储策略', icon: Database, href: '/admin/storage-settings' }
+    { id: 'apis', name: 'API 配置', icon: Key }
   ]
 
   return (
@@ -259,20 +299,6 @@ export default function SettingsPage() {
             <nav className="flex space-x-8 px-6">
               {tabs.map(tab => {
                 const IconComponent = tab.icon
-                if (tab.href) {
-                  return (
-                    <Link
-                      key={tab.id}
-                      href={tab.href}
-                      className="py-4 px-2 border-b-2 border-transparent font-medium text-sm transition-colors text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <IconComponent className="w-4 h-4" />
-                        <span>{tab.name}</span>
-                      </div>
-                    </Link>
-                  )
-                }
                 return (
                   <button
                     key={tab.id}
@@ -645,6 +671,56 @@ export default function SettingsPage() {
                   <label htmlFor="autoDeleteFailed" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                     自动删除上传失败的文件
                   </label>
+                </div>
+
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
+                    图片处理策略
+                  </h4>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      生成格式
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.storage.imageFormats}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        storage: { ...prev.storage, imageFormats: e.target.value }
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="例如：webp,jpeg 或 avif,webp,jpeg"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      逗号分隔，留空表示默认 avif,webp,jpeg。更改会影响后续新处理的图片；已生成的变体不受影响。
+                    </p>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      生成尺寸
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.storage.imageVariantNames}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        storage: { ...prev.storage, imageVariantNames: e.target.value }
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="例如：thumb,small,medium,large"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      逗号分隔，留空表示默认 thumb,small,medium,large。
+                    </p>
+                  </div>
+
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4 mt-4">
+                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                      <strong>注意：</strong> 并发与上传并行度（IMG_WORKER_CONCURRENCY / UPLOAD_CONCURRENCY）需通过环境变量配置，修改后重启生效。
+                    </p>
+                  </div>
                 </div>
                 
                 <div className="flex justify-end pt-4">

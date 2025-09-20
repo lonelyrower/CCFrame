@@ -57,7 +57,8 @@
       "Bash(npm update:*)",
       "Bash(test:*)",
       "Bash(git diff:*)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "Bash(set NODE_OPTIONS=--max-old-space-size=4096)"
     ],
     "deny": [],
     "ask": []

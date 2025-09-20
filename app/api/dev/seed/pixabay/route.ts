@@ -34,18 +34,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // 在生产环境下，只有提供正确的token才能使用这个功能
     if (process.env.NODE_ENV === 'production') {
-      return new NextResponse('Not Found', { status: 404 })
+      if (!SEED_TOKEN) {
+        return new NextResponse('Not Found', { status: 404 })
+      }
+      const providedToken = request.headers.get('x-seed-token') || ''
+      if (providedToken !== SEED_TOKEN) {
+        return new NextResponse('Not Found', { status: 404 })
+      }
     }
 
-    if (!SEED_TOKEN) {
-      console.error('SEED_TOKEN is not configured; refusing seed request')
-      return NextResponse.json({ error: 'Seed feature not configured' }, { status: 500 })
-    }
+    // 开发环境下也需要检查token
+    if (process.env.NODE_ENV !== 'production') {
+      if (!SEED_TOKEN) {
+        console.error('SEED_TOKEN is not configured; refusing seed request')
+        return NextResponse.json({ error: 'Seed feature not configured' }, { status: 500 })
+      }
 
-    const providedToken = request.headers.get('x-seed-token') || ''
-    if (providedToken !== SEED_TOKEN) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      const providedToken = request.headers.get('x-seed-token') || ''
+      if (providedToken !== SEED_TOKEN) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
     }
 
     const clientIp = extractClientIp(request)
