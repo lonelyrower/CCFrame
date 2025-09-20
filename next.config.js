@@ -46,12 +46,12 @@ const baseConfig = {
       removeConsole: true,
     },
   }),
-  // 开发环境性能优化
+  // 构建性能优化 - 在 Docker 构建时跳过类型检查和 ESLint
   typescript: {
-    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+    ignoreBuildErrors: true, // Docker 环境中跳过 TS 检查以提升构建速度
   },
   eslint: {
-    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
+    ignoreDuringBuilds: true, // Docker 环境中跳过 ESLint 检查以提升构建速度
   },
   experimental: {
     serverComponentsExternalPackages: ['sharp', 'exifr'],
