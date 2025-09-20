@@ -64,6 +64,21 @@ describe('Storage Manager Fallback', () => {
     const buf = await manager.downloadBuffer(key)
     expect(buf.toString()).toBe('read')
   })
+
+  test('aws provider accepts S3_* config fallback', () => {
+    process.env.S3_BUCKET_NAME = 'alias-bucket'
+    process.env.S3_ACCESS_KEY_ID = 'alias-key'
+    process.env.S3_SECRET_ACCESS_KEY = 'alias-secret'
+    process.env.S3_REGION = 'ap-southeast-1'
+    delete process.env.AWS_S3_BUCKET
+    delete process.env.AWS_ACCESS_KEY_ID
+    delete process.env.AWS_SECRET_ACCESS_KEY
+
+    const manager = StorageManager.createFromSettings('aws')
+    const config = (manager as any).config
+    expect(config.bucket).toBe('alias-bucket')
+    expect(config.region).toBe('ap-southeast-1')
+  })
 })
 
 describe('StorageManager healthCheck', () => {

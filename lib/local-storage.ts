@@ -1,5 +1,8 @@
 import fs from 'fs'
 import path from 'path'
+import { getRuntimeConfig } from './runtime-config'
+
+getRuntimeConfig()
 
 const fsp = fs.promises
 const MIME_BY_EXT: Record<string, string> = {
@@ -161,7 +164,8 @@ let globalLocalStorageManager: LocalStorageManager | null = null
 
 export function getLocalStorageManager(): LocalStorageManager {
   if (!globalLocalStorageManager) {
-    globalLocalStorageManager = new LocalStorageManager('./uploads')
+    const basePath = process.env.UPLOAD_PATH || './uploads'
+    globalLocalStorageManager = new LocalStorageManager(basePath)
   }
   return globalLocalStorageManager
 }

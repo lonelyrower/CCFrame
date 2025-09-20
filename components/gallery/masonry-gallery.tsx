@@ -255,7 +255,8 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
                 position: "absolute",
                 width: Math.max(width, 50),
                 height: Math.max(height, 50),
-                transform: `translate3d(${left}px, ${top}px, 0)`,
+                top,
+                left,
               }}
               tabIndex={0}
               role="button"
@@ -349,3 +350,4 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
     </>
   )
 }
+

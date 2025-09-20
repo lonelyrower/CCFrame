@@ -39,7 +39,6 @@ async function getPhotos(params: SearchParams): Promise<PhotoWithDetails[]> {
         tag: {
           name: {
             contains: params.tag,
-            mode: 'insensitive',
           },
         },
       },
@@ -54,7 +53,7 @@ async function getPhotos(params: SearchParams): Promise<PhotoWithDetails[]> {
           album: {
             title: {
               contains: term,
-              mode: 'insensitive',
+              
             },
           },
         },
@@ -64,7 +63,7 @@ async function getPhotos(params: SearchParams): Promise<PhotoWithDetails[]> {
               tag: {
                 name: {
                   contains: term,
-                  mode: 'insensitive',
+                  
                 },
               },
             },

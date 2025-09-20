@@ -31,15 +31,15 @@ export async function GET(req: Request) {
 
   // Build shared AND conditions for camera/lens basic substring (DB-level narrowing)
   const exifAnd: any[] = []
-  if (camera) exifAnd.push({ exifJson: { contains: camera, mode: 'insensitive' as const } })
-  if (lens) exifAnd.push({ exifJson: { contains: lens, mode: 'insensitive' as const } })
+  if (camera) exifAnd.push({ exifJson: { contains: camera } })
+  if (lens) exifAnd.push({ exifJson: { contains: lens } })
 
   // Tag query (only if q provided)
   const tagWhere: any = {
     status: 'COMPLETED',
   }
   if (q) {
-    tagWhere.tags = { some: { tag: { name: { contains: q, mode: 'insensitive' } } } }
+    tagWhere.tags = { some: { tag: { name: { contains: q } } } }
   }
   if (exifAnd.length) {
     // Even for tagMatches we enforce camera/lens constraints to ensure intersection semantics
@@ -57,7 +57,7 @@ export async function GET(req: Request) {
   // EXIF query (q OR camera/lens). We widen exifJson contains with q (if present)
   const exifWhere: any = { status: 'COMPLETED' }
   const exifConditions: any[] = []
-  if (q) exifConditions.push({ exifJson: { contains: q, mode: 'insensitive' } })
+  if (q) exifConditions.push({ exifJson: { contains: q } })
   exifAnd.forEach(c => exifConditions.push(c))
   if (exifConditions.length) exifWhere.AND = exifConditions
 
@@ -129,3 +129,4 @@ export async function GET(req: Request) {
 
   return NextResponse.json({ ok: true, count: merged.length, items: merged, query: { q, camera, lens } })
 }
+

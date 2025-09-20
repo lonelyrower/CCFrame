@@ -2,6 +2,9 @@ import { Readable } from 'stream'
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getLocalStorageManager, LocalStorageManager } from './local-storage'
+import { getRuntimeConfig } from './runtime-config'
+
+getRuntimeConfig()
 
 export type StorageProvider = 'minio' | 'aws' | 'aliyun' | 'qcloud'
 
@@ -23,6 +26,57 @@ type StorageHealthStatus = {
   error?: string
   code?: string
   statusCode?: number
+}
+
+
+type NormalizedStorageProvider = StorageProvider | 'local'
+
+const STORAGE_PROVIDER_ALIASES: Record<string, NormalizedStorageProvider> = {
+  aws: 'aws',
+  s3: 'aws',
+  'aws-s3': 'aws',
+  minio: 'minio',
+  'minio-s3': 'minio',
+  aliyun: 'aliyun',
+  oss: 'aliyun',
+  qcloud: 'qcloud',
+  cos: 'qcloud',
+  local: 'local',
+  filesystem: 'local',
+  fs: 'local',
+}
+
+function firstEnv(keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = process.env[key]
+    if (value && value.length > 0) {
+      return value
+    }
+  }
+  return undefined
+}
+
+function requireEnv(keys: string[], provider: string): string {
+  const value = firstEnv(keys)
+  if (!value) {
+    const joined = keys.join(' or ')
+    throw new Error(`[storage] Missing environment variable ${joined} for provider "${provider}"`)
+  }
+  return value
+}
+
+function normalizeStorageProvider(value?: string): NormalizedStorageProvider {
+  if (!value) {
+    return 'minio'
+  }
+
+  const normalized = value.trim().toLowerCase()
+  const resolved = STORAGE_PROVIDER_ALIASES[normalized]
+  if (!resolved) {
+    console.warn(`[storage] Unknown storage provider "${value}", falling back to "minio"`)
+    return 'minio'
+  }
+  return resolved
 }
 
 
@@ -48,45 +102,56 @@ export class StorageManager {
     const configs: Record<StorageProvider, () => StorageConfig> = {
       minio: () => ({
         provider: 'minio',
-        endpoint: process.env.S3_ENDPOINT || 'http://127.0.0.1:9000',
-        region: process.env.S3_REGION || 'us-east-1',
-        accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.MINIO_ROOT_USER || 'minioadmin',
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.MINIO_ROOT_PASSWORD || 'minioadmin',
-        bucket: process.env.S3_BUCKET_NAME!,
-        cdnUrl: process.env.CDN_BASE_URL,
+        endpoint: firstEnv(['S3_ENDPOINT', 'MINIO_ENDPOINT']) || 'http://127.0.0.1:9000',
+        region: firstEnv(['S3_REGION', 'MINIO_REGION']) || 'us-east-1',
+        accessKeyId: requireEnv(['S3_ACCESS_KEY_ID', 'MINIO_ROOT_USER', 'AWS_ACCESS_KEY_ID'], 'minio'),
+        secretAccessKey: requireEnv(['S3_SECRET_ACCESS_KEY', 'MINIO_ROOT_PASSWORD', 'AWS_SECRET_ACCESS_KEY'], 'minio'),
+        bucket: requireEnv(['S3_BUCKET_NAME', 'MINIO_BUCKET', 'AWS_S3_BUCKET'], 'minio'),
+        cdnUrl: firstEnv(['CDN_BASE_URL', 'AWS_CLOUDFRONT_URL']),
         forcePathStyle: true,
       }),
       aws: () => ({
         provider: 'aws',
-        region: process.env.AWS_REGION!,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-        bucket: process.env.AWS_S3_BUCKET!,
-        cdnUrl: process.env.AWS_CLOUDFRONT_URL,
+        endpoint: firstEnv(['AWS_S3_ENDPOINT', 'S3_ENDPOINT']),
+        region: requireEnv(['AWS_REGION', 'S3_REGION'], 'aws'),
+        accessKeyId: requireEnv(['AWS_ACCESS_KEY_ID', 'S3_ACCESS_KEY_ID'], 'aws'),
+        secretAccessKey: requireEnv(['AWS_SECRET_ACCESS_KEY', 'S3_SECRET_ACCESS_KEY'], 'aws'),
+        bucket: requireEnv(['AWS_S3_BUCKET', 'S3_BUCKET_NAME'], 'aws'),
+        cdnUrl: firstEnv(['AWS_CLOUDFRONT_URL', 'CDN_BASE_URL']),
       }),
-      aliyun: () => ({
-        provider: 'aliyun',
-        endpoint: `https://oss-${process.env.ALIYUN_REGION}.aliyuncs.com`,
-        region: process.env.ALIYUN_REGION!,
-        accessKeyId: process.env.ALIYUN_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.ALIYUN_SECRET_ACCESS_KEY!,
-        bucket: process.env.ALIYUN_OSS_BUCKET!,
-        cdnUrl: process.env.ALIYUN_CDN_URL,
-      }),
-      qcloud: () => ({
-        provider: 'qcloud',
-        endpoint: `https://cos.${process.env.QCLOUD_REGION}.myqcloud.com`,
-        region: process.env.QCLOUD_REGION!,
-        accessKeyId: process.env.QCLOUD_SECRET_ID!,
-        secretAccessKey: process.env.QCLOUD_SECRET_KEY!,
-        bucket: process.env.QCLOUD_COS_BUCKET!,
-        cdnUrl: process.env.QCLOUD_CDN_URL,
-      }),
+      aliyun: () => {
+        const region = requireEnv(['ALIYUN_REGION'], 'aliyun')
+        return {
+          provider: 'aliyun',
+          endpoint: firstEnv(['ALIYUN_ENDPOINT']) || `https://oss-${region}.aliyuncs.com`,
+          region,
+          accessKeyId: requireEnv(['ALIYUN_ACCESS_KEY_ID'], 'aliyun'),
+          secretAccessKey: requireEnv(['ALIYUN_SECRET_ACCESS_KEY'], 'aliyun'),
+          bucket: requireEnv(['ALIYUN_OSS_BUCKET'], 'aliyun'),
+          cdnUrl: firstEnv(['ALIYUN_CDN_URL', 'CDN_BASE_URL']),
+        }
+      },
+      qcloud: () => {
+        const region = requireEnv(['QCLOUD_REGION'], 'qcloud')
+        return {
+          provider: 'qcloud',
+          endpoint: firstEnv(['QCLOUD_ENDPOINT']) || `https://cos.${region}.myqcloud.com`,
+          region,
+          accessKeyId: requireEnv(['QCLOUD_SECRET_ID'], 'qcloud'),
+          secretAccessKey: requireEnv(['QCLOUD_SECRET_KEY'], 'qcloud'),
+          bucket: requireEnv(['QCLOUD_COS_BUCKET'], 'qcloud'),
+          cdnUrl: firstEnv(['QCLOUD_CDN_URL', 'CDN_BASE_URL']),
+        }
+      },
     }
 
-    return new StorageManager(configs[provider]())
-  }
+    const factory = configs[provider]
+    if (!factory) {
+      throw new Error(`Unsupported storage provider: ${provider}`)
+    }
 
+    return new StorageManager(factory())
+  }
   async uploadBuffer(key: string, buffer: Buffer, contentType: string): Promise<void> {
     const command = new PutObjectCommand({
       Bucket: this.config.bucket,
@@ -361,43 +426,44 @@ let globalStorageManager: StorageManager | any
 
 export function getStorageManager(): StorageManager | any {
   if (!globalStorageManager) {
-    const provider = (process.env.STORAGE_PROVIDER as StorageProvider) || 'minio'
+    const normalized = normalizeStorageProvider(process.env.STORAGE_PROVIDER)
     const isDev = process.env.NODE_ENV !== 'production'
 
-    if (process.env.STORAGE_PROVIDER === 'local') {
-      return getLocalStorageManager()
+    if (normalized === 'local') {
+      globalStorageManager = getLocalStorageManager()
+      return globalStorageManager
     }
 
-    if (isDev) {
-      const s3Endpoint = process.env.S3_ENDPOINT
-      const s3Bucket = process.env.S3_BUCKET_NAME
-      const s3Key = process.env.S3_ACCESS_KEY_ID || process.env.MINIO_ROOT_USER
-      const s3Secret = process.env.S3_SECRET_ACCESS_KEY || process.env.MINIO_ROOT_PASSWORD
-      const awsBucket = process.env.AWS_S3_BUCKET
-      const awsKey = process.env.AWS_ACCESS_KEY_ID
-      const awsSecret = process.env.AWS_SECRET_ACCESS_KEY
+    const provider = normalized as StorageProvider
 
-      const minioIncomplete = provider === 'minio' && (!s3Endpoint || !s3Bucket || !s3Key || !s3Secret)
-      const awsIncomplete = provider === 'aws' && (!awsBucket || !awsKey || !awsSecret)
-      if (minioIncomplete || awsIncomplete) {
-        return getLocalStorageManager()
-      }
-    }
-
-    if (isDev && provider === 'minio') {
-      try {
-        globalStorageManager = StorageManager.createFromSettings(provider)
-      } catch (error) {
-        console.warn('S3/MinIO not available, falling back to local storage:', error)
-        return getLocalStorageManager()
-      }
-    } else {
+    try {
       globalStorageManager = StorageManager.createFromSettings(provider)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const providerValue = process.env.STORAGE_PROVIDER || 'minio'
+      const note = `[storage] Failed to initialize provider "${providerValue}": ${message}`
+      if (isDev) {
+        console.warn(note)
+      } else {
+        console.error(note)
+      }
+      globalStorageManager = getLocalStorageManager()
+      return globalStorageManager
     }
   }
   return globalStorageManager
 }
 
 export function setStorageProvider(provider: StorageProvider): void {
-  globalStorageManager = StorageManager.createFromSettings(provider)
+  resetStorageManager()
+  if (provider === 'local') {
+    globalStorageManager = getLocalStorageManager()
+  } else {
+    globalStorageManager = StorageManager.createFromSettings(provider)
+  }
 }
+
+export function resetStorageManager(): void {
+  globalStorageManager = undefined
+}
+

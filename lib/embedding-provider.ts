@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
+import { getRuntimeConfig } from '@/lib/runtime-config'
 import { getSemanticConfig, type SemanticProvider } from '@/lib/semantic-config'
 import { recordEmbeddingProvider, recordQueryEmbeddingCache } from '@/lib/metrics'
 
@@ -10,8 +11,13 @@ export interface EmbeddingResult {
   provider: string
 }
 
-const OPENAI_ENDPOINT = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '')
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+function getOpenAIConfig() {
+  const runtime = getRuntimeConfig()
+  const semantic = runtime.semantic || {}
+  const baseUrl = (semantic.openaiBaseUrl || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '')
+  const apiKey = semantic.openaiApiKey || process.env.OPENAI_API_KEY
+  return { apiKey, baseUrl }
+}
 
 function normalize(vector: Float32Array) {
   let sum = 0
@@ -72,7 +78,8 @@ function readQueryCache(key: string) {
 }
 
 async function callOpenAIEmbedding(input: string | string[], model: string, retries: number): Promise<Float32Array> {
-  if (!OPENAI_API_KEY) {
+  const { apiKey, baseUrl } = getOpenAIConfig()
+  if (!apiKey) {
     throw new Error('Missing OPENAI_API_KEY')
   }
   const payload = JSON.stringify({ input, model })
@@ -80,11 +87,11 @@ async function callOpenAIEmbedding(input: string | string[], model: string, retr
   let delay = 500
   while (true) {
     const started = Date.now()
-    const response = await fetch(`${OPENAI_ENDPOINT}/embeddings`, {
+    const response = await fetch(`${baseUrl}/embeddings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`
       },
       body: payload,
     })
