@@ -1,4 +1,4 @@
-import { RuntimeConfigPanel } from '@/components/admin/runtime-config-panel'
+import RuntimeConfigPanel from '@/components/admin/runtime-config-panel'
 
 export const dynamic = 'force-dynamic'
 
