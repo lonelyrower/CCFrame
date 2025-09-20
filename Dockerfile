@@ -23,7 +23,7 @@ RUN apt-get update && \
 FROM base AS build
 
 COPY package.json package-lock.json ./
-RUN npm ci --only=production --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma
@@ -34,6 +34,9 @@ COPY . .
 # Build Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
+
+# Prune dev dependencies after build
+RUN npm prune --production
 
 # Runner image
 FROM base AS runner
