@@ -2,17 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { 
-  User, 
-  Lock, 
-  Database, 
-  Palette, 
+import {
+  User,
+  Lock,
+  Database,
+  Palette,
   Globe,
   Save,
   Eye,
   EyeOff,
   Shield,
   Key,
+  Bug,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
@@ -78,6 +79,7 @@ export default function SettingsPage() {
   })
 
   const [isLoading, setIsLoading] = useState(false)
+  const [debugConfig, setDebugConfig] = useState<any>(null)
 
   useEffect(() => {
     const email = session?.user?.email || ''
@@ -267,10 +269,24 @@ export default function SettingsPage() {
     }
   }
 
+  // Load debug configuration
+  const loadDebugConfig = async () => {
+    try {
+      const response = await fetch('/api/admin/debug/config')
+      if (response.ok) {
+        const data = await response.json()
+        setDebugConfig(data)
+      }
+    } catch (error) {
+      console.error('加载配置信息失败:', error)
+    }
+  }
+
   // Load settings on component mount
   useEffect(() => {
     loadApiSettings()
     loadStorageSettings()
+    loadDebugConfig()
   }, [])
 
   const tabs = [
@@ -278,7 +294,8 @@ export default function SettingsPage() {
     { id: 'security', name: '安全设置', icon: Shield },
     { id: 'site', name: '网站设置', icon: Globe },
     { id: 'storage', name: '存储设置', icon: Database },
-    { id: 'apis', name: 'API 配置', icon: Key }
+    { id: 'apis', name: 'API 配置', icon: Key },
+    { id: 'debug', name: '配置检查', icon: Bug }
   ]
 
   return (
@@ -784,6 +801,103 @@ export default function SettingsPage() {
                   >
                     {isLoading ? '保存中...' : '保存更改'}
                   </Button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'debug' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    系统配置检查
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    查看当前系统的环境变量和配置状态，用于调试和故障排除。
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium text-gray-900 dark:text-white">配置信息</h4>
+                    <Button
+                      onClick={loadDebugConfig}
+                      size="sm"
+                      variant="outline"
+                    >
+                      刷新
+                    </Button>
+                  </div>
+
+                  {debugConfig ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">运行环境:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              debugConfig.NODE_ENV === 'production'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                                : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                            }`}>
+                              {debugConfig.NODE_ENV}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">存储方式:</span>
+                            <span className="text-sm font-mono text-gray-900 dark:text-white">
+                              {debugConfig.STORAGE_PROVIDER}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">SEED_TOKEN:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              debugConfig.SEED_TOKEN_SET
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {debugConfig.SEED_TOKEN_VALUE}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">PIXABAY_API_KEY:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              debugConfig.PIXABAY_API_KEY_SET
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {debugConfig.PIXABAY_API_KEY_VALUE}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">最大导入数:</span>
+                            <span className="text-sm font-mono text-gray-900 dark:text-white">
+                              {debugConfig.SEED_MAX_COUNT}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">检查时间:</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {new Date(debugConfig.timestamp).toLocaleString('zh-CN')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                        <p className="text-sm text-blue-800 dark:text-blue-300">
+                          <strong>提示：</strong> 如果导入示例图片出现404错误，请检查SEED_TOKEN和PIXABAY_API_KEY是否正确设置。
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-gray-500 dark:text-gray-400">
+                        点击"刷新"按钮加载配置信息
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -37,11 +37,17 @@ export async function POST(request: NextRequest) {
     // 在生产环境下，只有提供正确的token才能使用这个功能
     if (process.env.NODE_ENV === 'production') {
       if (!SEED_TOKEN) {
-        return new NextResponse('Not Found', { status: 404 })
+        console.error('SEED_TOKEN环境变量未设置，禁用seed功能')
+        return NextResponse.json({
+          error: 'Seed功能未配置。请联系管理员设置SEED_TOKEN环境变量。'
+        }, { status: 500 })
       }
       const providedToken = request.headers.get('x-seed-token') || ''
       if (providedToken !== SEED_TOKEN) {
-        return new NextResponse('Not Found', { status: 404 })
+        console.error(`SEED_TOKEN不匹配: 期望="${SEED_TOKEN}", 实际="${providedToken}"`)
+        return NextResponse.json({
+          error: 'Token验证失败。请确认SEED_TOKEN配置。'
+        }, { status: 403 })
       }
     }
 
@@ -69,19 +75,23 @@ export async function POST(request: NextRequest) {
       select: { id: true, pixabayApiKey: true },
     })
 
+    const body = await request.json().catch(() => ({}))
+
     let apiKey = (user as any)?.pixabayApiKey || process.env.PIXABAY_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ 
-        error: 'Pixabay API Key 未设置。请在管理设置 > API 配置中配置您的 API Key，或者联系管理员设置环境变量。' 
+      console.error('PIXABAY_API_KEY未设置，无法导入示例图片')
+      return NextResponse.json({
+        error: 'Pixabay API Key 未设置。请在管理设置 > API 配置中配置您的 API Key，或者联系管理员设置PIXABAY_API_KEY环境变量。'
       }, { status: 400 })
     }
-
-    const body = await request.json().catch(() => ({}))
     const query = (body.query as string) || 'nature'
     // 允许通过环境变量配置最大导入数量，仍保留一个硬上限以防误配
     const requested = Number(body.count || 3)
     const count = Math.min(Math.max(1, requested), CONFIG_MAX_SEED)
     const visibility = (body.visibility as 'PUBLIC' | 'PRIVATE') || 'PUBLIC'
+
+    console.log(`开始导入示例图片: 查询="${query}", 数量=${count}, 环境=${process.env.NODE_ENV}`)
+    console.log(`存储配置: STORAGE_PROVIDER=${process.env.STORAGE_PROVIDER || 'local'}`)
 
     const searchUrl = new URL('https://pixabay.com/api/')
     searchUrl.searchParams.set('key', apiKey)
