@@ -292,7 +292,9 @@ export default function SettingsPage() {
       serviceWorkerRegistered: false,
       serviceWorkerActive: false,
       manifestSupported: 'Notification' in window,
-      pwaEnabled: process.env.NEXT_PUBLIC_ENABLE_PWA === 'true',
+      pwaEnabled: typeof window !== 'undefined' &&
+        (document.querySelector('meta[name="theme-color"]') !== null ||
+         document.querySelector('link[rel="manifest"]') !== null),
       currentUrl: window.location.origin,
       timestamp: new Date().toISOString()
     }
