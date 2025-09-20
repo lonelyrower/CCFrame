@@ -24,7 +24,7 @@ export function LightboxProvider({ photos, children }: { photos: PhotoWithDetail
   const [helpOpen, setHelpOpen] = useState(false)
 
   // Safe access to photos - ensure we have valid data
-  const safePhotos = photos || []
+  const safePhotos = useMemo(() => photos || [], [photos])
   const hasPhotos = safePhotos.length > 0
 
   const go = useCallback((i: number) => {

@@ -239,7 +239,7 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
   return (
     <>
       <div ref={containerRef} className="relative w-full" style={{ height: totalHeight }}>
-        {itemsToRender.map(({ photo, column, top }) => {
+        {itemsToRender.map(({ photo, column, top, height }) => {
           const width = columnWidth || 0
           const left = column * (width + COLUMN_GAP)
 
