@@ -925,7 +925,7 @@ export default function SettingsPage() {
                   ) : (
                     <div className="text-center py-8">
                       <div className="text-gray-500 dark:text-gray-400">
-                        点击"刷新"按钮加载配置信息
+                        点击&quot;刷新&quot;按钮加载配置信息
                       </div>
                     </div>
                   )}
@@ -1017,7 +1017,7 @@ export default function SettingsPage() {
                   ) : (
                     <div className="text-center py-8">
                       <div className="text-gray-500 dark:text-gray-400">
-                        点击"刷新"按钮加载配置信息
+                        点击&quot;刷新&quot;按钮加载配置信息
                       </div>
                     </div>
                   )}
