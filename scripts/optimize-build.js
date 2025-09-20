@@ -90,8 +90,19 @@ function optimizedBuild() {
   const startTime = Date.now()
   
   try {
-    // 并行执行 TypeScript 类型检查和 Next.js 构建
-    execSync('npm run type-check & npm run build:original', { 
+    // 序列执行构建，避免并行问题
+    console.log('🔍 TypeScript 类型检查...')
+    execSync('npm run type-check', { 
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        NODE_ENV: 'production',
+        NEXT_TELEMETRY_DISABLED: '1'
+      }
+    })
+    
+    console.log('🏗️  Next.js 构建...')
+    execSync('npm run build:original', { 
       stdio: 'inherit',
       env: {
         ...process.env,

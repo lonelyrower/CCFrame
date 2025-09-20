@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--max-old-space-size=4096' next dev --turbo",
-    "build": "node scripts/optimize-build.js",
+    "build": "next build",
     "build:original": "next build",
+    "build:optimized": "node scripts/optimize-build.js",
     "build:fast": "node scripts/optimize-build.js fast",
     "build:analyze": "node scripts/optimize-build.js analyze",
     "build:clean": "node scripts/optimize-build.js clean",
