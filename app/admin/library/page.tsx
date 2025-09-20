@@ -102,32 +102,30 @@ async function getPhotos(page = 1, limit = 50, filter?: string): Promise<{
 
 function LibraryLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg animate-pulse">
-              <div className="flex items-center">
-                <div className="w-5 h-5 bg-gray-300 dark:bg-gray-700 rounded mr-2" />
-                <div>
-                  <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-12 mb-2" />
-                  <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-8" />
-                </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg animate-pulse">
+            <div className="flex items-center">
+              <div className="w-5 h-5 bg-gray-300 dark:bg-gray-700 rounded mr-2" />
+              <div>
+                <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-12 mb-2" />
+                <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-8" />
               </div>
             </div>
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div key={i} className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+        ))}
       </div>
     </div>
   )
@@ -141,8 +139,7 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div className="mb-4 lg:mb-0">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -153,10 +150,13 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
             </p>
           </div>
           
-          <LibraryControls 
-            initialFilter={searchParams.filter}
-            initialViewMode={searchParams.view as 'grid' | 'list' || 'grid'}
-          />
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:items-center">
+            <SeedDemoButton count={12} />
+            <LibraryControls 
+              initialFilter={searchParams.filter}
+              initialViewMode={searchParams.view as 'grid' | 'list' || 'grid'}
+            />
+          </div>
         </div>
 
         <LibraryStatsBar stats={stats} />
@@ -187,7 +187,6 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
             </button>
           </div>
         )}
-      </div>
     </div>
   )
 }
