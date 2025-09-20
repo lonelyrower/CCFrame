@@ -91,7 +91,7 @@ function optimizedBuild() {
   
   try {
     // 并行执行 TypeScript 类型检查和 Next.js 构建
-    execSync('npm run type-check & npm run build', { 
+    execSync('npm run type-check & npm run build:original', { 
       stdio: 'inherit',
       env: {
         ...process.env,
