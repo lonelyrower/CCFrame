@@ -72,6 +72,16 @@ const baseConfig = {
       },
     ]
   },
+  webpack: (config, { dev, isServer }) => {
+    // 编译Service Worker
+    if (!dev && !isServer) {
+      config.entry = {
+        ...config.entry,
+        sw: './app/sw.ts',
+      }
+    }
+    return config
+  },
 }
 
 module.exports = withAnalyzer(baseConfig)

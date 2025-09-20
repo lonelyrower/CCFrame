@@ -11,7 +11,8 @@ type ServiceWorkerMessage = {
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') return
+    // 检查PWA是否启用
+    if (process.env.NEXT_PUBLIC_ENABLE_PWA !== 'true') return
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
 
     let unmounted = false

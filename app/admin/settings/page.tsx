@@ -80,6 +80,7 @@ export default function SettingsPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [debugConfig, setDebugConfig] = useState<any>(null)
+  const [pwaStatus, setPwaStatus] = useState<any>(null)
 
   useEffect(() => {
     const email = session?.user?.email || ''
@@ -282,11 +283,41 @@ export default function SettingsPage() {
     }
   }
 
+  // Check PWA status
+  const checkPwaStatus = async () => {
+    if (typeof window === 'undefined') return
+
+    const status = {
+      serviceWorkerSupported: 'serviceWorker' in navigator,
+      serviceWorkerRegistered: false,
+      serviceWorkerActive: false,
+      manifestSupported: 'Notification' in window,
+      pwaEnabled: process.env.NEXT_PUBLIC_ENABLE_PWA === 'true',
+      currentUrl: window.location.origin,
+      timestamp: new Date().toISOString()
+    }
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration()
+        if (registration) {
+          status.serviceWorkerRegistered = true
+          status.serviceWorkerActive = !!registration.active
+        }
+      }
+    } catch (error) {
+      console.error('检查Service Worker状态失败:', error)
+    }
+
+    setPwaStatus(status)
+  }
+
   // Load settings on component mount
   useEffect(() => {
     loadApiSettings()
     loadStorageSettings()
     loadDebugConfig()
+    checkPwaStatus()
   }, [])
 
   const tabs = [
@@ -888,6 +919,98 @@ export default function SettingsPage() {
                       <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                         <p className="text-sm text-blue-800 dark:text-blue-300">
                           <strong>提示：</strong> 如果导入示例图片出现404错误，请检查SEED_TOKEN和PIXABAY_API_KEY是否正确设置。
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-gray-500 dark:text-gray-400">
+                        点击"刷新"按钮加载配置信息
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium text-gray-900 dark:text-white">PWA 状态</h4>
+                    <Button
+                      onClick={checkPwaStatus}
+                      size="sm"
+                      variant="outline"
+                    >
+                      检查
+                    </Button>
+                  </div>
+
+                  {pwaStatus ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">PWA 启用:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              pwaStatus.pwaEnabled
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {pwaStatus.pwaEnabled ? '已启用' : '已禁用'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">SW 支持:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              pwaStatus.serviceWorkerSupported
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {pwaStatus.serviceWorkerSupported ? '支持' : '不支持'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">SW 注册:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              pwaStatus.serviceWorkerRegistered
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {pwaStatus.serviceWorkerRegistered ? '已注册' : '未注册'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">SW 激活:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              pwaStatus.serviceWorkerActive
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {pwaStatus.serviceWorkerActive ? '已激活' : '未激活'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">通知支持:</span>
+                            <span className={`text-sm font-mono px-2 py-1 rounded ${
+                              pwaStatus.manifestSupported
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                              {pwaStatus.manifestSupported ? '支持' : '不支持'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">检查时间:</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {new Date(pwaStatus.timestamp).toLocaleString('zh-CN')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                        <p className="text-sm text-green-800 dark:text-green-300">
+                          <strong>说明：</strong> PWA功能让应用可以离线使用、添加到主屏幕，并提供原生应用般的体验。
                         </p>
                       </div>
                     </div>

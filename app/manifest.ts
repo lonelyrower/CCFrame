@@ -2,13 +2,13 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Personal Photo Gallery',
-    short_name: 'PhotoGallery',
-    description: 'A beautiful, private photo gallery focused on simple display',
+    name: 'CC Frame - Creative Camera',
+    short_name: 'CC Frame',
+    description: 'CC Frame 是一个现代化的相册网站，专注照片展示与管理',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#ec4899',
+    theme_color: '#6366f1',
     orientation: 'portrait',
     categories: ['photography', 'lifestyle'],
     icons: [
