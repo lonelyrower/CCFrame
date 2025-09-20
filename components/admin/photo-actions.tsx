@@ -19,6 +19,7 @@ export function PhotoActions({
 }) {
   const [busy, setBusy] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [fullPhoto, setFullPhoto] = useState<PhotoWithDetails | null>(photo || null)
   
   // Support both legacy and new props
   const id = photo?.id || photoId!
@@ -55,6 +56,29 @@ export function PhotoActions({
     window.open(`/api/image/${id}/large?format=jpeg`, '_blank')
   }
 
+  const handleEdit = async () => {
+    if (fullPhoto) {
+      setShowEditModal(true)
+      return
+    }
+
+    // 如果没有完整的photo数据，先获取
+    try {
+      setBusy(true)
+      const response = await fetch(`/api/photos/${id}`)
+      if (!response.ok) {
+        throw new Error('获取照片数据失败')
+      }
+      const { photo: photoData } = await response.json()
+      setFullPhoto(photoData)
+      setShowEditModal(true)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '获取照片数据失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -62,7 +86,7 @@ export function PhotoActions({
           <button 
             className="p-1 text-white hover:bg-white/20 rounded" 
             title="编辑" 
-            onClick={() => setShowEditModal(true)}
+            onClick={handleEdit}
             disabled={busy}
           >
             <Edit className="w-4 h-4" />
@@ -84,12 +108,13 @@ export function PhotoActions({
         </div>
       </div>
 
-      {photo && (
+      {fullPhoto && (
         <PhotoEditModal
-          photo={photo}
+          photo={fullPhoto}
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           onUpdated={(updatedPhoto) => {
+            setFullPhoto(updatedPhoto)
             onChanged?.(updatedPhoto.visibility as 'PUBLIC' | 'PRIVATE' | 'DELETED')
           }}
         />

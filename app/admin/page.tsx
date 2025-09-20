@@ -96,7 +96,7 @@ async function RecentPhotos() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       {recentPhotos.map((photo) => (
-        <div key={photo.id} className="group relative">
+        <div key={photo.id} className="group relative cursor-pointer">
           <div className="relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
             {photo.variants[0] && (
               <Image
@@ -108,7 +108,12 @@ async function RecentPhotos() {
               />
             )}
           </div>
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
+          <a 
+            href={`/api/image/${photo.id}/large?format=jpeg`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center"
+          >
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
               {photo.visibility === 'PUBLIC' ? (
                 <Eye className="h-6 w-6 text-white" />
@@ -116,7 +121,7 @@ async function RecentPhotos() {
                 <EyeOff className="h-6 w-6 text-white" />
               )}
             </div>
-          </div>
+          </a>
         </div>
       ))}
     </div>

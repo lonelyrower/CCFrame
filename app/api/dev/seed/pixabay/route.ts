@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 获取用户的API Key设置
+    // 获取用户的API Key设置和默认导入数量
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, pixabayApiKey: true },
+      select: { id: true, pixabayApiKey: true, defaultSeedCount: true } as any,
     })
 
     if (!user) {
@@ -70,8 +70,12 @@ export async function POST(request: NextRequest) {
     }
     const query = (body.query as string) || 'nature'
     // 允许通过环境变量配置最大导入数量，仍保留一个硬上限以防误配
-    const requested = Number(body.count || 3)
-    const count = Math.min(Math.max(1, requested), CONFIG_MAX_SEED)
+    // 使用用户设置的默认数量，如果未设置则使用请求中的数量
+    const userDefaultCount = (user as any)?.defaultSeedCount || 12
+    const requested = Number(body.count || userDefaultCount)
+    // 提高默认最大限制到30，或使用环境变量
+    const maxAllowed = Math.min(Number(process.env.SEED_MAX_COUNT || '30'), HARD_MAX_SEED)
+    const count = Math.min(Math.max(1, requested), maxAllowed)
     const visibility = (body.visibility as 'PUBLIC' | 'PRIVATE') || 'PUBLIC'
 
     console.log(`开始导入示例图片: 查询="${query}", 数量=${count}, 环境=${process.env.NODE_ENV}`)

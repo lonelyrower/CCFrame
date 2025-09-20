@@ -126,7 +126,9 @@ export default function UploadPage() {
       })
 
       if (!presignResponse.ok) {
-        throw new Error('获取上传地址失败')
+        const errorData = await presignResponse.json().catch(() => ({}))
+        const errorMessage = errorData.error || `服务器错误 (${presignResponse.status})`
+        throw new Error(`获取上传地址失败: ${errorMessage}`)
       }
 
   const { photoId, uploadUrl, fileKey, completed, duplicate } = await presignResponse.json()
@@ -206,7 +208,7 @@ export default function UploadPage() {
     if (files.length === 0) return
 
     setIsUploading(true)
-    toast.success(`Starting upload of ${files.length} files`)
+    toast.success(`开始上传 ${files.length} 个文件`)
 
     // Upload files sequentially to avoid overwhelming the server
     let successCount = 0

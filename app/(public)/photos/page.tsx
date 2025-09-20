@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { LightboxProvider } from '@/components/gallery/lightbox-context'
+import { Lightbox } from '@/components/gallery/lightbox'
 import { PhotosFilters } from '@/components/gallery/photos-filters'
 import type { PhotoWithDetails } from '@/types'
 import { Grid } from 'lucide-react'
@@ -210,6 +211,7 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
       ) : (
         <LightboxProvider photos={photos}>
           <MasonryGallery photos={photos} />
+          <Lightbox />
         </LightboxProvider>
       )}
     </div>

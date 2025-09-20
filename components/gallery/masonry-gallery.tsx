@@ -204,9 +204,10 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
   const handleSelect = useCallback(
     (photo: PhotoWithDetails) => {
       try {
-        if (lightbox) {
+        if (lightbox && typeof lightbox.open === 'function') {
           lightbox.open(photo.id)
         } else {
+          // Always fallback to photo modal when lightbox is not available
           setSelectedPhoto(photo)
         }
       } catch (error) {
