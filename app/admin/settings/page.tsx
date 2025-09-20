@@ -883,13 +883,20 @@ export default function SettingsPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600 dark:text-gray-400">SEED_TOKEN:</span>
-                            <span className={`text-sm font-mono px-2 py-1 rounded ${
-                              debugConfig.SEED_TOKEN_SET
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                            }`}>
-                              {debugConfig.SEED_TOKEN_VALUE}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-sm font-mono px-2 py-1 rounded ${
+                                debugConfig.SEED_TOKEN_SET
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400'
+                              }`}>
+                                {debugConfig.SEED_TOKEN_VALUE}
+                              </span>
+                              {!debugConfig.SEED_TOKEN_SET && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  (管理员可直接使用)
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="space-y-2">
@@ -928,7 +935,7 @@ export default function SettingsPage() {
 
                       <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                         <p className="text-sm text-blue-800 dark:text-blue-300">
-                          <strong>提示：</strong> 如果导入示例图片出现404错误，请检查SEED_TOKEN和PIXABAY_API_KEY是否正确设置。
+                          <strong>提示：</strong> 导入示例图片功能已优化为开箱即用。管理员用户可直接使用，只需在 API 配置中设置 PIXABAY_API_KEY 即可。
                         </p>
                       </div>
                     </div>

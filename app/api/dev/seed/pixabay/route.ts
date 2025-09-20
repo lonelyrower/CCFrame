@@ -34,34 +34,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 在生产环境下，只有提供正确的token才能使用这个功能
-    if (process.env.NODE_ENV === 'production') {
-      if (!SEED_TOKEN) {
-        console.error('SEED_TOKEN环境变量未设置，禁用seed功能')
-        return NextResponse.json({
-          error: 'Seed功能未配置。请联系管理员设置SEED_TOKEN环境变量。'
-        }, { status: 500 })
-      }
+    // 简化的权限验证：只要是登录用户就可以使用
+    // 可选的额外安全层：如果设置了SEED_TOKEN，仍然验证
+    if (SEED_TOKEN) {
       const providedToken = request.headers.get('x-seed-token') || ''
       if (providedToken !== SEED_TOKEN) {
-        console.error(`SEED_TOKEN不匹配: 期望="${SEED_TOKEN}", 实际="${providedToken}"`)
-        return NextResponse.json({
-          error: 'Token验证失败。请确认SEED_TOKEN配置。'
-        }, { status: 403 })
+        return NextResponse.json({ error: 'Token验证失败' }, { status: 403 })
       }
     }
 
-    // 开发环境下也需要检查token
-    if (process.env.NODE_ENV !== 'production') {
-      if (!SEED_TOKEN) {
-        console.error('SEED_TOKEN is not configured; refusing seed request')
-        return NextResponse.json({ error: 'Seed feature not configured' }, { status: 500 })
-      }
+    // 获取用户的API Key设置
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, pixabayApiKey: true },
+    })
 
-      const providedToken = request.headers.get('x-seed-token') || ''
-      if (providedToken !== SEED_TOKEN) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      }
+    if (!user) {
+      return NextResponse.json({ error: '用户不存在' }, { status: 404 })
     }
 
     const clientIp = extractClientIp(request)
@@ -69,14 +58,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Try to get API key from user's settings first, then fallback to environment variable
-    const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, pixabayApiKey: true },
-    })
-
     const body = await request.json().catch(() => ({}))
 
+    // API Key已在上面的user查询中获取
     let apiKey = (user as any)?.pixabayApiKey || process.env.PIXABAY_API_KEY
     if (!apiKey) {
       console.error('PIXABAY_API_KEY未设置，无法导入示例图片')

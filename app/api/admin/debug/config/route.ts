@@ -23,7 +23,7 @@ export async function GET() {
       NODE_ENV: process.env.NODE_ENV,
       STORAGE_PROVIDER: process.env.STORAGE_PROVIDER || 'local',
       SEED_TOKEN_SET: !!process.env.SEED_TOKEN,
-      SEED_TOKEN_VALUE: process.env.SEED_TOKEN ? `${process.env.SEED_TOKEN.substring(0, 6)}***` : 'not set',
+      SEED_TOKEN_VALUE: process.env.SEED_TOKEN ? `${process.env.SEED_TOKEN.substring(0, 6)}***` : 'optional',
       PIXABAY_API_KEY_SET: !!finalApiKey,
       PIXABAY_API_KEY_VALUE: finalApiKey ? `${finalApiKey.substring(0, 6)}***` : 'not set',
       PIXABAY_API_KEY_SOURCE: dbApiKey ? 'database' : (envApiKey ? 'environment' : 'none'),
