@@ -71,7 +71,7 @@ function numberFromConfig(runtimeValue: unknown, envValue: string | undefined, f
   return numberFromEnv(envValue, fallback)
 }
 
-function buildConfigResponse()() {
+function buildConfigResponse() {
   const runtime = getRuntimeConfig()
   const runtimeStorage = runtime.storage || {}
   const runtimeSemantic = runtime.semantic || {}

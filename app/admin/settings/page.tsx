@@ -42,6 +42,48 @@ interface Settings {
   apis: {
     pixabayApiKey: string
   }
+  runtime: {
+    storage: {
+      provider: string
+      local: {
+        basePath: string
+      }
+      minio: {
+        endpoint: string
+        region: string
+        bucket: string
+        accessKeyId: string
+        secretAccessKey: string
+        cdnUrl: string
+        forcePathStyle: boolean
+      }
+      aws: {
+        endpoint: string
+        region: string
+        bucket: string
+        accessKeyId: string
+        secretAccessKey: string
+        cdnUrl: string
+      }
+    }
+    semantic: {
+      enabled: boolean
+      mode: string
+      provider: string
+      model: string
+      dim: number
+      openaiApiKey: string
+      openaiBaseUrl: string
+      strictMode: boolean
+      rpmLimit: number
+      maxRetry: number
+      queryCacheTtlMs: number
+      cacheTtlMs: number
+      cacheSize: number
+      negativeCache: boolean
+      negativeCacheTtlMs: number
+    }
+  }
 }
 
 export default function SettingsPage() {
@@ -75,6 +117,48 @@ export default function SettingsPage() {
     },
     apis: {
       pixabayApiKey: ''
+    },
+    runtime: {
+      storage: {
+        provider: 'minio',
+        local: {
+          basePath: './uploads'
+        },
+        minio: {
+          endpoint: '',
+          region: '',
+          bucket: '',
+          accessKeyId: '',
+          secretAccessKey: '',
+          cdnUrl: '',
+          forcePathStyle: true
+        },
+        aws: {
+          endpoint: '',
+          region: '',
+          bucket: '',
+          accessKeyId: '',
+          secretAccessKey: '',
+          cdnUrl: ''
+        }
+      },
+      semantic: {
+        enabled: false,
+        mode: 'off',
+        provider: 'deterministic',
+        model: 'deterministic-v1',
+        dim: 768,
+        openaiApiKey: '',
+        openaiBaseUrl: '',
+        strictMode: false,
+        rpmLimit: 60,
+        maxRetry: 3,
+        queryCacheTtlMs: 30000,
+        cacheTtlMs: 60000,
+        cacheSize: 100,
+        negativeCache: false,
+        negativeCacheTtlMs: 5000
+      }
     }
   })
 
@@ -223,6 +307,11 @@ export default function SettingsPage() {
         return
       }
 
+      if (section === 'runtime') {
+        await saveRuntimeConfig()
+        return
+      }
+
       throw new Error('未知的设置类型')
     } catch (error) {
       console.error('保存设置失败:', error)
@@ -247,6 +336,51 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('加载API设置失败:', error)
+    }
+  }
+
+  // Load runtime configuration
+  const loadRuntimeConfig = async () => {
+    try {
+      const response = await fetch('/api/admin/runtime-config')
+      if (response.ok) {
+        const data = await response.json()
+        setSettings(prev => ({
+          ...prev,
+          runtime: data
+        }))
+      }
+    } catch (error) {
+      console.error('加载运行时配置失败:', error)
+    }
+  }
+
+  // Save runtime configuration
+  const saveRuntimeConfig = async () => {
+    try {
+      const response = await fetch('/api/admin/runtime-config', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings.runtime),
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.error || '运行时配置保存失败')
+      }
+
+      const updatedConfig = await response.json()
+      setSettings(prev => ({
+        ...prev,
+        runtime: updatedConfig
+      }))
+
+      toast.success('运行时配置已保存')
+    } catch (error) {
+      console.error('保存运行时配置失败:', error)
+      toast.error(error instanceof Error ? error.message : '保存失败')
     }
   }
 
@@ -318,6 +452,7 @@ export default function SettingsPage() {
   useEffect(() => {
     loadApiSettings()
     loadStorageSettings()
+    loadRuntimeConfig()
     loadDebugConfig()
     checkPwaStatus()
   }, [])
@@ -327,6 +462,7 @@ export default function SettingsPage() {
     { id: 'security', name: '安全设置', icon: Shield },
     { id: 'site', name: '网站设置', icon: Globe },
     { id: 'storage', name: '存储设置', icon: Database },
+    { id: 'runtime', name: '运行时配置', icon: Database },
     { id: 'apis', name: 'API 配置', icon: Key },
     { id: 'debug', name: '配置检查', icon: Bug }
   ]
@@ -781,6 +917,516 @@ export default function SettingsPage() {
                   >
                     {isLoading ? '保存中...' : '保存更改'}
                   </Button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'runtime' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    运行时配置
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    配置存储提供商和语义搜索功能，这些设置会立即生效无需重启应用。
+                  </p>
+                </div>
+
+                {/* Storage Configuration */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
+                    存储配置
+                  </h4>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        存储提供商
+                      </label>
+                      <select
+                        value={settings.runtime.storage.provider}
+                        onChange={(e) => setSettings(prev => ({
+                          ...prev,
+                          runtime: {
+                            ...prev.runtime,
+                            storage: { ...prev.runtime.storage, provider: e.target.value }
+                          }
+                        }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      >
+                        <option value="local">本地存储</option>
+                        <option value="minio">MinIO</option>
+                        <option value="aws">AWS S3</option>
+                      </select>
+                    </div>
+
+                    {settings.runtime.storage.provider === 'local' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          本地存储路径
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.runtime.storage.local.basePath}
+                          onChange={(e) => setSettings(prev => ({
+                            ...prev,
+                            runtime: {
+                              ...prev.runtime,
+                              storage: {
+                                ...prev.runtime.storage,
+                                local: { ...prev.runtime.storage.local, basePath: e.target.value }
+                              }
+                            }
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          placeholder="./uploads"
+                        />
+                      </div>
+                    )}
+
+                    {settings.runtime.storage.provider === 'minio' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              MinIO 端点
+                            </label>
+                            <input
+                              type="text"
+                              value={settings.runtime.storage.minio.endpoint}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    minio: { ...prev.runtime.storage.minio, endpoint: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="localhost:9000"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              区域
+                            </label>
+                            <input
+                              type="text"
+                              value={settings.runtime.storage.minio.region}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    minio: { ...prev.runtime.storage.minio, region: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="us-east-1"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            存储桶名称
+                          </label>
+                          <input
+                            type="text"
+                            value={settings.runtime.storage.minio.bucket}
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
+                              runtime: {
+                                ...prev.runtime,
+                                storage: {
+                                  ...prev.runtime.storage,
+                                  minio: { ...prev.runtime.storage.minio, bucket: e.target.value }
+                                }
+                              }
+                            }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            placeholder="photos"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              访问密钥
+                            </label>
+                            <input
+                              type="text"
+                              value={settings.runtime.storage.minio.accessKeyId}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    minio: { ...prev.runtime.storage.minio, accessKeyId: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="minio"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              密钥
+                            </label>
+                            <input
+                              type="password"
+                              value={settings.runtime.storage.minio.secretAccessKey}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    minio: { ...prev.runtime.storage.minio, secretAccessKey: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="密钥"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            CDN URL（可选）
+                          </label>
+                          <input
+                            type="text"
+                            value={settings.runtime.storage.minio.cdnUrl}
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
+                              runtime: {
+                                ...prev.runtime,
+                                storage: {
+                                  ...prev.runtime.storage,
+                                  minio: { ...prev.runtime.storage.minio, cdnUrl: e.target.value }
+                                }
+                              }
+                            }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            placeholder="https://cdn.example.com"
+                          />
+                        </div>
+                        <div>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={settings.runtime.storage.minio.forcePathStyle}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    minio: { ...prev.runtime.storage.minio, forcePathStyle: e.target.checked }
+                                  }
+                                }
+                              }))}
+                              className="mr-2"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              强制路径样式访问
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {settings.runtime.storage.provider === 'aws' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              AWS 区域
+                            </label>
+                            <input
+                              type="text"
+                              value={settings.runtime.storage.aws.region}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    aws: { ...prev.runtime.storage.aws, region: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="us-east-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              存储桶名称
+                            </label>
+                            <input
+                              type="text"
+                              value={settings.runtime.storage.aws.bucket}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    aws: { ...prev.runtime.storage.aws, bucket: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="my-photos"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              访问密钥 ID
+                            </label>
+                            <input
+                              type="text"
+                              value={settings.runtime.storage.aws.accessKeyId}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    aws: { ...prev.runtime.storage.aws, accessKeyId: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="AKIA..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              秘密访问密钥
+                            </label>
+                            <input
+                              type="password"
+                              value={settings.runtime.storage.aws.secretAccessKey}
+                              onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                runtime: {
+                                  ...prev.runtime,
+                                  storage: {
+                                    ...prev.runtime.storage,
+                                    aws: { ...prev.runtime.storage.aws, secretAccessKey: e.target.value }
+                                  }
+                                }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              placeholder="秘密访问密钥"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            CloudFront URL（可选）
+                          </label>
+                          <input
+                            type="text"
+                            value={settings.runtime.storage.aws.cdnUrl}
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
+                              runtime: {
+                                ...prev.runtime,
+                                storage: {
+                                  ...prev.runtime.storage,
+                                  aws: { ...prev.runtime.storage.aws, cdnUrl: e.target.value }
+                                }
+                              }
+                            }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            placeholder="https://d123456.cloudfront.net"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Semantic Search Configuration */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
+                    语义搜索配置
+                  </h4>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={settings.runtime.semantic.enabled}
+                          onChange={(e) => setSettings(prev => ({
+                            ...prev,
+                            runtime: {
+                              ...prev.runtime,
+                              semantic: { ...prev.runtime.semantic, enabled: e.target.checked }
+                            }
+                          }))}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          启用语义搜索
+                        </span>
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                        启用后会在首页显示语义搜索面板，并为新上传的图片生成向量嵌入
+                      </p>
+                    </div>
+
+                    {settings.runtime.semantic.enabled && (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            嵌入提供商
+                          </label>
+                          <select
+                            value={settings.runtime.semantic.provider}
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
+                              runtime: {
+                                ...prev.runtime,
+                                semantic: { ...prev.runtime.semantic, provider: e.target.value }
+                              }
+                            }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          >
+                            <option value="deterministic">确定性嵌入（无需API）</option>
+                            <option value="openai">OpenAI</option>
+                          </select>
+                        </div>
+
+                        {settings.runtime.semantic.provider === 'openai' && (
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                OpenAI API 密钥
+                              </label>
+                              <input
+                                type="password"
+                                value={settings.runtime.semantic.openaiApiKey}
+                                onChange={(e) => setSettings(prev => ({
+                                  ...prev,
+                                  runtime: {
+                                    ...prev.runtime,
+                                    semantic: { ...prev.runtime.semantic, openaiApiKey: e.target.value }
+                                  }
+                                }))}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="sk-..."
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                OpenAI 基础 URL（可选）
+                              </label>
+                              <input
+                                type="text"
+                                value={settings.runtime.semantic.openaiBaseUrl}
+                                onChange={(e) => setSettings(prev => ({
+                                  ...prev,
+                                  runtime: {
+                                    ...prev.runtime,
+                                    semantic: { ...prev.runtime.semantic, openaiBaseUrl: e.target.value }
+                                  }
+                                }))}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="https://api.openai.com/v1"
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  请求限制（每分钟）
+                                </label>
+                                <input
+                                  type="number"
+                                  value={settings.runtime.semantic.rpmLimit}
+                                  onChange={(e) => setSettings(prev => ({
+                                    ...prev,
+                                    runtime: {
+                                      ...prev.runtime,
+                                      semantic: { ...prev.runtime.semantic, rpmLimit: parseInt(e.target.value) || 60 }
+                                    }
+                                  }))}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  placeholder="60"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  最大重试次数
+                                </label>
+                                <input
+                                  type="number"
+                                  value={settings.runtime.semantic.maxRetry}
+                                  onChange={(e) => setSettings(prev => ({
+                                    ...prev,
+                                    runtime: {
+                                      ...prev.runtime,
+                                      semantic: { ...prev.runtime.semantic, maxRetry: parseInt(e.target.value) || 3 }
+                                    }
+                                  }))}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  placeholder="3"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            模式
+                          </label>
+                          <select
+                            value={settings.runtime.semantic.mode}
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
+                              runtime: {
+                                ...prev.runtime,
+                                semantic: { ...prev.runtime.semantic, mode: e.target.value }
+                              }
+                            }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          >
+                            <option value="off">关闭</option>
+                            <option value="shadow">影子模式（生成但不显示）</option>
+                            <option value="on">完全启用</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => handleSave('runtime')}
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isLoading ? '保存中...' : '保存运行时配置'}
+                  </Button>
+                </div>
+
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                    <strong>提示：</strong> 运行时配置更改后会立即生效，无需重启应用。存储配置更改后，新上传的文件会使用新的存储提供商。语义搜索配置更改后，需要重新处理现有图片以生成嵌入向量。
+                  </p>
                 </div>
               </div>
             )}
