@@ -41,6 +41,7 @@ interface Settings {
   }
   apis: {
     pixabayApiKey: string
+    defaultSeedCount: number
   }
   runtime: {
     storage: {
@@ -116,7 +117,8 @@ export default function SettingsPage() {
       imageVariantNames: ''
     },
     apis: {
-      pixabayApiKey: ''
+      pixabayApiKey: '',
+      defaultSeedCount: 12
     },
     runtime: {
       storage: {
@@ -294,7 +296,8 @@ export default function SettingsPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            pixabayApiKey: settings.apis.pixabayApiKey
+            pixabayApiKey: settings.apis.pixabayApiKey,
+            defaultSeedCount: settings.apis.defaultSeedCount
           }),
         })
 
@@ -330,7 +333,8 @@ export default function SettingsPage() {
         setSettings(prev => ({
           ...prev,
           apis: {
-            pixabayApiKey: data.pixabayApiKey || ''
+            pixabayApiKey: data.pixabayApiKey || '',
+            defaultSeedCount: data.defaultSeedCount || 12
           }
         }))
       }
@@ -1468,6 +1472,32 @@ export default function SettingsPage() {
                         Pixabay API 文档
                       </a> 
                       中获取免费的 API Key。
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    默认导入数量
+                  </label>
+                  <div className="space-y-2">
+                    <select
+                      value={settings.apis.defaultSeedCount || 12}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        apis: { ...prev.apis, defaultSeedCount: parseInt(e.target.value) }
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value={3}>3 张</option>
+                      <option value={6}>6 张</option>
+                      <option value={12}>12 张</option>
+                      <option value={18}>18 张</option>
+                      <option value={24}>24 张</option>
+                      <option value={30}>30 张</option>
+                    </select>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      设置导入示例图片的默认数量。用户仍可在导入时临时调整。
                     </p>
                   </div>
                 </div>

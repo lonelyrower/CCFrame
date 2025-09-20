@@ -57,6 +57,10 @@ export async function GET(request: NextRequest) {
         autoDeleteFailed: true,
         maxUploadSize: 50,
         compressionQuality: 85
+      },
+      apis: {
+        pixabayKey: process.env.PIXABAY_API_KEY || '',
+        defaultSeedCount: 12
       }
     }
 
@@ -145,6 +149,12 @@ export async function PUT(request: NextRequest) {
 
     if (section === 'storage') {
       // For now, just return success (could store in a settings table)
+      return NextResponse.json({ success: true, settings: data })
+    }
+
+    if (section === 'apis') {
+      // For now, just return success (could store in a settings table)
+      // In a real implementation, you might want to validate the data and store it
       return NextResponse.json({ success: true, settings: data })
     }
 

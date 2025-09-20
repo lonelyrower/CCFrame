@@ -1,0 +1,69 @@
+# 优化 Docker 构建的 .dockerignore 文件
+# 减少构建上下文大小，提升构建速度
+
+# Git 相关
+.git
+.gitignore
+
+# Node.js
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next
+out
+
+# 构建输出
+dist
+build
+
+# 测试
+coverage
+__tests__
+*.test.js
+*.test.ts
+*.test.tsx
+.jest
+
+# 开发文件
+*.local
+.env.local
+.env.development
+.env.test
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 日志
+logs
+*.log
+
+# 临时文件
+tmp
+temp
+
+# 文档
+*.md
+docs
+
+# 不需要的文件
+.claude
+debug-storage.js
+fix-storage.js
+
+# 上传的文件（生产环境应使用外部存储）
+uploads
+
+# Docker 相关
+Dockerfile*
+docker-compose*.yml
+.dockerignore

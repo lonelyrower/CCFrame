@@ -12,12 +12,13 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  twoFASecret   String?  @map("twofa_secret")
-  pixabayApiKey String?  @map("pixabay_api_key")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String   @map("password_hash")
+  twoFASecret      String?  @map("twofa_secret")
+  pixabayApiKey    String?  @map("pixabay_api_key")
+  defaultSeedCount Int?     @default(12) @map("default_seed_count")
+  createdAt        DateTime @default(now()) @map("created_at")
   
   albums  Album[]
   photos  Photo[]

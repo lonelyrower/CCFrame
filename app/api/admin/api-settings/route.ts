@@ -10,7 +10,7 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: guard.adminUserId },
-      select: { id: true, pixabayApiKey: true },
+      select: { id: true, pixabayApiKey: true, defaultSeedCount: true },
     })
 
     if (!user) {
@@ -19,6 +19,7 @@ export async function GET() {
 
     return NextResponse.json({
       pixabayApiKey: (user as any)?.pixabayApiKey || '',
+      defaultSeedCount: user.defaultSeedCount || 12,
     })
   } catch (error) {
     console.error('获取API设置失败:', error)
@@ -31,17 +32,21 @@ export async function POST(request: NextRequest) {
     const guard = await requireAdmin()
     if (guard instanceof NextResponse) return guard
 
-    const { pixabayApiKey } = await request.json()
+    const { pixabayApiKey, defaultSeedCount } = await request.json()
 
     const user = await db.user.update({
       where: { id: guard.adminUserId },
-      data: ({ pixabayApiKey: pixabayApiKey || null } as any),
-      select: { id: true, pixabayApiKey: true },
+      data: { 
+        pixabayApiKey: pixabayApiKey || null,
+        defaultSeedCount: defaultSeedCount || 12
+      } as any,
+      select: { id: true, pixabayApiKey: true, defaultSeedCount: true } as any,
     })
 
     return NextResponse.json({
       message: 'API设置已保存',
       pixabayApiKey: (user as any)?.pixabayApiKey || '',
+      defaultSeedCount: (user as any)?.defaultSeedCount || 12,
     }, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8'
