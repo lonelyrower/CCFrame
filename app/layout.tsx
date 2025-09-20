@@ -14,6 +14,14 @@ const notoSansSC = Noto_Sans_SC({
 
 export const metadata: Metadata = {
   title: 'CC Frame - Creative Camera',
+  description: 'CC Frame 是一个现代化的相册网站，专注照片展示与管理',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' }
+    ],
+    apple: '/icons/icon-192.png',
+  },
 }
 
 export default function RootLayout({

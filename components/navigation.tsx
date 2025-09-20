@@ -54,14 +54,9 @@ export function Navigation() {
                   <Aperture className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  CC Frame
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1 font-normal">
-                  个人相册
-                </span>
-              </div>
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                CC Frame
+              </span>
             </Link>
 
             <div className="hidden md:flex items-center space-x-8">
@@ -142,14 +137,9 @@ export function Navigation() {
                 <Aperture className="h-5 w-5 text-white" />
               </div>
             </div>
-            <div className="flex flex-col">
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                CC Frame
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1 font-normal">
-                个人相册
-              </span>
-            </div>
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              CC Frame
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
