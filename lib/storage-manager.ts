@@ -6,7 +6,7 @@ import { getRuntimeConfig } from './runtime-config'
 
 getRuntimeConfig()
 
-export type StorageProvider = 'minio' | 'aws' | 'aliyun' | 'qcloud'
+export type StorageProvider = 'local' | 'minio' | 'aws' | 'aliyun' | 'qcloud'
 
 export interface StorageConfig {
   provider: StorageProvider
@@ -100,6 +100,13 @@ export class StorageManager {
 
   static createFromSettings(provider: StorageProvider): StorageManager {
     const configs: Record<StorageProvider, () => StorageConfig> = {
+      local: () => ({
+        provider: 'local',
+        region: '',
+        accessKeyId: '',
+        secretAccessKey: '',
+        bucket: '',
+      }),
       minio: () => ({
         provider: 'minio',
         endpoint: firstEnv(['S3_ENDPOINT', 'MINIO_ENDPOINT']) || 'http://127.0.0.1:9000',
