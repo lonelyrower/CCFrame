@@ -23,6 +23,11 @@ export function LightboxProvider({ photos, children }: { photos: PhotoWithDetail
   const [isOpen, setIsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
 
+  // Guard against empty photos array
+  if (!photos || photos.length === 0) {
+    return <LightboxContext.Provider value={null}>{children}</LightboxContext.Provider>
+  }
+
   const go = useCallback((i: number) => {
     setIndex((prev) => {
       if (i < 0) return 0
@@ -76,7 +81,7 @@ export function LightboxProvider({ photos, children }: { photos: PhotoWithDetail
   const value = useMemo(() => ({
     photos,
     index,
-    current: photos[index],
+    current: photos[index] || photos[0],
     go,
     next,
     prev,

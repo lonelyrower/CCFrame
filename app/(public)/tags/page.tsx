@@ -4,6 +4,7 @@ import { PhotoWithDetails } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Tag, Hash, ArrowRight } from 'lucide-react'
+import { getImageUrl } from '@/lib/utils'
 
 interface TagWithCount {
   id: string
@@ -121,7 +122,7 @@ function TagCard({ tag }: { tag: TagWithCount }) {
             {tag.photos.slice(0, 6).map((photo) => (
               <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                 <Image
-                  src={`/api/image/${photo.id}/thumb`}
+                  src={getImageUrl(photo.id, 'thumb', 'webp')}
                   alt={photo.album?.title || 'Photo thumbnail'}
                   fill
                   sizes="(min-width: 1024px) 8vw, (min-width: 768px) 10vw, 33vw"

@@ -58,7 +58,11 @@
       "Bash(test:*)",
       "Bash(git diff:*)",
       "Bash(docker build:*)",
-      "Bash(set NODE_OPTIONS=--max-old-space-size=4096)"
+      "Bash(set NODE_OPTIONS=--max-old-space-size=4096)",
+      "Bash(npx next lint:*)",
+      "Bash(cat:*)",
+      "Bash(dir)",
+      "Bash(redis-cli:*)"
     ],
     "deny": [],
     "ask": []

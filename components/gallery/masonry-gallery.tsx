@@ -151,11 +151,21 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
     const heights = new Array(count).fill(0)
 
     const items: LayoutItem[] = displayPhotos.map((photo) => {
-      const aspect = photo.width && photo.height ? photo.width / photo.height : 1
-      const height = colWidth && aspect > 0 ? colWidth / aspect : colWidth
+      // Ensure we have valid dimensions, fallback to reasonable defaults
+      const photoWidth = photo.width && photo.width > 0 ? photo.width : 400
+      const photoHeight = photo.height && photo.height > 0 ? photo.height : 300
+      const aspect = photoWidth / photoHeight
+
+      // Calculate height based on column width and aspect ratio
+      const height = colWidth && aspect > 0 ? colWidth / aspect : colWidth * 0.75
+
+      // Find the shortest column to place the item
       const column = heights.indexOf(Math.min(...heights))
       const top = heights[column]
+
+      // Update column height
       heights[column] += height + gap
+
       return { photo, column, top, height }
     })
 
@@ -193,9 +203,15 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
 
   const handleSelect = useCallback(
     (photo: PhotoWithDetails) => {
-      if (lightbox) {
-        lightbox.open(photo.id)
-      } else {
+      try {
+        if (lightbox) {
+          lightbox.open(photo.id)
+        } else {
+          setSelectedPhoto(photo)
+        }
+      } catch (error) {
+        console.error('Error opening photo:', error)
+        // Fallback to direct photo modal
         setSelectedPhoto(photo)
       }
     },
@@ -238,6 +254,7 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
               style={{
                 position: "absolute",
                 width: width > 0 ? width : undefined,
+                height: height > 0 ? height : undefined,
                 transform: `translate3d(${left}px, ${top}px, 0)`,
               }}
               tabIndex={0}
@@ -254,14 +271,19 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
                 }
               }}
             >
-              <div className="relative overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm transition-all duration-500 ease-[var(--ease-soft)] hover:-translate-y-1 hover:shadow-lg">
+              <div className="relative w-full h-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm transition-all duration-500 ease-[var(--ease-soft)] hover:-translate-y-1 hover:shadow-lg">
                 <Image
                   src={getImageUrl(photo.id, "small", "webp")}
                   alt={photo.album?.title || "Photo"}
-                  width={photo.width}
-                  height={photo.height}
+                  width={photo.width || 400}
+                  height={photo.height || 300}
                   sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                  className="w-full rounded-xl object-cover transition-transform duration-[var(--duration-medium)] ease-[var(--ease-out)] group-hover:scale-[1.03]"
+                  className="w-full h-full rounded-xl object-cover transition-transform duration-[var(--duration-medium)] ease-[var(--ease-out)] group-hover:scale-[1.03]"
+                  style={{
+                    aspectRatio: photo.width && photo.height
+                      ? `${photo.width} / ${photo.height}`
+                      : '4 / 3'
+                  }}
                   placeholder="blur"
                   blurDataURL={`data:image/svg+xml;base64,${toBase64(
                     `<svg width=\"400\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"400\" height=\"300\" fill=\"#f3f4f6\"/></svg>`

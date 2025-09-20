@@ -296,18 +296,6 @@
   }
 
   /* 卡片悬停效果 */
-  .card-hover {
-    transition: all 0.2s ease-out;
-  }
-
-  .card-hover:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .card-hover:hover {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-  }
 
   /* 聚焦状态增强 */
   .focus-ring {
