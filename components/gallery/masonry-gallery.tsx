@@ -141,13 +141,13 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
 
   const { layoutItems, totalHeight, columnWidth } = useMemo(() => {
     const count = Math.max(1, columnCount)
-    if (!containerWidth) {
+    if (!containerWidth || containerWidth < 100) {
       return { layoutItems: [] as LayoutItem[], totalHeight: 0, columnWidth: 0 }
     }
 
     const gap = COLUMN_GAP
     const widthAvailable = containerWidth - gap * (count - 1)
-    const colWidth = count > 0 ? Math.max(widthAvailable / count, 0) : containerWidth
+    const colWidth = count > 0 ? Math.max(widthAvailable / count, 50) : Math.max(containerWidth, 50)
     const heights = new Array(count).fill(0)
 
     const items: LayoutItem[] = displayPhotos.map((photo) => {
@@ -157,7 +157,7 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
       const aspect = photoWidth / photoHeight
 
       // Calculate height based on column width and aspect ratio
-      const height = colWidth && aspect > 0 ? colWidth / aspect : colWidth * 0.75
+      const height = colWidth > 0 && aspect > 0 ? Math.max(colWidth / aspect, 50) : Math.max(colWidth * 0.75, 50)
 
       // Find the shortest column to place the item
       const column = heights.indexOf(Math.min(...heights))
@@ -253,8 +253,8 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
               data-lightbox-return
               style={{
                 position: "absolute",
-                width: width > 0 ? width : undefined,
-                height: height > 0 ? height : undefined,
+                width: Math.max(width, 50),
+                height: Math.max(height, 50),
                 transform: `translate3d(${left}px, ${top}px, 0)`,
               }}
               tabIndex={0}
