@@ -895,13 +895,21 @@ export default function SettingsPage() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600 dark:text-gray-400">PIXABAY_API_KEY:</span>
-                            <span className={`text-sm font-mono px-2 py-1 rounded ${
-                              debugConfig.PIXABAY_API_KEY_SET
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                            }`}>
-                              {debugConfig.PIXABAY_API_KEY_VALUE}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-sm font-mono px-2 py-1 rounded ${
+                                debugConfig.PIXABAY_API_KEY_SET
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                              }`}>
+                                {debugConfig.PIXABAY_API_KEY_VALUE}
+                              </span>
+                              {debugConfig.PIXABAY_API_KEY_SOURCE && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  ({debugConfig.PIXABAY_API_KEY_SOURCE === 'database' ? '数据库' :
+                                   debugConfig.PIXABAY_API_KEY_SOURCE === 'environment' ? '环境变量' : '未设置'})
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600 dark:text-gray-400">最大导入数:</span>
