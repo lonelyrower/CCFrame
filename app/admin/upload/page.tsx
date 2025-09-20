@@ -226,7 +226,7 @@ export default function UploadPage() {
       toast.success(`${successCount} files uploaded successfully`)
     }
     if (failureCount > 0) {
-      toast.error(`${failureCount} files failed to upload`)
+      toast.error(`${failureCount} 个文件上传失败`)
     }
   }
 

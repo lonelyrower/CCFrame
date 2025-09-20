@@ -10,7 +10,7 @@ import { PhotoZoomCanvas } from './photo-zoom-canvas'
 import dynamic from 'next/dynamic'
 // Defer heavy sub-components to reduce initial bundle
 import { usePrefetchPhotos } from './use-prefetch-photos'
-import { useLightbox } from './lightbox-context'
+import { useOptionalLightbox } from './lightbox-context'
 import { useFocusTrap } from './use-focus-trap'
 import { usePhotoTags } from './use-photo-tags'
 import { LightboxHelpOverlay } from './lightbox-help-overlay'
@@ -37,7 +37,9 @@ interface PhotoModalProps {
 }
 
 export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: PhotoModalProps) {
-  const { helpOpen, toggleHelp } = useLightbox()
+  const lightbox = useOptionalLightbox()
+  const helpOpen = lightbox?.helpOpen ?? false
+  const toggleHelp = lightbox?.toggleHelp ?? (() => {})
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const [newTag, setNewTag] = useState('')
   const { tags: localTags, editing: editingTags, toggleEditing, addTag: addTagHook, removeTag: removeTagHook } = usePhotoTags(photo.id, photo.tags.map(t => t.tag))

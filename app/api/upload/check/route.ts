@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const headers = rateLimitHeaders(rate)
 
   if (!rate.allowed) {
-    const response = NextResponse.json({ error: 'Too many duplicate checks' }, { status: 429 })
+    const response = NextResponse.json({ error: '检查频率过高，请稍后再试' }, { status: 429 })
     applyHeaders(response, headers)
     return response
   }
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const hash = url.searchParams.get('hash')?.trim().toLowerCase()
   if (!hash || hash.length < 16) {
-    const response = NextResponse.json({ error: 'invalid hash' }, { status: 400 })
+    const response = NextResponse.json({ error: '文件哈希值无效' }, { status: 400 })
     applyHeaders(response, headers)
     return response
   }

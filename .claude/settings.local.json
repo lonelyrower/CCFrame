@@ -63,7 +63,8 @@
       "Bash(cat:*)",
       "Bash(dir)",
       "Bash(redis-cli:*)",
-      "WebFetch(domain:142.91.105.238)"
+      "WebFetch(domain:142.91.105.238)",
+      "Bash(pg_ctl:*)"
     ],
     "deny": [],
     "ask": []

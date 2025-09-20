@@ -9,7 +9,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -17,7 +17,7 @@ export async function PUT(request: NextRequest) {
     const contentType = searchParams.get('contentType')
 
     if (!key || !contentType) {
-      return NextResponse.json({ error: 'Missing key or contentType' }, { status: 400 })
+      return NextResponse.json({ error: '缺少文件标识或类型信息' }, { status: 400 })
     }
 
     // 读取文件内容
@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Local upload error:', error)
     return NextResponse.json(
-      { error: 'Upload failed' },
+      { error: '上传失败' },
       { status: 500 }
     )
   }

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       uploadEventCounter.inc({ type: 'presign', result: 'unauthorized' })
       logger.warn({ event: 'upload_presign_unauthorized' }, 'Upload presign blocked: unauthorized')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
     const rate = await rateLimit(userId, 'upload:presign', 30, 60)
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     if (!rate.allowed) {
       uploadEventCounter.inc({ type: 'presign', result: 'rate_limited' })
       logger.warn({ userId, event: 'upload_presign_rate_limited' }, 'Upload presign rate limit exceeded')
-      const response = NextResponse.json({ error: 'Upload rate limit exceeded' }, { status: 429 })
+      const response = NextResponse.json({ error: '上传频率限制，请稍后再试' }, { status: 429 })
       for (const [key, value] of Object.entries(rateHeaders)) {
         response.headers.set(key, value)
       }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (!contentType.startsWith('image/')) {
       uploadEventCounter.inc({ type: 'presign', result: 'validation_error' })
       logger.warn({ userId, contentType, event: 'upload_presign_validation' }, 'Upload presign rejected due to invalid content type')
-      const response = NextResponse.json({ error: 'Invalid content type' }, { status: 400 })
+      const response = NextResponse.json({ error: '不支持的文件类型' }, { status: 400 })
       if (rateHeaders) {
         for (const [key, value] of Object.entries(rateHeaders)) {
           response.headers.set(key, value)
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       if (!album) {
         uploadEventCounter.inc({ type: 'presign', result: 'validation_error' })
         logger.warn({ userId, albumId, event: 'upload_presign_album_missing' }, 'Upload presign rejected: album not found')
-        const response = NextResponse.json({ error: 'Album not found' }, { status: 404 })
+        const response = NextResponse.json({ error: '相册不存在' }, { status: 404 })
         if (rateHeaders) {
           for (const [key, value] of Object.entries(rateHeaders)) {
             response.headers.set(key, value)
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : String(error)
     uploadEventCounter.inc({ type: 'presign', result: 'error' })
     logger.error({ error: message, stack: error instanceof Error ? error.stack : undefined, event: 'upload_presign_error' }, 'Upload presign error')
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json({ error: '服务器内部错误' }, { status: 500 })
     if (rateHeaders) {
       for (const [key, value] of Object.entries(rateHeaders)) {
         response.headers.set(key, value)

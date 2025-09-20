@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!sessionUserId) {
       uploadEventCounter.inc({ type: 'commit', result: 'unauthorized' })
       logger.warn({ event: 'upload_commit_unauthorized' }, 'Upload commit blocked: unauthorized')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
     const rate = await rateLimit(sessionUserId, 'upload:commit', 40, 60)
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (!rate.allowed) {
       uploadEventCounter.inc({ type: 'commit', result: 'rate_limited' })
       logger.warn({ userId: sessionUserId, event: 'upload_commit_rate_limited' }, 'Upload commit rate limit exceeded')
-      return attachHeaders(NextResponse.json({ error: 'Upload rate limit exceeded' }, { status: 429 }))
+      return attachHeaders(NextResponse.json({ error: '上传频率限制，请稍后再试' }, { status: 429 }))
     }
 
     const body = await request.json()
@@ -97,6 +97,6 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : String(error)
     uploadEventCounter.inc({ type: 'commit', result: 'error' })
     logger.error({ userId: sessionUserId, error: message, stack: error instanceof Error ? error.stack : undefined, event: 'upload_commit_error' }, 'Upload commit error')
-    return attachHeaders(NextResponse.json({ error: 'Internal server error' }, { status: 500 }))
+    return attachHeaders(NextResponse.json({ error: '服务器内部错误' }, { status: 500 }))
   }
 }

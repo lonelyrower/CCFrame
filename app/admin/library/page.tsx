@@ -5,10 +5,6 @@ import { redirect } from 'next/navigation'
 
 import { db } from '@/lib/db'
 import {
-  Search,
-  Filter,
-  Grid3X3,
-  List,
   Image as ImageIcon
 } from 'lucide-react'
 import { PhotoWithDetails } from '@/types'
@@ -17,6 +13,7 @@ import { SeedDemoButton } from '@/components/admin/seed-demo-button'
 import { PhotoTagsInline } from '@/components/admin/photo-tags-inline'
 import { PhotoActions } from '@/components/admin/photo-actions'
 import { LibraryStatsBar } from '@/components/admin/library-stats-bar'
+import { LibraryControls } from '@/components/admin/library-controls'
 import { requireAdmin } from '@/lib/admin-auth'
 
 interface LibraryStats {
@@ -136,7 +133,7 @@ function LibraryLoading() {
   )
 }
 
-async function LibraryContent({ searchParams }: { searchParams: { filter?: string; page?: string } }) {
+async function LibraryContent({ searchParams }: { searchParams: { filter?: string; page?: string; view?: string } }) {
   const { photos, stats, hasMore } = await getPhotos(
     parseInt(searchParams.page || '1'),
     50,
@@ -156,30 +153,10 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="搜索照片..."
-                defaultValue={searchParams.filter || ''}
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-            
-            <button className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              <Filter className="w-4 h-4" />
-            </button>
-            
-            <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-              <button className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-                <Grid3X3 className="w-4 h-4" />
-              </button>
-              <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <List className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          <LibraryControls 
+            initialFilter={searchParams.filter}
+            initialViewMode={searchParams.view as 'grid' | 'list' || 'grid'}
+          />
         </div>
 
         <LibraryStatsBar stats={stats} />
