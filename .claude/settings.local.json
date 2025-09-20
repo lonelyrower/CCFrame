@@ -62,7 +62,8 @@
       "Bash(npx next lint:*)",
       "Bash(cat:*)",
       "Bash(dir)",
-      "Bash(redis-cli:*)"
+      "Bash(redis-cli:*)",
+      "WebFetch(domain:142.91.105.238)"
     ],
     "deny": [],
     "ask": []
