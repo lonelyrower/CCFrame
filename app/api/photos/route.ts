@@ -42,6 +42,7 @@ function buildWhere(session: any, params: URLSearchParams) {
         tag: {
           name: {
             contains: tag,
+            mode: 'insensitive',
           },
         },
       },
@@ -54,6 +55,7 @@ function buildWhere(session: any, params: URLSearchParams) {
         album: {
           title: {
             contains: search,
+            mode: 'insensitive',
           },
         },
       },
@@ -63,6 +65,7 @@ function buildWhere(session: any, params: URLSearchParams) {
             tag: {
               name: {
                 contains: search,
+                mode: 'insensitive',
               },
             },
           },
