@@ -17,24 +17,12 @@ const baseConfig = {
       // 限制并行处理数量，避免内存溢出
       config.parallelism = 2
       
-      // 优化缓存配置
-      config.cache = {
-        type: 'filesystem',
-        cacheDirectory: '.next/cache/webpack',
-        maxMemoryGenerations: 1,
-        // 缓存版本控制
-        version: `${process.env.NODE_ENV}-${require('./package.json').version}`,
-        buildDependencies: {
-          config: [__filename, './package.json'],
-        },
-      }
-      
-      // 优化分包策略
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
+      // 优化分包策略（保持简单）
+      if (config.optimization && config.optimization.splitChunks) {
+        config.optimization.splitChunks = {
+          ...config.optimization.splitChunks,
           cacheGroups: {
+            ...config.optimization.splitChunks.cacheGroups,
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
@@ -42,13 +30,8 @@ const baseConfig = {
               priority: 10,
               reuseExistingChunk: true,
             },
-            common: {
-              minChunks: 2,
-              priority: 5,
-              reuseExistingChunk: true,
-            },
           },
-        },
+        }
       }
     }
     
