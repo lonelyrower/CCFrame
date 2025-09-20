@@ -7,6 +7,53 @@ const baseConfig = {
   reactStrictMode: false, // 开发时禁用严格模式提升性能
   swcMinify: process.env.NODE_ENV === 'production',
   output: 'standalone',
+  // 构建性能优化
+  webpack: (config, { dev, isServer }) => {
+    // 生产环境构建优化
+    if (!dev) {
+      // 优化模块解析
+      config.resolve.symlinks = false
+      
+      // 限制并行处理数量，避免内存溢出
+      config.parallelism = 2
+      
+      // 优化缓存配置
+      config.cache = {
+        type: 'filesystem',
+        cacheDirectory: '.next/cache/webpack',
+        maxMemoryGenerations: 1,
+        // 缓存版本控制
+        version: `${process.env.NODE_ENV}-${require('./package.json').version}`,
+        buildDependencies: {
+          config: [__filename, './package.json'],
+        },
+      }
+      
+      // 优化分包策略
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+            common: {
+              minChunks: 2,
+              priority: 5,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      }
+    }
+    
+    return config
+  },
   // 允许外网访问开发服务器
   ...(process.env.NODE_ENV === 'development' && {
     allowedDevOrigins: ['172.22.230.246'],
