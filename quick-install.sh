@@ -98,9 +98,10 @@ MINIO_ROOT_USER=$(openssl rand -base64 12)
 MINIO_ROOT_PASSWORD=$(openssl rand -base64 16)
 ENABLE_SEMANTIC_SEARCH=true
 SEMANTIC_USE_PGVECTOR=off
-EMBED_PROVIDER=deterministic
-EMBED_MODEL_NAME=deterministic-v1
-EMBED_DIM=768
+EMBED_PROVIDER=openai
+EMBED_MODEL_NAME=text-embedding-3-small
+EMBED_DIM=1536
+# Note: Add your OpenAI API key by setting OPENAI_API_KEY environment variable
 EOF
     fi
 fi
