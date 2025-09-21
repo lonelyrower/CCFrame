@@ -64,7 +64,12 @@
       "Bash(dir)",
       "Bash(redis-cli:*)",
       "WebFetch(domain:142.91.105.238)",
-      "Bash(pg_ctl:*)"
+      "Bash(pg_ctl:*)",
+      "Bash(STORAGE_PROVIDER=local UPLOAD_PATH=./uploads LOCAL_STORAGE_PATH=./uploads node scripts/check-upload-config.js)",
+      "Bash(source .env)",
+      "Bash(export STORAGE_PROVIDER=local DATABASE_URL=\"file:./dev.db\" NEXTAUTH_SECRET=\"dev-secret\" NEXTAUTH_URL=\"http://localhost:3000\")",
+      "Bash(./scripts/ultra-fast-build.js)",
+      "Bash(timeout 30s npm run dev:*)"
     ],
     "deny": [],
     "ask": []

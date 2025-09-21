@@ -295,21 +295,26 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
             />
 
             {/* 选择框 - 改为现代化设计 */}
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 z-10">
               <label className="flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only" 
-                  checked={!!sel[photo.id]} 
-                  onChange={() => toggle(photo.id)} 
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={!!sel[photo.id]}
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    toggle(photo.id)
+                  }}
                 />
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                  sel[photo.id] 
-                    ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-600/50' 
+                  sel[photo.id]
+                    ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-600/50'
                     : 'bg-white/80 border-white/80 hover:bg-white hover:border-white backdrop-blur-sm'
                 }`}>
                   {sel[photo.id] && (
-                    <CheckSquare className="w-3 h-3 text-white" />
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
                   )}
                 </div>
               </label>

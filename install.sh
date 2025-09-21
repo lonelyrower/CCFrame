@@ -287,6 +287,11 @@ S3_BUCKET_NAME=ccframe
 S3_REGION=us-east-1
 MINIO_ROOT_USER=${MINIO_ROOT_USER}
 MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+ENABLE_SEMANTIC_SEARCH=true
+SEMANTIC_USE_PGVECTOR=off
+EMBED_PROVIDER=deterministic
+EMBED_MODEL_NAME=deterministic-v1
+EMBED_DIM=768
 EOF
     fi
   fi
@@ -300,6 +305,24 @@ EOF
   else
     echo "NEXTAUTH_URL=http://$SERVER_IP" >> .env
   fi
+  if grep -q '^ENABLE_SEMANTIC_SEARCH=' .env; then
+    sed -i 's#^ENABLE_SEMANTIC_SEARCH=.*#ENABLE_SEMANTIC_SEARCH=true#' .env
+  else
+    echo 'ENABLE_SEMANTIC_SEARCH=true' >> .env
+  fi
+  if ! grep -q '^SEMANTIC_USE_PGVECTOR=' .env; then
+    echo 'SEMANTIC_USE_PGVECTOR=off' >> .env
+  fi
+  if ! grep -q '^EMBED_PROVIDER=' .env; then
+    echo 'EMBED_PROVIDER=deterministic' >> .env
+  fi
+  if ! grep -q '^EMBED_MODEL_NAME=' .env; then
+    echo 'EMBED_MODEL_NAME=deterministic-v1' >> .env
+  fi
+  if ! grep -q '^EMBED_DIM=' .env; then
+    echo 'EMBED_DIM=768' >> .env
+  fi
+  print_success "Semantic search defaults: ENABLE_SEMANTIC_SEARCH=true"
   print_success "NEXTAUTH_URL 已设置为 http://$SERVER_IP"
 }
 

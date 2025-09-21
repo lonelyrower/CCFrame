@@ -81,28 +81,53 @@ export function PhotoActions({
 
   return (
     <>
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="flex items-center gap-1 bg-black/50 rounded-md p-1">
-          <button 
-            className="p-1 text-white hover:bg-white/20 rounded" 
-            title="编辑" 
-            onClick={handleEdit}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <div className="flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-md p-1">
+          <button
+            className="p-1.5 text-white hover:bg-white/20 rounded transition-colors"
+            title="编辑"
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              handleEdit()
+            }}
             disabled={busy}
           >
             <Edit className="w-4 h-4" />
           </button>
-          <button 
-            className="p-1 text-white hover:bg-white/20 rounded" 
-            title={currentVisibility === 'PUBLIC' ? '设为私密' : '设为公开'} 
-            onClick={toggleVisibility} 
+          <button
+            className="p-1.5 text-white hover:bg-white/20 rounded transition-colors"
+            title={currentVisibility === 'PUBLIC' ? '设为私密' : '设为公开'}
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              toggleVisibility()
+            }}
             disabled={busy}
           >
             {currentVisibility === 'PUBLIC' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
-          <button className="p-1 text-white hover:bg-white/20 rounded" title="下载" onClick={download}>
+          <button
+            className="p-1.5 text-white hover:bg-white/20 rounded transition-colors"
+            title="下载"
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              download()
+            }}
+          >
             <Download className="w-4 h-4" />
           </button>
-          <button className="p-1 text-white hover:bg-red-600 rounded" title="删除" onClick={del} disabled={busy}>
+          <button
+            className="p-1.5 text-white hover:bg-red-600 rounded transition-colors"
+            title="删除"
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              del()
+            }}
+            disabled={busy}
+          >
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
