@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { db } from './db'
+import { TwoFactorAuth } from './two-factor'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -9,7 +10,8 @@ export const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        twoFactorCode: { label: '2FA Code', type: 'text' }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -30,9 +32,26 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        // 检查是否启用了2FA
+        const twoFactorEnabled = await TwoFactorAuth.isEnabled(user.id)
+
+        if (twoFactorEnabled) {
+          // 如果启用了2FA但没有提供验证码
+          if (!credentials.twoFactorCode) {
+            throw new Error('2FA_REQUIRED')
+          }
+
+          // 验证2FA码
+          const userSecret = await TwoFactorAuth.getUserSecret(user.id)
+          if (!userSecret || !TwoFactorAuth.verifyToken(userSecret, credentials.twoFactorCode)) {
+            throw new Error('INVALID_2FA_CODE')
+          }
+        }
+
         return {
           id: user.id,
           email: user.email,
+          twoFactorEnabled
         }
       }
     })

@@ -101,7 +101,10 @@ export class ExifProcessor {
   static cleanSensitiveExif(exifData: ExifData, options: {
     removeLocation?: boolean
     removeCamera?: boolean
-  } = {}): ExifData {
+  } = {
+    removeLocation: true, // 默认移除位置信息
+    removeCamera: false
+  }): ExifData {
     const cleaned = { ...exifData }
 
     if (options.removeLocation) {
@@ -114,5 +117,15 @@ export class ExifProcessor {
     }
 
     return cleaned
+  }
+
+  /**
+   * 获取安全的EXIF数据（默认清理敏感信息）
+   */
+  static getSafeExifData(exifData: ExifData): ExifData {
+    return this.cleanSensitiveExif(exifData, {
+      removeLocation: process.env.EXIF_REMOVE_LOCATION !== 'false',
+      removeCamera: process.env.EXIF_REMOVE_CAMERA === 'true'
+    })
   }
 }

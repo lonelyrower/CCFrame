@@ -69,7 +69,9 @@
       "Bash(source .env)",
       "Bash(export STORAGE_PROVIDER=local DATABASE_URL=\"file:./dev.db\" NEXTAUTH_SECRET=\"dev-secret\" NEXTAUTH_URL=\"http://localhost:3000\")",
       "Bash(./scripts/ultra-fast-build.js)",
-      "Bash(timeout 30s npm run dev:*)"
+      "Bash(timeout 30s npm run dev:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

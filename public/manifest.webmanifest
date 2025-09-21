@@ -1,0 +1,114 @@
+{
+  "name": "CCFrame - 个人相册",
+  "short_name": "CCFrame",
+  "description": "现代化的个人相册网站，专注照片展示与基础管理",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#6366f1",
+  "background_color": "#ffffff",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["photo", "lifestyle", "multimedia"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "相册主页面"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "移动端相册"
+    }
+  ],
+  "features": [
+    "photo-gallery",
+    "image-upload",
+    "tag-management",
+    "search",
+    "offline-viewing"
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "上传照片",
+      "short_name": "上传",
+      "description": "快速上传新照片",
+      "url": "/admin/library?action=upload",
+      "icons": [
+        {
+          "src": "/icons/upload-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "管理相册",
+      "short_name": "管理",
+      "description": "管理相册和标签",
+      "url": "/admin",
+      "icons": [
+        {
+          "src": "/icons/admin-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

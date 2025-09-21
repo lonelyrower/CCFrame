@@ -8,6 +8,7 @@ import { checkDuplicatePhoto } from '@/lib/photo-dedupe'
 import { db } from '@/lib/db'
 import { logger } from '@/lib/logger'
 import { uploadEventCounter } from '@/lib/prometheus'
+import { withCSRFProtection } from '@/lib/csrf'
 import { z } from 'zod'
 
 // Force dynamic rendering for this route
@@ -21,7 +22,7 @@ const uploadRequestSchema = z.object({
   contentHash: z.string().length(64).optional(), // hex sha256
 })
 
-export async function POST(request: NextRequest) {
+export const POST = withCSRFProtection(async function POST(request: NextRequest) {
   let rateHeaders: Record<string, string> | null = null
   try {
     const session = await getServerSession(authOptions)
@@ -131,4 +132,4 @@ export async function POST(request: NextRequest) {
     }
     return response
   }
-}
+})

@@ -13,8 +13,10 @@ export const dynamic = 'force-dynamic'
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [twoFactorCode, setTwoFactorCode] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/admin'
@@ -27,18 +29,26 @@ function LoginForm() {
       const result = await signIn('credentials', {
         email,
         password,
+        twoFactorCode: requiresTwoFactor ? twoFactorCode : undefined,
         redirect: false,
       })
 
       if (result?.error) {
-        toast.error('用户名或密码错误')
+        if (result.error === '2FA_REQUIRED') {
+          setRequiresTwoFactor(true)
+          toast.error('请输入双重认证验证码')
+        } else if (result.error === 'INVALID_2FA_CODE') {
+          toast.error('双重认证验证码无效')
+        } else {
+          toast.error('用户名或密码错误')
+        }
       } else {
         toast.success('登录成功')
-        
+
         // Wait for session to be established
         await new Promise(resolve => setTimeout(resolve, 100))
         const session = await getSession()
-        
+
         if (session) {
           router.push(callbackUrl)
           router.refresh()
@@ -113,10 +123,33 @@ function LoginForm() {
             </button>
           </div>
 
+          {requiresTwoFactor && (
+            <div>
+              <label htmlFor="twoFactorCode" className="sr-only">
+                双重认证验证码
+              </label>
+              <input
+                id="twoFactorCode"
+                name="twoFactorCode"
+                type="text"
+                autoComplete="one-time-code"
+                required={requiresTwoFactor}
+                maxLength={6}
+                className="relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-center tracking-widest"
+                placeholder="000000"
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+                请输入认证器应用中的6位验证码
+              </p>
+            </div>
+          )}
+
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || (requiresTwoFactor && twoFactorCode.length !== 6)}
           >
             {isLoading ? (
               <>

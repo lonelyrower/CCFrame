@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useState, useRef } from 'react'
+import { useEffect, useCallback, useState, useRef, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Calendar, Camera, MapPin, HelpCircle } from 'lucide-react'
 import { PhotoWithDetails } from '@/types'
@@ -36,7 +36,7 @@ interface PhotoModalProps {
   onPrevious: () => void
 }
 
-export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: PhotoModalProps) {
+export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, photos, onClose, onNext, onPrevious }) {
   const lightbox = useOptionalLightbox()
   const helpOpen = lightbox?.helpOpen ?? false
   const toggleHelp = lightbox?.toggleHelp ?? (() => {})
@@ -302,4 +302,4 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
       </motion.div>
     </AnimatePresence>
   )
-}
+})

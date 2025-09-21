@@ -1,8 +1,10 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react'
 import { MasonryGallery } from './masonry-gallery'
 import { LightboxProvider } from './lightbox-context'
+import ErrorBoundary from '../error-boundary'
+import { usePhotos } from '@/hooks/use-photos'
 import type { PhotoWithDetails } from '@/types'
 
 interface PhotosClientGalleryProps {
@@ -25,7 +27,7 @@ function deserializePhoto(raw: any): PhotoWithDetails {
   }
 }
 
-export function PhotosClientGallery({ initialPhotos, initialCursor, baseQuery, initialTotal }: PhotosClientGalleryProps) {
+export const PhotosClientGallery = memo<PhotosClientGalleryProps>(function PhotosClientGallery({ initialPhotos, initialCursor, baseQuery, initialTotal }) {
   const [photos, setPhotos] = useState<PhotoWithDetails[]>(() => initialPhotos.map(deserializePhoto))
   const [cursor, setCursor] = useState<string | null>(initialCursor)
   const [loading, setLoading] = useState(false)
@@ -95,29 +97,31 @@ export function PhotosClientGallery({ initialPhotos, initialCursor, baseQuery, i
   const completed = totalLoaded >= total || !hasMore
 
   return (
-    <LightboxProvider photos={photos}>
-      <MasonryGallery photos={photos} loading={loading && photos.length === 0} />
-      <div ref={sentinelRef} className="h-10 w-full" aria-hidden="true" />
-      {loading && photos.length > 0 && (
-        <div className="py-4 text-center text-sm text-gray-500">Loading more photos...</div>
-      )}
-      {error && (
-        <div className="py-2 text-center text-sm text-red-500">
-          {error}
-          {hasMore && (
-            <button
-              type="button"
-              className="ml-2 underline"
-              onClick={() => loadMore()}
-            >
-              Retry
-            </button>
-          )}
-        </div>
-      )}
-      {completed && (
-        <div className="py-4 text-center text-xs text-gray-400">All photos loaded ({total})</div>
-      )}
-    </LightboxProvider>
+    <ErrorBoundary>
+      <LightboxProvider photos={photos}>
+        <MasonryGallery photos={photos} loading={loading && photos.length === 0} />
+        <div ref={sentinelRef} className="h-10 w-full" aria-hidden="true" />
+        {loading && photos.length > 0 && (
+          <div className="py-4 text-center text-sm text-gray-500">Loading more photos...</div>
+        )}
+        {error && (
+          <div className="py-2 text-center text-sm text-red-500">
+            {error}
+            {hasMore && (
+              <button
+                type="button"
+                className="ml-2 underline"
+                onClick={() => loadMore()}
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        )}
+        {completed && (
+          <div className="py-4 text-center text-xs text-gray-400">All photos loaded ({total})</div>
+        )}
+      </LightboxProvider>
+    </ErrorBoundary>
   )
-}
+})
