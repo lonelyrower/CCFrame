@@ -37,7 +37,7 @@ export default function RootLayout({
       <body className={`${inter.className} ${notoSansSC.variable} antialiased transition-colors duration-500`}>
         <Providers>
           <ServiceWorkerRegister />
-          <div className="relative min-h-screen overflow-x-hidden bg-app-surface">
+          <div className="relative min-h-screen bg-app-surface">
             <div className="pointer-events-none absolute inset-0 opacity-70">
               <div className="absolute left-1/2 top-[-20%] h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-app-glow blur-3xl" />
               <div className="absolute bottom-[-15%] right-[-10%] h-[360px] w-[360px] rounded-full bg-app-glow-secondary blur-3xl" />
