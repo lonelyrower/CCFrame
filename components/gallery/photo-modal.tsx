@@ -40,6 +40,7 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
   const lightbox = useOptionalLightbox()
   const helpOpen = lightbox?.helpOpen ?? false
   const toggleHelp = lightbox?.toggleHelp ?? (() => {})
+  const filmstripEnabled = Boolean(lightbox)
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const [newTag, setNewTag] = useState('')
   const { tags: localTags, editing: editingTags, toggleEditing, addTag: addTagHook, removeTag: removeTagHook } = usePhotoTags(photo.id, photo.tags.map(t => t.tag))
@@ -292,7 +293,7 @@ export function PhotoModal({ photo, photos, onClose, onNext, onPrevious }: Photo
               </div>
             </div>
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 pointer-events-none select-none">
-              {photos.length > 1 && <PhotoFilmstrip />}
+              {filmstripEnabled && photos.length > 1 && <PhotoFilmstrip />}
             </div>
           </motion.div>
           <LightboxHelpOverlay open={helpOpen} onClose={() => toggleHelp()} />
