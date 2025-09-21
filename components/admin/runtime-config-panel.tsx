@@ -350,7 +350,9 @@ export default function RuntimeConfigPanel() {
       <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
         <header>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">语义搜索</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">启用语义搜索并配置嵌入服务。</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            启用AI语义搜索，让用户可以用自然语言搜索照片内容。推荐使用OpenAI获得最佳搜索体验。
+          </p>
         </header>
         {loading ? (
           <p className="text-sm text-gray-500 dark:text-gray-400">正在加载运行时配置...</p>
@@ -402,6 +404,14 @@ export default function RuntimeConfigPanel() {
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
+                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {config.semantic.provider === 'openai' && (
+                    <span className="text-blue-600 dark:text-blue-400">🚀 推荐：AI理解自然语言，搜索质量最佳</span>
+                  )}
+                  {config.semantic.provider === 'deterministic' && (
+                    <span>🔧 基础：基于文件标签和元数据的快速搜索</span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -416,11 +426,11 @@ export default function RuntimeConfigPanel() {
                     model: e.target.value
                   }))}
                   disabled={saving.semantic}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg灰-700 text-gray-900 dark-text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark-text-gray-300 mb-2">向量维度</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">向量维度</label>
                 <input
                   type="number"
                   value={config.semantic.dim}
@@ -430,14 +440,19 @@ export default function RuntimeConfigPanel() {
                   }))}
                   disabled={saving.semantic}
                   min={32}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg白 dark:bg灰-700 text-gray-900 dark-text白"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md-grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark-text-gray-300 mb-2">OpenAI API Key</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  OpenAI API Key
+                  {config.semantic.provider === 'openai' && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
+                </label>
                 <input
                   type="password"
                   value={config.semantic.openaiApiKey}
@@ -446,11 +461,38 @@ export default function RuntimeConfigPanel() {
                     openaiApiKey: e.target.value
                   }))}
                   disabled={saving.semantic || config.semantic.provider !== 'openai'}
-                  className="w-full px-3 py-2 border border-gray-300 dark-border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg白 dark:bg灰-700 text-gray-900 dark-text白"
+                  placeholder={config.semantic.provider === 'openai' ? 'sk-...' : '仅在使用OpenAI时需要'}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
+                {config.semantic.provider === 'openai' && !config.semantic.openaiApiKey && (
+                  <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                    💡 需要OpenAI API密钥来启用AI语义搜索。没有密钥将使用基础搜索方式。
+                  </p>
+                )}
+                {config.semantic.provider === 'openai' && config.semantic.openaiApiKey && (
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                    ✅ API密钥已配置，将使用AI语义搜索
+                  </p>
+                )}
+                {config.semantic.provider === 'openai' && (
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>如何获取OpenAI API密钥：</strong>
+                    </p>
+                    <ol className="text-sm text-blue-700 dark:text-blue-300 mt-1 space-y-1">
+                      <li>1. 访问 <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline">platform.openai.com/api-keys</a></li>
+                      <li>2. 注册或登录OpenAI账户</li>
+                      <li>3. 点击"Create new secret key"</li>
+                      <li>4. 复制密钥并粘贴到上方输入框</li>
+                    </ol>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                      💰 成本约$0.005/1000张图片，几乎免费使用
+                    </p>
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark-text-gray-300 mb-2">OpenAI Base URL</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">OpenAI Base URL</label>
                 <input
                   type="text"
                   value={config.semantic.openaiBaseUrl}
@@ -460,7 +502,7 @@ export default function RuntimeConfigPanel() {
                   }))}
                   disabled={saving.semantic || config.semantic.provider !== 'openai'}
                   placeholder="https://api.openai.com/v1"
-                  className="w-full px-3 py-2 border border-gray-300 dark-border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg白 dark:bg灰-700 text-gray-900 dark-text白"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
