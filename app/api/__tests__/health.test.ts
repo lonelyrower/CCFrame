@@ -1,13 +1,36 @@
 import { NextRequest } from 'next/server'
 import { GET } from '../health/route'
 
-// Mock dependencies
-jest.mock('@/lib/db')
-jest.mock('@/lib/storage-manager')
-jest.mock('@/lib/redis')
-jest.mock('@/lib/metrics')
-jest.mock('@/lib/semantic-config')
-jest.mock('@/lib/prometheus')
+jest.mock('@/lib/db', () => ({
+  db: {
+    $queryRaw: jest.fn(),
+    $queryRawUnsafe: jest.fn(),
+  },
+}))
+
+jest.mock('@/lib/storage-manager', () => ({
+  getStorageManager: jest.fn(),
+}))
+
+jest.mock('@/lib/redis', () => ({
+  getRedis: jest.fn(),
+}))
+
+jest.mock('@/lib/metrics', () => ({
+  getImageTimingAverages: jest.fn(),
+  getEmbeddingMetrics: jest.fn(),
+  getSemanticApiMetrics: jest.fn(),
+}))
+
+jest.mock('@/lib/semantic-config', () => ({
+  getSemanticConfig: jest.fn(),
+}))
+
+jest.mock('@/lib/prometheus', () => ({
+  storageHealthCounter: { inc: jest.fn() },
+  dbHealthCounter: { inc: jest.fn() },
+  redisHealthCounter: { inc: jest.fn() },
+}))
 
 const mockDb = jest.requireMock('@/lib/db').db
 const mockGetStorageManager = jest.requireMock('@/lib/storage-manager').getStorageManager
@@ -16,35 +39,48 @@ const mockGetImageTimingAverages = jest.requireMock('@/lib/metrics').getImageTim
 const mockGetEmbeddingMetrics = jest.requireMock('@/lib/metrics').getEmbeddingMetrics
 const mockGetSemanticApiMetrics = jest.requireMock('@/lib/metrics').getSemanticApiMetrics
 const mockGetSemanticConfig = jest.requireMock('@/lib/semantic-config').getSemanticConfig
+const mockStorageHealthCounter = jest.requireMock('@/lib/prometheus').storageHealthCounter
+const mockDbHealthCounter = jest.requireMock('@/lib/prometheus').dbHealthCounter
+const mockRedisHealthCounter = jest.requireMock('@/lib/prometheus').redisHealthCounter
 
 describe('/api/health', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    delete process.env.REDIS_URL
+    mockDb.$queryRaw.mockReset()
+    mockDb.$queryRawUnsafe.mockReset()
+    mockGetStorageManager.mockReset()
+    mockGetRedis.mockReset()
+    mockGetImageTimingAverages.mockReset()
+    mockGetEmbeddingMetrics.mockReset()
+    mockGetSemanticApiMetrics.mockReset()
+    mockGetSemanticConfig.mockReset()
+    mockStorageHealthCounter.inc.mockReset()
+    mockDbHealthCounter.inc.mockReset()
+    mockRedisHealthCounter.inc.mockReset()
 
-    // Default mock implementations
     mockGetImageTimingAverages.mockReturnValue({
       count: 10,
       avgTotal: 150.5,
       avgBlurhash: 25.3,
-      avgVariants: 125.2
+      avgVariants: 125.2,
     })
 
     mockGetEmbeddingMetrics.mockReturnValue({
       queryCache: { hits: 50, misses: 10, hitRate: 0.83 },
       negativeCache: { hits: 5, inserts: 2, size: 2 },
-      layers: { memory: 30, redis: 15, provider: 5, negative: 5 }
+      layers: { memory: 30, redis: 15, provider: 5, negative: 5 },
     })
 
     mockGetSemanticApiMetrics.mockReturnValue({
       count: 100,
       avgMs: 85.2,
       p95Ms: 180.5,
-      cacheHitRate: 0.45
+      cacheHitRate: 0.45,
     })
 
     mockGetSemanticConfig.mockReturnValue({
       enabled: true,
-      mode: 'shadow'
+      mode: 'shadow',
     })
   })
 
@@ -258,3 +294,4 @@ describe('/api/health', () => {
     expect(data.metrics.embeddingLifecycleError).toBe('Query failed')
   })
 })
+

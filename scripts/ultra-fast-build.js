@@ -2,59 +2,102 @@
 
 const fs = require('fs')
 const path = require('path')
-const { execSync } = require('child_process')
+const { spawnSync } = require('child_process')
 
-console.log('🚀 超快速构建模式')
+const rootDir = path.resolve(__dirname, '..')
+const configPath = path.join(rootDir, 'next.config.js')
+const backupPath = path.join(rootDir, 'next.config.original.js')
+const fastConfigPath = path.join(rootDir, 'next.config.fast.js')
+const perfDir = path.join(rootDir, 'logs', 'perf')
+const buildLogPath = path.join(perfDir, 'build-metrics.json')
 
-// 备份原配置
-if (fs.existsSync('next.config.js') && !fs.existsSync('next.config.original.js')) {
-  fs.copyFileSync('next.config.js', 'next.config.original.js')
-  console.log('📋 已备份原始配置')
+fs.mkdirSync(perfDir, { recursive: true })
+
+console.log('⚙️  启动极速构建模式')
+
+if (fs.existsSync(configPath) && !fs.existsSync(backupPath)) {
+  fs.copyFileSync(configPath, backupPath)
+  console.log('📝 已备份原始 next.config.js')
 }
 
-// 使用快速配置
-if (fs.existsSync('next.config.fast.js')) {
-  fs.copyFileSync('next.config.fast.js', 'next.config.js')
-  console.log('⚡ 切换到快速构建配置')
+if (fs.existsSync(fastConfigPath)) {
+  fs.copyFileSync(fastConfigPath, configPath)
+  console.log('🚀 已切换至 next.config.fast.js')
 }
 
-// 清理缓存
-console.log('🧹 清理构建缓存...')
-if (fs.existsSync('.next')) {
-  execSync('rm -rf .next', { stdio: 'inherit' })
+console.log('🧹 清理旧的构建缓存...')
+if (fs.existsSync(path.join(rootDir, '.next'))) {
+  fs.rmSync(path.join(rootDir, '.next'), { recursive: true, force: true })
 }
-if (fs.existsSync('tsconfig.tsbuildinfo')) {
-  fs.unlinkSync('tsconfig.tsbuildinfo')
+if (fs.existsSync(path.join(rootDir, 'tsconfig.tsbuildinfo'))) {
+  fs.rmSync(path.join(rootDir, 'tsconfig.tsbuildinfo'), { force: true })
 }
 
-// 设置环境变量
 process.env.NODE_ENV = 'production'
 process.env.NEXT_TELEMETRY_DISABLED = '1'
-process.env.CI = '1' // 某些包在 CI 环境下会跳过非必要步骤
+process.env.CI = process.env.CI || '1'
 
-console.log('📦 开始超快速构建...')
-const startTime = Date.now()
+console.log('🏗️  开始执行 next build ...')
+const startedAt = Date.now()
+
+function appendBuildMetrics(entry) {
+  let history = []
+  if (fs.existsSync(buildLogPath)) {
+    try {
+      history = JSON.parse(fs.readFileSync(buildLogPath, 'utf8'))
+    } catch (error) {
+      console.warn('⚠️  无法解析现有 build-metrics.json，将重新生成文件')
+    }
+  }
+  history.push(entry)
+  fs.writeFileSync(buildLogPath, JSON.stringify(history, null, 2))
+}
 
 try {
-  // 直接构建，不做类型检查
-  execSync('next build', { 
-    stdio: 'inherit',
+  const result = spawnSync('npx', ['next', 'build'], {
+    cwd: rootDir,
     env: {
       ...process.env,
-      NODE_OPTIONS: '--max-old-space-size=2048'
-    }
+      NODE_OPTIONS: '--max-old-space-size=2048',
+    },
+    encoding: 'utf8',
   })
-  
-  const buildTime = (Date.now() - startTime) / 1000
-  console.log(`✅ 构建完成！耗时: ${buildTime.toFixed(2)}s`)
-  
+
+  if (result.stdout) process.stdout.write(result.stdout)
+  if (result.stderr) process.stderr.write(result.stderr)
+
+  if (result.status !== 0) {
+    throw new Error(`next build 退出码 ${result.status}`)
+  }
+
+  const durationSeconds = (Date.now() - startedAt) / 1000
+  const summary = { durationSeconds }
+
+  const output = `${result.stdout}\n${result.stderr}`
+  const firstLoadMatch = output.match(/First Load JS shared by all\s+([0-9.]+\s?[kMG]B)/i)
+  if (firstLoadMatch) {
+    summary.firstLoadJs = firstLoadMatch[1]
+  }
+
+  const totalRoutes = (output.match(/^[┌├]/gm) || []).length
+  summary.routes = totalRoutes
+
+  appendBuildMetrics({
+    timestamp: new Date().toISOString(),
+    ...summary,
+  })
+
+  console.log(`✅ 构建完成，用时 ${durationSeconds.toFixed(2)}s`)
+  if (summary.firstLoadJs) {
+    console.log(`📦 First Load JS: ${summary.firstLoadJs}`)
+  }
+  console.log(`🗂️  记录已追加至 ${path.relative(rootDir, buildLogPath)}`)
 } catch (error) {
   console.error('❌ 构建失败:', error.message)
-  process.exit(1)
+  process.exitCode = 1
 } finally {
-  // 恢复原配置
-  if (fs.existsSync('next.config.original.js')) {
-    fs.copyFileSync('next.config.original.js', 'next.config.js')
-    console.log('🔄 已恢复原始配置')
+  if (fs.existsSync(backupPath)) {
+    fs.copyFileSync(backupPath, configPath)
+    console.log('♻️  已恢复原始 next.config.js')
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { SWRConfig } from 'swr'
+import type { Key, Middleware, SWRConfiguration } from 'swr'
 import { ReactNode } from 'react'
 import toast from 'react-hot-toast'
 
@@ -8,32 +9,91 @@ interface SWRProviderProps {
   children: ReactNode
 }
 
-// Global SWR error handler
-const handleError = (error: any, key: string) => {
-  console.error('SWR Error:', key, error)
+type SWRKey = Key
 
-  // Show user-friendly error messages
-  if (error.message?.includes('401')) {
+const formatKey = (key: SWRKey): string => {
+  if (typeof key === 'string') return key
+  if (Array.isArray(key)) {
+    return key.filter(Boolean).map((item) => String(item)).join(' | ')
+  }
+  return String(key)
+}
+
+const extractMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  return ''
+}
+
+const handleError = (error: unknown, key: SWRKey) => {
+  const message = extractMessage(error)
+  console.error('SWR Error:', formatKey(key), error)
+
+  if (!message) {
+    if (process.env.NODE_ENV === 'development') {
+      toast.error('SWR 请求发生未知错误')
+    }
+    return
+  }
+
+  if (message.includes('401')) {
     toast.error('请重新登录')
-  } else if (error.message?.includes('403')) {
-    toast.error('没有权限访问此资源')
-  } else if (error.message?.includes('404')) {
-    // Don't show 404 errors to user as they're often expected
-    console.warn('Resource not found:', key)
-  } else if (error.message?.includes('500')) {
-    toast.error('服务器错误，请稍后重试')
-  } else if (error.message?.includes('网络')) {
-    toast.error('网络连接错误')
+  } else if (message.includes('403')) {
+    toast.error('没有权限访问该资源')
+  } else if (message.includes('404')) {
+    console.warn('Resource not found:', formatKey(key))
+  } else if (message.includes('500')) {
+    toast.error('服务器繁忙，请稍后再试')
+  } else if (message.includes('网络')) {
+    toast.error('网络连接异常')
   } else if (process.env.NODE_ENV === 'development') {
-    toast.error(`开发环境错误: ${error.message}`)
+    toast.error(`SWR 请求错误: ${message}`)
   }
 }
 
-// Global SWR success handler for mutations
-const handleSuccess = (data: any, key: string) => {
-  // Only log in development
+const handleSuccess = (data: unknown, key: SWRKey) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('SWR Success:', key, data)
+    console.log('SWR Success:', formatKey(key), data)
+  }
+}
+
+const timingMiddleware: Middleware = (useSWRNext) => {
+  return (key, fetcher, config) => {
+    const start = typeof performance !== 'undefined' ? performance.now() : Date.now()
+    const originalOnSuccess = config?.onSuccess
+    const originalOnError = config?.onError
+
+    const nextConfig: SWRConfiguration = {
+      ...(config || {}),
+      onSuccess: (data: unknown, keyArg: Key, cfg: Readonly<SWRConfiguration>) => {
+        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[SWR] ${formatKey(keyArg)} completed in ${duration.toFixed(2)}ms`)
+        }
+
+        if (typeof originalOnSuccess === 'function') {
+          (originalOnSuccess as (data: unknown, key: Key, cfg: Readonly<SWRConfiguration>) => void)(data, keyArg, cfg)
+        }
+
+        handleSuccess(data, keyArg)
+      },
+      onError: (error: unknown, keyArg: Key, cfg: Readonly<SWRConfiguration>) => {
+        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start
+
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`[SWR] ${formatKey(keyArg)} failed after ${duration.toFixed(2)}ms`)
+        }
+
+        if (typeof originalOnError === 'function') {
+          (originalOnError as (error: unknown, key: Key, cfg: Readonly<SWRConfiguration>) => void)(error, keyArg, cfg)
+        }
+
+        handleError(error, keyArg)
+      },
+    }
+
+    return useSWRNext(key, fetcher, nextConfig)
   }
 }
 
@@ -41,100 +101,40 @@ export function SWRProvider({ children }: SWRProviderProps) {
   return (
     <SWRConfig
       value={{
-        // Global configuration
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
         refreshInterval: 0,
         dedupingInterval: 2000,
         errorRetryCount: 3,
         errorRetryInterval: 1000,
-
-        // Global error handling
         onError: handleError,
         onSuccess: handleSuccess,
-
-        // Performance optimizations
         keepPreviousData: true,
-
-        // Cache configuration
-        compare: (a, b) => {
-          // Custom comparison for better cache management
+        compare: (a: unknown, b: unknown) => {
           if (a === b) return true
           if (!a || !b) return false
 
-          // For arrays, compare length and shallow equality
           if (Array.isArray(a) && Array.isArray(b)) {
             if (a.length !== b.length) return false
             return a.every((item, index) => {
-              if (typeof item === 'object' && item !== null && b[index] !== null) {
-                return item.id === b[index].id && item.updatedAt === b[index].updatedAt
+              const counterpart = b[index] as unknown
+              if (item && counterpart && typeof item === 'object' && typeof counterpart === 'object') {
+                const leftRecord = item as { id?: unknown; updatedAt?: unknown }
+                const rightRecord = counterpart as { id?: unknown; updatedAt?: unknown }
+                if (leftRecord.id !== undefined && rightRecord.id !== undefined && leftRecord.updatedAt !== undefined && rightRecord.updatedAt !== undefined) {
+                  return leftRecord.id === rightRecord.id && leftRecord.updatedAt === rightRecord.updatedAt
+                }
               }
-              return item === b[index]
+              return item === counterpart
             })
-          }
-
-          // For objects with id and updatedAt, use those for comparison
-          if (
-            typeof a === 'object' && typeof b === 'object' &&
-            a !== null && b !== null &&
-            'id' in a && 'id' in b &&
-            'updatedAt' in a && 'updatedAt' in b
-          ) {
-            return a.id === b.id && a.updatedAt === b.updatedAt
           }
 
           return false
         },
-
-        // Middleware for request/response processing
-        use: [
-          // Request middleware
-          (useSWRNext) => (key, fetcher, config) => {
-            // Add request timing
-            const start = performance.now()
-
-            return useSWRNext(key, fetcher, {
-              ...config,
-              onSuccess: (data, key, config) => {
-                const duration = performance.now() - start
-
-                if (process.env.NODE_ENV === 'development') {
-                  console.log(`📊 SWR ${key} completed in ${duration.toFixed(2)}ms`)
-                }
-
-                // Call original onSuccess if provided
-                if (config.onSuccess) {
-                  config.onSuccess(data, key, config)
-                }
-
-                handleSuccess(data, key)
-              },
-              onError: (error, key, config) => {
-                const duration = performance.now() - start
-
-                if (process.env.NODE_ENV === 'development') {
-                  console.warn(`❌ SWR ${key} failed after ${duration.toFixed(2)}ms`)
-                }
-
-                // Call original onError if provided
-                if (config.onError) {
-                  config.onError(error, key, config)
-                }
-
-                handleError(error, key)
-              }
-            })
-          }
-        ],
-
-        // Fallback data for specific patterns
+        use: [timingMiddleware],
         fallback: {},
-
-        // Loading timeout
         loadingTimeout: 30000,
-
-        // Focus throttle
-        focusThrottleInterval: 5000
+        focusThrottleInterval: 5000,
       }}
     >
       {children}

@@ -18,6 +18,8 @@ export interface PhotoWithDetails extends Photo {
     tag: Tag
   }>
   album?: Album | null
+  title?: string | null
+  description?: string | null
   _count?: Record<string, number>
 }
 
@@ -67,7 +69,8 @@ export interface UploadProgress {
   id: string
   filename: string
   progress: number
-  status: 'uploading' | 'processing' | 'completed' | 'failed'
+  status: 'queued' | 'hashing' | 'uploading' | 'processing' | 'completed' | 'failed'
   error?: string
+  size?: number
 }
 

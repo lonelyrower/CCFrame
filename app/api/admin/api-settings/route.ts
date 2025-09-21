@@ -8,18 +8,18 @@ export async function GET() {
     const guard = await requireAdmin()
     if (guard instanceof NextResponse) return guard
 
-    const user = await db.user.findUnique({
+    const user = (await db.user.findUnique({
       where: { id: guard.adminUserId },
       select: { id: true, pixabayApiKey: true, defaultSeedCount: true },
-    })
+    } as any)) as { id: string; pixabayApiKey: string | null; defaultSeedCount?: number | null } | null
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     return NextResponse.json({
-      pixabayApiKey: (user as any)?.pixabayApiKey || '',
-      defaultSeedCount: user.defaultSeedCount || 12,
+      pixabayApiKey: user?.pixabayApiKey ?? '',
+      defaultSeedCount: user?.defaultSeedCount ?? 12,
     })
   } catch (error) {
     console.error('获取API设置失败:', error)
@@ -34,19 +34,19 @@ export async function POST(request: NextRequest) {
 
     const { pixabayApiKey, defaultSeedCount } = await request.json()
 
-    const user = await db.user.update({
+    const user = (await db.user.update({
       where: { id: guard.adminUserId },
-      data: { 
+      data: {
         pixabayApiKey: pixabayApiKey || null,
         defaultSeedCount: defaultSeedCount || 12
       } as any,
       select: { id: true, pixabayApiKey: true, defaultSeedCount: true } as any,
-    })
+    } as any)) as { id: string; pixabayApiKey: string | null; defaultSeedCount?: number | null } | null
 
     return NextResponse.json({
       message: 'API设置已保存',
-      pixabayApiKey: (user as any)?.pixabayApiKey || '',
-      defaultSeedCount: (user as any)?.defaultSeedCount || 12,
+      pixabayApiKey: user?.pixabayApiKey ?? '',
+      defaultSeedCount: user?.defaultSeedCount ?? 12,
     }, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8'

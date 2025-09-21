@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, useTransition } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Search } from 'lucide-react'
 
+import { cn } from '@/lib/utils'
+
 interface AlbumOption {
   id: string
   title: string
@@ -28,9 +30,11 @@ interface PhotosFiltersProps {
   albums: AlbumOption[]
   tags: TagOption[]
   params: FilterParams
+  className?: string
+  variant?: 'panel' | 'plain'
 }
 
-export function PhotosFilters({ albums, tags, params }: PhotosFiltersProps) {
+export function PhotosFilters({ albums, tags, params, className, variant = 'panel' }: PhotosFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -71,19 +75,26 @@ export function PhotosFilters({ albums, tags, params }: PhotosFiltersProps) {
     })
   }
 
+  const wrapperClassName = cn(
+    variant === 'panel'
+      ? 'rounded-xl border border-surface-outline/40 bg-surface-panel/80 p-6 shadow-subtle backdrop-blur-sm'
+      : '',
+    className,
+  )
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
+    <div className={wrapperClassName}>
       <form className="flex flex-wrap gap-4" onSubmit={handleSearchSubmit}>
         <div className="flex-1 min-w-60">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
             <input
               type="search"
               name="search"
-              placeholder="搜索照片、相册或标签…"
+              placeholder="Search albums or tags"
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full rounded-lg border border-surface-outline/60 bg-surface-canvas/80 py-2 pl-10 pr-4 text-sm text-text-primary shadow-subtle transition focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
             />
           </div>
         </div>
@@ -92,20 +103,20 @@ export function PhotosFilters({ albums, tags, params }: PhotosFiltersProps) {
           name="sort"
           value={params.sort || 'newest'}
           onChange={handleSelectChange('sort')}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
         >
-          <option value="newest">最新上传</option>
-          <option value="oldest">最早上传</option>
-          <option value="name">相册名称</option>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Album name</option>
         </select>
 
         <select
           name="album"
           value={params.album || ''}
           onChange={handleSelectChange('album')}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
         >
-          <option value="">所有相册</option>
+          <option value="">All albums</option>
           {albums.map((album) => (
             <option key={album.id} value={album.id}>
               {album.title} ({album.count})
@@ -117,9 +128,9 @@ export function PhotosFilters({ albums, tags, params }: PhotosFiltersProps) {
           name="tag"
           value={params.tag || ''}
           onChange={handleSelectChange('tag')}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
         >
-          <option value="">所有标签</option>
+          <option value="">All tags</option>
           {tags.map((tag) => (
             <option key={tag.id} value={tag.name}>
               {tag.name} ({tag.count})
@@ -127,15 +138,10 @@ export function PhotosFilters({ albums, tags, params }: PhotosFiltersProps) {
           ))}
         </select>
 
-        <button
-          type="submit"
-          className="hidden"
-          aria-hidden="true"
-        >
-          应用
+        <button type="submit" className="hidden" aria-hidden="true">
+          Apply
         </button>
       </form>
     </div>
   )
 }
-

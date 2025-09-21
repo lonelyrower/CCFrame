@@ -24,7 +24,7 @@ export const tagNameSchema = z
   .min(1, '标签名不能为空')
   .max(50, '标签名不能超过50个字符')
   .refine(
-    (name) => /^[\p{L}\p{N}_\-\s]+$/u.test(name),
+    (name) => /^[一-龥A-Za-z0-9_\-\s]+$/.test(name),
     '标签名只能包含字母、数字、下划线、连字符和空格'
   )
 
@@ -152,7 +152,7 @@ export function sanitizeHtml(input: string): string {
  * SQL 注入防护（额外保护，Prisma 已经有内置保护）
  */
 export function sanitizeSqlInput(input: string): string {
-  return input.replace(/[';--]/g, '')
+  return input.replace(/(--|;|')/g, '')
 }
 
 /**

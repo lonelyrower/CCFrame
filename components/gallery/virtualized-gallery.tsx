@@ -1,24 +1,25 @@
 'use client'
 
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
+import Image from 'next/image'
 import { VariableSizeGrid } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { Photo } from '@/types/photo'
+import type { PhotoWithDetails } from '@/types'
 
 interface VirtualizedGalleryProps {
-  photos: Photo[]
-  onPhotoClick: (photo: Photo, index: number) => void
+  photos: PhotoWithDetails[]
+  onPhotoClick: (photo: PhotoWithDetails, index: number) => void
   columnWidth?: number
   gap?: number
   overscanCount?: number
 }
 
 interface GridItemData {
-  photos: Photo[]
+  photos: PhotoWithDetails[]
   columnCount: number
   columnWidth: number
   gap: number
-  onPhotoClick: (photo: Photo, index: number) => void
+  onPhotoClick: (photo: PhotoWithDetails, index: number) => void
 }
 
 const GridItem = React.memo<{
@@ -67,18 +68,22 @@ const GridItem = React.memo<{
         )}
 
         {/* Lazy loaded image */}
-        <img
+        <Image
           src={`/api/image/${photo.id}/small?format=webp`}
-          alt={photo.title || '照片'}
+          alt={photo.album?.title || photo.tags?.[0]?.tag?.name || 'Photo'}
+          fill
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
           loading="lazy"
-          decoding="async"
-          style={{
-            aspectRatio: aspectRatio
-          }}
-          onError={(e) => {
-            // Fallback to blur hash or placeholder
-            e.currentTarget.style.display = 'none'
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          onError={(event) => {
+            const img = event.currentTarget
+            if (img.src.includes('webp')) {
+              img.src = `/api/image/${photo.id}/small?format=jpeg`
+            } else if (img.src.includes('/api/image/') && img.src.includes('small')) {
+              img.src = `/api/image/${photo.id}/thumb?format=jpeg`
+            } else if (!img.src.includes('serve')) {
+              img.src = `/api/image/serve/${photo.id}/small?format=jpeg`
+            }
           }}
         />
 
@@ -88,7 +93,7 @@ const GridItem = React.memo<{
         {/* Photo info overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <p className="text-white text-sm font-medium truncate">
-            {photo.title || `照片 ${index + 1}`}
+            {photo.album?.title || photo.tags?.[0]?.tag?.name || `Photo ${index + 1}`}
           </p>
           {photo.takenAt && (
             <p className="text-white/80 text-xs">
@@ -141,7 +146,7 @@ export const VirtualizedGallery: React.FC<VirtualizedGalleryProps> = ({
       rowCount: rows,
       getItemHeight: getHeight
     }
-  }, [containerWidth, columnWidth, gap, photos.length])
+  }, [containerWidth, columnWidth, gap, photos])
 
   // Grid item data
   const itemData: GridItemData = useMemo(() => ({

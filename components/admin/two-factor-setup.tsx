@@ -177,7 +177,7 @@ export function TwoFactorSetup() {
               )}
               <span>{status.message}</span>
             </div>
-            <Badge variant={status.enabled ? 'default' : 'secondary'}>
+            <Badge variant={status.enabled ? 'brand' : 'subtle'}>
               {status.enabled ? '已启用' : '未启用'}
             </Badge>
           </div>

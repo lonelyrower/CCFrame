@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Surface } from "@/components/ui/surface"
 import toast from "react-hot-toast"
 
 type StorageProviderOption = "local" | "minio" | "aws"
@@ -228,7 +229,7 @@ export default function RuntimeConfigPanel() {
 
   return (
     <div className="space-y-8">
-      <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
+      <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
         <header>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">存储提供方设置</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">选择文件实际存储位置并填写访问凭据。</p>
@@ -345,9 +346,9 @@ export default function RuntimeConfigPanel() {
             </div>
           </div>
         )}
-      </section>
+      </Surface>
 
-      <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
+      <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
         <header>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">语义搜索</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -482,7 +483,7 @@ export default function RuntimeConfigPanel() {
                     <ol className="text-sm text-blue-700 dark:text-blue-300 mt-1 space-y-1">
                       <li>1. 访问 <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline">platform.openai.com/api-keys</a></li>
                       <li>2. 注册或登录OpenAI账户</li>
-                      <li>3. 点击"Create new secret key"</li>
+                      <li>3. 点击&quot;Create new secret key&quot;</li>
                       <li>4. 复制密钥并粘贴到上方输入框</li>
                     </ol>
                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
@@ -514,7 +515,7 @@ export default function RuntimeConfigPanel() {
             </div>
           </div>
         )}
-      </section>
+      </Surface>
     </div>
   )
 }

@@ -16,6 +16,8 @@ import {
   Bug,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Container } from '@/components/layout/container'
+import { Heading, Text } from '@/components/ui/typography'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -472,8 +474,8 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="space-y-12 pb-20 pt-6">
+      <Container size="xl" bleed="none" className="space-y-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             设置
@@ -1719,7 +1721,7 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

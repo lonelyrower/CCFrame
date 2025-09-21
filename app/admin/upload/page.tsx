@@ -2,9 +2,15 @@
 
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Upload, X, CheckCircle, AlertCircle, Loader2, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { UploadProgress } from '@/types'
+import { useUploadQueue, type UploadQueueItem, type UploadQueueStatus } from '@/components/providers/upload-queue-provider'
+import { Container } from '@/components/layout/container'
+import { Surface } from '@/components/ui/surface'
+import { Heading, Text } from '@/components/ui/typography'
+import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
+import { fadeInScale, listItemRise } from '@/lib/motion/presets'
+import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 interface UploadFile extends File {
@@ -17,24 +23,41 @@ interface UploadFile extends File {
 
 export default function UploadPage() {
   const [files, setFiles] = useState<UploadFile[]>([])
-  const [uploads, setUploads] = useState<Map<string, UploadProgress>>(new Map())
+  const {
+    stats: uploadStats,
+    hasActive: queueHasActive,
+    getItem: getUploadById,
+    upsert: upsertUpload,
+    update: patchUpload,
+    remove: removeUploadEntry,
+    clear: clearUploadQueue,
+  } = useUploadQueue()
   const [selectedAlbum, setSelectedAlbum] = useState<string>('')
   const [isUploading, setIsUploading] = useState(false)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => {
-      // 确保文件对象有有效的size属性
       const validatedSize = file.size || 0
+      const generatedId = Math.random().toString(36).substring(7)
+
+      upsertUpload({
+        id: generatedId,
+        filename: file.name,
+        progress: 0,
+        status: 'queued',
+        size: validatedSize,
+      })
+
       return {
         ...file,
-        id: Math.random().toString(36).substring(7),
+        id: generatedId,
         preview: URL.createObjectURL(file),
-        size: validatedSize // 显式设置size确保它是数字
+        size: validatedSize
       }
     })
 
     setFiles(prev => [...prev, ...newFiles])
-  }, [])
+  }, [upsertUpload])
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
@@ -54,11 +77,7 @@ export default function UploadPage() {
       }
       return prev.filter(f => f.id !== fileId)
     })
-    setUploads(prev => {
-      const newUploads = new Map(prev)
-      newUploads.delete(fileId)
-      return newUploads
-    })
+    removeUploadEntry(fileId)
   }
 
   // Incremental hashing (streaming) to provide progress for large files
@@ -90,13 +109,25 @@ export default function UploadPage() {
   }
 
   const uploadFile = async (file: UploadFile): Promise<'completed' | 'failed'> => {
+    upsertUpload({
+      id: file.id,
+      filename: file.name,
+      progress: 0,
+      status: 'queued',
+      size: file.size,
+      error: undefined,
+    })
+
     try {
       // Precompute content hash with progress (duplicate fast-path)
       if (!file.contentHash && !file.hashing) {
         setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashing: true, hashProgress: 0 } : f))
+        patchUpload(file.id, { status: 'hashing', progress: 0 })
         try {
           const hash = await sha256Hex(file, (r) => {
-            setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashProgress: Math.round(r * 100) } : f))
+            const percent = Math.round(r * 100)
+            setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashProgress: percent } : f))
+            patchUpload(file.id, { status: 'hashing', progress: percent })
           })
           file.contentHash = hash
         } catch (e) {
@@ -104,6 +135,7 @@ export default function UploadPage() {
           file.contentHash = null
         } finally {
           setFiles(prev => prev.map(f => f.id === file.id ? { ...f, hashing: false } : f))
+          patchUpload(file.id, { status: 'queued', progress: 0 })
         }
       }
 
@@ -134,7 +166,7 @@ export default function UploadPage() {
   const { photoId, uploadUrl, fileKey, completed, duplicate } = await presignResponse.json()
 
       if (completed) {
-        setUploads(prev => new Map(prev).set(file.id, { id: file.id, filename: file.name, progress: 100, status: 'completed' }))
+        patchUpload(file.id, { status: 'completed', progress: 100 })
         if (duplicate) {
           toast.success(`重复文件已快速关联: ${file.name}`)
         }
@@ -142,12 +174,7 @@ export default function UploadPage() {
       }
 
       // Update progress
-      setUploads(prev => new Map(prev).set(file.id, {
-        id: file.id,
-        filename: file.name,
-        progress: 0,
-        status: 'uploading'
-      }))
+      patchUpload(file.id, { status: 'uploading', progress: 0 })
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
@@ -163,12 +190,7 @@ export default function UploadPage() {
       }
 
       // Update progress
-      setUploads(prev => new Map(prev).set(file.id, {
-        id: file.id,
-        filename: file.name,
-        progress: 50,
-        status: 'processing'
-      }))
+      patchUpload(file.id, { status: 'processing', progress: 50 })
 
       // Commit upload
       const commitResponse = await fetch('/api/upload/commit', {
@@ -182,24 +204,13 @@ export default function UploadPage() {
       }
 
       // Mark as completed
-      setUploads(prev => new Map(prev).set(file.id, {
-        id: file.id,
-        filename: file.name,
-        progress: 100,
-        status: 'completed'
-      }))
+      patchUpload(file.id, { status: 'completed', progress: 100 })
 
       return 'completed'
 
     } catch (error) {
       console.error('Upload error:', error)
-      setUploads(prev => new Map(prev).set(file.id, {
-        id: file.id,
-        filename: file.name,
-        progress: 0,
-        status: 'failed',
-        error: error instanceof Error ? error.message : '上传失败'
-      }))
+      patchUpload(file.id, { status: 'failed', progress: 0, error: error instanceof Error ? error.message : '�ϴ�ʧ��' })
       return 'failed'
     }
   }
@@ -239,246 +250,305 @@ export default function UploadPage() {
       }
     })
     setFiles([])
-    setUploads(new Map())
+    clearUploadQueue()
   }
 
-  const getStatusIcon = (status: UploadProgress['status']) => {
+  const getStatusIcon = (status: UploadQueueStatus) => {
     switch (status) {
       case 'uploading':
       case 'processing':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+        return <Loader2 className="h-4 w-4 animate-spin text-primary" />
+      case 'hashing':
+        return <Loader2 className="h-4 w-4 animate-spin text-text-secondary" />
+      case 'queued':
+        return <Clock className="h-4 w-4 text-text-muted" />
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-state-success" />
       case 'failed':
-        return <AlertCircle className="h-4 w-4 text-red-500" />
+        return <AlertCircle className="h-4 w-4 text-state-danger" />
+      default:
+        return null
     }
   }
 
-  const getStatusText = (upload: UploadProgress) => {
+  const getStatusText = (upload: UploadQueueItem) => {
     switch (upload.status) {
       case 'uploading':
-        return `上传中... ${upload.progress}%`
+        return `上传中… ${upload.progress}%`
       case 'processing':
-        return '处理中...'
+        return '处理图像…'
+      case 'hashing':
+        return `计算哈希… ${upload.progress}%`
+      case 'queued':
+        return '等待上传'
       case 'completed':
-        return '已完成'
+        return '完成'
       case 'failed':
-        return `失败: ${upload.error}`
+        return `失败: ${upload.error ?? '未知错误'}`
+      default:
+        return ''
     }
   }
 
+
+
+  const completedCount = uploadStats.completed
+  const activeCount = uploadStats.active
+  const failedCount = uploadStats.failed
+  const pendingCount = uploadStats.pending
+  const totalCount = uploadStats.total
+
+  const dropzoneClassName = cn(
+    'flex min-h-[220px] flex-col items-center justify-center rounded-xl border-2 border-dashed text-center transition-all duration-300',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
+    'touch-manipulation active:scale-[0.99]',
+    isDragActive
+      ? 'border-primary/80 bg-primary/10 shadow-floating'
+      : 'border-surface-outline/60 bg-surface-canvas hover:border-primary/50 hover:bg-surface-panel'
+  )
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          上传照片
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          上传新照片到你的相册
-        </p>
-      </div>
-
-      {/* Upload Area */}
-      <div className="mb-8">
-        <div
-          {...getRootProps()}
-          className={`
-            border-2 border-dashed rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200
-            min-h-[200px] sm:min-h-[240px] flex flex-col items-center justify-center
-            ${isDragActive
-              ? 'border-primary bg-primary/10 scale-[1.02]'
-              : 'border-gray-300 dark:border-gray-700 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.01]'
-            }
-            touch-manipulation active:scale-[0.99]
-          `}
-        >
-          <input {...getInputProps()} />
-
-          {/* Icon with animation */}
-          <div className={`mb-4 transition-transform duration-200 ${isDragActive ? 'scale-110' : ''}`}>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-md opacity-20" />
-              <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 p-4 rounded-full">
-                <Upload className={`h-8 w-8 sm:h-12 sm:w-12 transition-colors ${isDragActive ? 'text-primary' : 'text-gray-400'}`} />
-              </div>
-            </div>
+    <div className="space-y-12 pb-20 pt-6">
+      <Container size="xl" bleed="none" className="space-y-6">
+        <AnimateOnScroll>
+          <div className="space-y-2">
+            <Heading size="lg">上传照片</Heading>
+            <Text tone="secondary">
+              上传后将自动运行重复检测与缩略图生成，请保持页面开启直至状态完成。
+            </Text>
           </div>
+        </AnimateOnScroll>
 
-          {isDragActive ? (
-            <div className="space-y-2">
-              <p className="text-lg sm:text-xl font-medium text-primary">将文件拖放到此处...</p>
-              <div className="w-32 h-1 bg-primary/20 rounded-full overflow-hidden">
-                <div className="w-full h-full bg-primary rounded-full animate-pulse" />
+        <AnimateOnScroll variants={fadeInScale}>
+          <Surface tone="panel" padding="lg" className="shadow-subtle space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-1">
+                <Heading size="sm">拖拽或选择文件</Heading>
+                <Text tone="secondary" size="sm">
+                  支持 JPEG、PNG、WebP、AVIF、HEIC，单个文件最大 50MB。
+                </Text>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-                <span className="hidden sm:inline">拖拽照片到此处，或</span>
-                <span className="sm:hidden">轻触</span>
-                点击选择文件
-              </p>
-              <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
-                支持 JPEG, PNG, WebP, AVIF 和 HEIC 格式<br className="sm:hidden" />
-                <span className="hidden sm:inline">，</span>单个文件最大 50MB
-              </p>
-
-              {/* Mobile-specific hint */}
-              <div className="sm:hidden mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    open()
-                  }}
-                  className="min-h-[44px] min-w-[120px]"
-                >
-                  选择文件
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* File List */}
-      {files.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">
-              已选文件 ({files.length})
-            </h2>
-            <div className="flex gap-2">
               <Button
+                type="button"
                 variant="outline"
-                onClick={clearAll}
-                disabled={isUploading}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  open()
+                }}
               >
-                清空全部
-              </Button>
-              <Button
-                onClick={startUploads}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    上传中...
-                  </>
-                ) : (
-                  `上传 ${files.length} 个文件`
-                )}
+                浏览文件
               </Button>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {files.map((file) => {
-              const upload = uploads.get(file.id)
-              
-              return (
-                <div key={file.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    {/* Thumbnail */}
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 relative">
-                      {file.preview && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={file.preview}
-                          alt={file.name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      {file.hashing && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <span className="text-[10px] text-white">Hash {file.hashProgress || 0}%</span>
-                        </div>
-                      )}
-                    </div>
+            <div {...getRootProps({ className: dropzoneClassName })}>
+              <input {...getInputProps()} />
+              <div className={cn('mb-4 transition-transform duration-200', isDragActive && 'scale-110')}>
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-glow-primary opacity-30 blur-lg" />
+                  <div className="relative rounded-full bg-surface-panel p-4 shadow-surface">
+                    <Upload className={cn('h-8 w-8 sm:h-12 sm:w-12 text-text-muted', isDragActive && 'text-primary')} />
+                  </div>
+                </div>
+              </div>
 
-                    {/* File Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {file.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {file.size && !isNaN(file.size) ? (file.size / 1024 / 1024).toFixed(1) : '0.0'} MB
-                      </p>
-                      
-                      {/* Upload Status */}
-                      {upload && (
-                        <div className="mt-2">
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(upload.status)}
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              {getStatusText(upload)}
-                            </span>
-                          </div>
-                          
-                          {(upload.status === 'uploading' || upload.status === 'processing') && (
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-2">
-                              <div 
-                                className="bg-blue-500 h-1 rounded-full transition-all duration-300" 
-                                style={{ width: `${upload.progress}%` }}
-                              />
+              {isDragActive ? (
+                <div className="space-y-2">
+                  <Text size="lg" weight="medium" className="text-primary">
+                    松开即可开始处理…
+                  </Text>
+                  <div className="mx-auto h-1 w-32 overflow-hidden rounded-full bg-primary/20">
+                    <div className="h-full w-full animate-pulse rounded-full bg-primary" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Text size="md" weight="medium">
+                    <span className="hidden sm:inline">拖拽文件到此处</span>
+                    <span className="sm:hidden">轻触上传</span>
+                    ，或点击下方按钮选择文件
+                  </Text>
+                  <Text tone="secondary" size="xs">
+                    也支持直接粘贴截图，上传过程中可离开页面，任务会继续执行。
+                  </Text>
+                  <div className="pt-2 sm:hidden">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        open()
+                      }}
+                      className="min-h-[44px] min-w-[120px]"
+                    >
+                      选择文件
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Surface>
+        </AnimateOnScroll>
+
+        {files.length > 0 && (
+          <AnimateOnScroll variants={fadeInScale}>
+            <Surface tone="panel" padding="lg" className="shadow-subtle space-y-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <Heading size="sm">已选文件（{files.length}）</Heading>
+                  <Text tone="secondary" size="xs">
+                    Hash 预处理完成后会自动排除重复文件，保持页面开启以查看进度。
+                  </Text>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={clearAll}
+                    disabled={isUploading || queueHasActive}
+                  >
+                    清空列表
+                  </Button>
+                  <Button type="button" onClick={startUploads} disabled={isUploading}>
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        正在上传…
+                      </>
+                    ) : (
+                      `上传 ${files.length} 个文件`
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {files.map((file, index) => {
+                  const upload = getUploadById(file.id)
+
+                  return (
+                    <AnimateOnScroll
+                      key={file.id}
+                      variants={listItemRise}
+                      delay={index * 0.04}
+                      className="h-full"
+                    >
+                      <Surface
+                        tone="canvas"
+                        padding="md"
+                        className="flex h-full items-start gap-3 border border-surface-outline/40"
+                      >
+                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-surface-panel">
+                          {file.preview && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={file.preview} alt={file.name} className="h-full w-full object-cover" />
+                          )}
+                          {file.hashing && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <span className="text-[11px] font-medium text-white">
+                                Hash {file.hashProgress || 0}%
+                              </span>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* Remove Button */}
-                    {!upload || upload.status !== 'uploading' ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeFile(file.id)}
-                        className="flex-shrink-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    ) : null}
-                  </div>
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="space-y-1">
+                            <Text size="sm" weight="medium" className="truncate">
+                              {file.name}
+                            </Text>
+                            <Text tone="secondary" size="xs">
+                              {file.size && !Number.isNaN(file.size) ? (file.size / 1024 / 1024).toFixed(1) : '0.0'} MB
+                            </Text>
+                          </div>
+
+                          {upload && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                {getStatusIcon(upload.status)}
+                                <Text tone="secondary" size="xs">
+                                  {getStatusText(upload)}
+                                </Text>
+                              </div>
+                              {(upload.status === 'uploading' || upload.status === 'processing' || upload.status === 'hashing') && (
+                                <div className="h-1 w-full overflow-hidden rounded-full bg-surface-outline/30">
+                                  <div
+                                    className="h-full rounded-full bg-primary transition-all duration-300"
+                                    style={{ width: `${upload.progress}%` }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {!(upload && (upload.status === 'uploading' || upload.status === 'processing' || upload.status === 'hashing')) && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFile(file.id)}
+                            className="flex-shrink-0 text-text-muted hover:text-text-primary"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </Surface>
+                    </AnimateOnScroll>
+                  )
+                })}
+              </div>
+            </Surface>
+          </AnimateOnScroll>
+        )}
+
+        {totalCount > 0 && (
+          <AnimateOnScroll variants={fadeInScale}>
+            <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
+              <Heading size="sm">上传统计</Heading>
+              <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
+                <div className="space-y-1">
+                  <Text size="lg" weight="semibold">
+                    {completedCount}
+                  </Text>
+                  <Text tone="secondary" size="xs">
+                    成功
+                  </Text>
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Upload Summary */}
-      {uploads.size > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">上传统计</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {Array.from(uploads.values()).filter(u => u.status === 'completed').length}
+                <div className="space-y-1">
+                  <Text size="lg" weight="semibold" className="text-primary">
+                    {activeCount + pendingCount}
+                  </Text>
+                  <Text tone="secondary" size="xs">
+                    进行中{pendingCount > 0 ? `（排队 ${pendingCount}）` : ''}
+                  </Text>
+                </div>
+                <div className="space-y-1">
+                  <Text size="lg" weight="semibold" className="text-state-danger">
+                    {failedCount}
+                  </Text>
+                  <Text tone="secondary" size="xs">
+                    失败
+                  </Text>
+                </div>
+                <div className="space-y-1">
+                  <Text size="lg" weight="semibold" className="text-text-muted">
+                    {totalCount}
+                  </Text>
+                  <Text tone="secondary" size="xs">
+                    总计
+                  </Text>
+                </div>
               </div>
-              <div className="text-sm text-gray-500">已完成</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-500">
-                {Array.from(uploads.values()).filter(u => u.status === 'uploading' || u.status === 'processing').length}
-              </div>
-              <div className="text-sm text-gray-500">处理中</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-red-500">
-                {Array.from(uploads.values()).filter(u => u.status === 'failed').length}
-              </div>
-              <div className="text-sm text-gray-500">失败</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-500">
-                {uploads.size}
-              </div>
-              <div className="text-sm text-gray-500">Total</div>
-            </div>
-          </div>
-        </div>
-      )}
+            </Surface>
+          </AnimateOnScroll>
+        )}
+      </Container>
     </div>
   )
+
 }
+
+
+
+

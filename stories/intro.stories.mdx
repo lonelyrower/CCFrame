@@ -1,0 +1,22 @@
+import { Meta } from '@storybook/addon-docs';
+
+<Meta title="Intro/Welcome" />
+
+# CC Frame 设计系统
+
+欢迎来到 CC Frame 的 Storybook。此处汇总了基础 tokens、UI 组件与布局模块，方便前后台团队共享视觉语言与交互模式。
+
+## 快速开始
+- 运行 `npm run storybook` 启动本地服务器。
+- Stories 位于 `stories/` 目录，按 Foundations、Layout 分类。
+- 全局样式通过 `app/styles/tokens.css` 与 `app/globals.css` 注入。
+
+## 设计体系概览
+- [Design Language](../docs/design-language.md)
+- [Token Architecture](../docs/token-architecture.md)
+- [Components Guide](../docs/design-system/components.md)
+
+## 视觉回归建议
+- 基于 `@storybook/test-runner` 进行交互测试。
+- 推荐接入 Chromatic 或同类服务进行截图对比。
+- CI 中可执行 `npm run storybook:test`。

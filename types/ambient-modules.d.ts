@@ -14,3 +14,16 @@ declare module 'workbox-strategies' {
   export const NetworkFirst: any
   export const StaleWhileRevalidate: any
 }
+
+declare module 'otplib' {
+  export const authenticator: {
+    generate(secret?: string): string
+    generateSecret(): string
+    verify(options: { token: string; secret: string }): boolean
+    keyuri(account: string, issuer: string, secret: string): string
+  }
+}
+
+declare module 'qrcode' {
+  export function toDataURL(text: string): Promise<string>
+}

@@ -1,10 +1,14 @@
 import { Suspense } from 'react'
 import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
+import { Container } from '@/components/layout/container'
+import { Surface } from '@/components/ui/surface'
+import { Heading, Text } from '@/components/ui/typography'
 import { MasonryGallery } from '@/components/gallery/masonry-gallery'
 import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { Lightbox } from '@/components/gallery/lightbox'
 import { PhotosFilters } from '@/components/gallery/photos-filters'
+import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
 import type { PhotoWithDetails } from '@/types'
 import { Grid } from 'lucide-react'
 
@@ -160,23 +164,26 @@ async function getFilterOptions() {
 
 function PhotosLoading() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
-        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
-      </div>
-      <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 mb-6 animate-pulse">
-        <div className="flex gap-4">
-          <div className="flex-1 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-          <div className="w-32 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-          <div className="w-32 h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-        </div>
-      </div>
-      <MasonryGallery photos={[]} loading />
+    <div className="space-y-12 pb-20 pt-10 sm:pt-16">
+      <Container size="xl" bleed="none" className="space-y-6">
+        <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
+          <div className="space-y-2">
+            <div className="h-8 w-40 rounded-lg bg-surface-outline/40" />
+            <div className="h-4 w-64 rounded-lg bg-surface-outline/30" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="h-10 rounded-lg bg-surface-outline/30" />
+            ))}
+          </div>
+        </Surface>
+        <Surface tone="panel" padding="lg" className="shadow-subtle">
+          <MasonryGallery photos={[]} loading />
+        </Surface>
+      </Container>
     </div>
   )
 }
-
 async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
   const normalized = {
     ...searchParams,
@@ -188,35 +195,53 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
   ])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">全部照片</h1>
-        <p className="text-gray-600 dark:text-gray-400">共 {photos.length} 张照片，记录着生活中的美好瞬间</p>
-      </div>
-
-      <PhotosFilters
-        albums={filterOptions.albums}
-        tags={filterOptions.tags}
-        params={normalized}
-      />
-
-      {photos.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Grid className="w-12 h-12 text-gray-400" />
+    <div className="space-y-12 pb-20 pt-10 sm:pt-16">
+      <Container size="xl" bleed="none" className="flex flex-col gap-6">
+        <AnimateOnScroll>
+          <div className="space-y-3">
+            <Heading size="lg">全部照片</Heading>
+            <Text tone="secondary" size="sm">
+              浏览 {photos.length} 张已处理作品，可使用过滤器按相册、标签或关键字快速定位。
+            </Text>
           </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">没有找到匹配的照片</h3>
-          <p className="text-gray-600 dark:text-gray-400">请尝试调整搜索条件或浏览其他分类</p>
-        </div>
-      ) : (
-        <LightboxProvider photos={photos}>
-          <MasonryGallery photos={photos} />
-          <Lightbox />
-        </LightboxProvider>
-      )}
+        </AnimateOnScroll>
+
+        <AnimateOnScroll delay={0.06}>
+          <Surface tone="panel" padding="lg" className="shadow-subtle">
+            <PhotosFilters
+              albums={filterOptions.albums}
+              tags={filterOptions.tags}
+              params={normalized}
+              variant="plain"
+            />
+          </Surface>
+        </AnimateOnScroll>
+      </Container>
+
+      <Container size="xl" bleed="none">
+        {photos.length === 0 ? (
+          <AnimateOnScroll>
+            <Surface tone="panel" padding="lg" className="flex flex-col items-center gap-4 text-center shadow-subtle">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-surface-canvas">
+                <Grid className="h-12 w-12 text-text-muted" />
+              </div>
+              <Heading size="sm">暂无匹配照片</Heading>
+              <Text tone="secondary" size="sm">尝试调整搜索条件或改用其他标签与相册筛选。</Text>
+            </Surface>
+          </AnimateOnScroll>
+        ) : (
+          <AnimateOnScroll delay={0.1}>
+            <LightboxProvider photos={photos}>
+              <MasonryGallery photos={photos} />
+              <Lightbox />
+            </LightboxProvider>
+          </AnimateOnScroll>
+        )}
+      </Container>
     </div>
   )
 }
+
 
 export default function PhotosPage({ searchParams }: { searchParams: SearchParams }) {
   return (

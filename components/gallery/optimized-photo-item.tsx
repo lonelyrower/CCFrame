@@ -31,13 +31,13 @@ const OptimizedPhotoItem = memo<OptimizedPhotoItemProps>(({
 
   const handleClick = () => onSelect(photo)
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault()
       onSelect(photo)
     }
     if (event.key === "Escape") {
-      event.currentTarget.blur()
+      (event.currentTarget as HTMLElement).blur()
     }
   }
 
@@ -80,7 +80,7 @@ const OptimizedPhotoItem = memo<OptimizedPhotoItemProps>(({
             `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#f3f4f6"/></svg>`
           )}`}
           onError={(e) => {
-            const img = e.target as HTMLImageElement
+            const img = e.currentTarget as HTMLImageElement
             if (img.src.includes("webp")) {
               img.src = `/api/image/${photo.id}/small?format=jpeg`
             } else if (img.src.includes("/api/image/") && img.src.includes("small")) {

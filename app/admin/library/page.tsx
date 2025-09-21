@@ -14,6 +14,10 @@ import { PhotoTagsInline } from '@/components/admin/photo-tags-inline'
 import { PhotoActions } from '@/components/admin/photo-actions'
 import { LibraryStatsBar } from '@/components/admin/library-stats-bar'
 import { LibraryControls } from '@/components/admin/library-controls'
+import { Container } from '@/components/layout/container'
+import { Surface } from '@/components/ui/surface'
+import { Heading, Text } from '@/components/ui/typography'
+import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
 import { requireAdmin } from '@/lib/admin-auth'
 
 interface LibraryStats {
@@ -139,59 +143,80 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
   )
 
   return (
-    <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div className="mb-4 lg:mb-0">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              照片库
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              管理所有已上传的照片
-            </p>
+    <div className="space-y-12 pb-20 pt-6">
+      <Container size="xl" bleed="none" className="flex flex-col gap-6">
+        <AnimateOnScroll>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <Heading size="lg">库管理</Heading>
+              <Text tone="secondary">管理所有已上传的资产，调整可见性并保持元数据同步。</Text>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <SeedDemoButton count={12} />
+              <LibraryControls
+                initialFilter={searchParams.filter}
+                initialViewMode={(searchParams.view as 'grid' | 'list') || 'grid'}
+              />
+            </div>
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:items-center">
-            <SeedDemoButton count={12} />
-            <LibraryControls 
-              initialFilter={searchParams.filter}
-              initialViewMode={searchParams.view as 'grid' | 'list' || 'grid'}
-            />
-          </div>
-        </div>
+        </AnimateOnScroll>
 
-        <LibraryStatsBar stats={stats} />
+        <AnimateOnScroll delay={0.08}>
+          <Surface tone="panel" padding="lg" className="shadow-subtle">
+            <LibraryStatsBar stats={stats} className="gap-4" />
+          </Surface>
+        </AnimateOnScroll>
 
         {photos.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ImageIcon className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-              {searchParams.filter ? '没有找到匹配的照片' : '还没有照片'}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              {searchParams.filter ? '尝试修改搜索条件' : '上传一些照片开始使用，或导入示例图片快速预览效果'}
-            </p>
-            <div className="mt-6 flex justify-center">
-              <SeedDemoButton count={12} />
-            </div>
-          </div>
+          <AnimateOnScroll delay={0.12}>
+            <Surface tone="panel" padding="lg" className="flex flex-col items-center gap-4 text-center shadow-subtle">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-surface-canvas">
+                <ImageIcon className="h-12 w-12 text-text-muted" />
+              </div>
+              <Heading size="md">暂无照片</Heading>
+              <Text tone="secondary">
+                {searchParams.filter
+                  ? '尝试调整过滤条件以找到更多图片。'
+                  : '上传新的照片或使用示例数据快速填充图库。'}
+              </Text>
+              <div className="flex justify-center">
+                <SeedDemoButton count={12} />
+              </div>
+            </Surface>
+          </AnimateOnScroll>
         ) : (
-          <LibraryBatchGrid initial={photos.map(p => ({ id: p.id, visibility: p.visibility as any, width: p.width, height: p.height, albumTitle: p.album?.title || null, tags: (p.tags || []).map((t: any) => ({ id: t.tag.id, name: t.tag.name, color: t.tag.color })) }))} />
+          <AnimateOnScroll delay={0.12}>
+            <LibraryBatchGrid
+              initial={photos.map((photo) => ({
+                id: photo.id,
+                visibility: photo.visibility as any,
+                width: photo.width,
+                height: photo.height,
+                albumTitle: photo.album?.title || null,
+                tags: (photo.tags || []).map((tag) => ({
+                  id: tag.tag.id,
+                  name: tag.tag.name,
+                  color: tag.tag.color,
+                })),
+              }))}
+            />
+          </AnimateOnScroll>
         )}
 
         {hasMore && (
-          <div className="text-center mt-8">
-            <button className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              加载更多
-            </button>
-          </div>
+          <AnimateOnScroll delay={0.18}>
+            <div className="flex justify-center">
+              <button className="rounded-full border border-surface-outline/60 bg-surface-panel/80 px-6 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-panel">
+                加载更多
+              </button>
+            </div>
+          </AnimateOnScroll>
         )}
+      </Container>
     </div>
   )
 }
-
-export default function LibraryPage({
+\n\nexport default function LibraryPage({
   searchParams,
 }: {
   searchParams: { filter?: string; page?: string }
@@ -204,3 +229,5 @@ export default function LibraryPage({
 }
 
 export const dynamic = 'force-dynamic'
+
+

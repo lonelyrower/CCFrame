@@ -23,7 +23,12 @@
     "db:reset": "prisma migrate reset --force --skip-seed",
     "db:studio": "prisma studio",
     "variants:backfill": "tsx scripts/backfill-variants.ts",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "storybook:test": "storybook test --watch",
+    "benchmark:layout": "node scripts/benchmark-layout.mjs",
+    "verify:quality": "node scripts/run-quality-checks.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.470.0",
@@ -46,6 +51,7 @@
     "exifr": "^7.1.3",
     "framer-motion": "^10.16.16",
     "ioredis": "^5.3.2",
+    "lenis": "^1.3.11",
     "lucide-react": "^0.294.0",
     "next": "^14.0.4",
     "next-auth": "^4.24.5",
@@ -79,6 +85,13 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^8.3.5",
+    "@storybook/addon-essentials": "^8.3.5",
+    "@storybook/addon-interactions": "^8.3.5",
+    "@storybook/addon-themes": "^8.3.5",
+    "@storybook/nextjs": "^8.3.5",
+    "@storybook/test": "^8.3.5",
+    "@storybook/test-runner": "^0.16.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/bcryptjs": "^2.4.6",
@@ -87,10 +100,13 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
+    "chrome-launcher": "^0.15.1",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
     "jest": "^30.1.2",
     "jest-environment-jsdom": "^30.1.2",
+    "lighthouse": "^11.2.0",
     "typescript": "^5.3.3"
   }
 }
+

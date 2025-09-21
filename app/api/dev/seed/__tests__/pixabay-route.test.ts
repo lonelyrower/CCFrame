@@ -147,7 +147,7 @@ describe('Pixabay seed route', () => {
 
     await runPost(request, async response => {
       expect(response.status).toBe(403)
-      expect(await response.json()).toEqual({ error: 'Forbidden' })
+      expect(await response.json()).toEqual({ error: 'Token验证失败' })
       expect(fetchMock).not.toHaveBeenCalled()
     })
   })

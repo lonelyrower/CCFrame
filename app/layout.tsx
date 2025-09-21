@@ -1,11 +1,12 @@
+import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import { Inter, Noto_Sans_SC } from 'next/font/google'
+
 import './globals.css'
 import { Providers } from './providers'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const notoSansSC = Noto_Sans_SC({
   subsets: ['latin'],
   variable: '--font-noto-sans-sc',
@@ -14,40 +15,37 @@ const notoSansSC = Noto_Sans_SC({
 
 export const metadata: Metadata = {
   title: 'CC Frame - Creative Camera',
-  description: 'CC Frame 是一个现代化的相册网站，专注照片展示与管理',
+  description: 'CC Frame 是一个聚焦摄影作品展示与资源管理的现代平台。',
   manifest: '/manifest.webmanifest',
   themeColor: '#6366f1',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: '32x32' }
+      { url: '/favicon.ico', sizes: '32x32' },
     ],
     apple: '/icons/icon-192.png',
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body className={`${inter.className} ${notoSansSC.variable} antialiased transition-colors duration-500`}>
+      <body
+        className={`${inter.variable} ${notoSansSC.variable} bg-background font-sans text-foreground`}
+      >
         <Providers>
           <ServiceWorkerRegister />
-          <div className="relative min-h-screen bg-app-surface">
-            <div className="pointer-events-none absolute inset-0 opacity-70">
-              <div className="absolute left-1/2 top-[-20%] h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-app-glow blur-3xl" />
-              <div className="absolute bottom-[-15%] right-[-10%] h-[360px] w-[360px] rounded-full bg-app-glow-secondary blur-3xl" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(129,140,248,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(76,106,255,0.12),_transparent_55%)]" />
+          <div className="relative flex min-h-screen flex-col">
+            <div
+              aria-hidden
+              className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-accent/10" />
+              <div className="absolute left-1/2 top-[12%] h-[480px] w-[680px] -translate-x-1/2 rounded-full bg-glow-primary blur-3xl" />
+              <div className="absolute right-[-10%] bottom-[-20%] h-[420px] w-[420px] rounded-full bg-glow-secondary blur-3xl" />
             </div>
-
-
-            <main className="relative z-10">
-              {children}
-            </main>
+            {children}
           </div>
         </Providers>
       </body>

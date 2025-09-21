@@ -1,16 +1,17 @@
 import * as React from "react"
+
 import { cn } from "@/lib/utils"
+import { Surface, type SurfaceProps } from "./surface"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
+  React.HTMLAttributes<HTMLDivElement> & Pick<SurfaceProps, "tone" | "padding">
+>(({ className, tone = "panel", padding = "md", ...props }, ref) => (
+  <Surface
     ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      className
-    )}
+    tone={tone}
+    padding={padding}
+    className={cn("text-text-primary", className)}
     {...props}
   />
 ))
@@ -22,7 +23,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn("mb-4 flex flex-col gap-1", className)}
     {...props}
   />
 ))
@@ -35,7 +36,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "font-display text-xl font-semibold leading-tight tracking-tight text-text-primary",
       className
     )}
     {...props}
@@ -49,7 +50,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-text-muted", className)}
     {...props}
   />
 ))
@@ -59,7 +60,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("flex flex-col gap-4", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 

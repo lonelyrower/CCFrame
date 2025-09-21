@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取用户的API Key设置和默认导入数量
-    const user = await db.user.findUnique({
+    const user = (await db.user.findUnique({
       where: { id: session.user.id },
       select: { id: true, pixabayApiKey: true, defaultSeedCount: true } as any,
-    })
+    } as any)) as { id: string; pixabayApiKey: string | null; defaultSeedCount?: number | null } | null
 
     if (!user) {
       return NextResponse.json({ error: '用户不存在' }, { status: 404 })
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}))
 
     // API Key已在上面的user查询中获取
-    let apiKey = (user as any)?.pixabayApiKey || process.env.PIXABAY_API_KEY
+    let apiKey = user?.pixabayApiKey ?? process.env.PIXABAY_API_KEY
     if (!apiKey) {
       console.error('PIXABAY_API_KEY未设置，无法导入示例图片')
       return NextResponse.json({
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const query = (body.query as string) || 'nature'
     // 允许通过环境变量配置最大导入数量，仍保留一个硬上限以防误配
     // 使用用户设置的默认数量，如果未设置则使用请求中的数量
-    const userDefaultCount = (user as any)?.defaultSeedCount || 12
+    const userDefaultCount = user?.defaultSeedCount ?? 12
     const requested = Number(body.count || userDefaultCount)
     // 提高默认最大限制到30，或使用环境变量
     const maxAllowed = Math.min(Number(process.env.SEED_MAX_COUNT || '30'), HARD_MAX_SEED)

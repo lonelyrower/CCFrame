@@ -1,61 +1,62 @@
+@import './styles/tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --background: var(--token-color-surface-canvas);
+    --foreground: var(--token-color-text-primary);
+    --card: var(--token-color-surface-panel);
+    --card-foreground: var(--token-color-text-primary);
+    --popover: var(--token-color-surface-panel);
+    --popover-foreground: var(--token-color-text-primary);
+    --primary: var(--token-color-brand-primary);
+    --primary-foreground: var(--token-color-text-inverted);
+    --secondary: var(--token-color-surface-glass);
+    --secondary-foreground: var(--token-color-text-primary);
+    --muted: var(--token-color-surface-outline);
+    --muted-foreground: var(--token-color-text-muted);
+    --accent: var(--token-color-brand-accent);
+    --accent-foreground: var(--token-color-text-inverted);
+    --destructive: 0 91% 71%;
+    --destructive-foreground: var(--token-color-text-inverted);
+    --border: var(--token-color-surface-outline);
+    --input: var(--token-color-surface-outline);
+    --ring: var(--token-color-brand-primary);
     --radius: 0.75rem;
     --surface-a: hsla(226, 100%, 97%, 0.82);
     --surface-b: hsla(220, 86%, 96%, 0.72);
     --surface-dark-a: hsla(223, 74%, 10%, 0.85);
     --surface-dark-b: hsla(222, 62%, 16%, 0.72);
-    --shadow-soft: 0 20px 45px hsla(221, 73%, 52%, 0.18);
+    --shadow-soft: var(--token-shadow-surface);
     --shadow-soft-dark: 0 20px 45px hsla(220, 60%, 5%, 0.48);
-    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-    --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
-    --duration-short: 160ms;
-    --duration-medium: 260ms;
+    --ease-out: var(--token-motion-curve-ease-out);
+    --ease-soft: var(--token-motion-curve-ease-soft);
+    --duration-short: var(--token-motion-duration-sm);
+    --duration-medium: var(--token-motion-duration-md);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: var(--token-color-surface-canvas);
+    --foreground: var(--token-color-text-primary);
+    --card: var(--token-color-surface-panel);
+    --card-foreground: var(--token-color-text-primary);
+    --popover: var(--token-color-surface-panel);
+    --popover-foreground: var(--token-color-text-primary);
+    --primary: var(--token-color-brand-primary);
+    --primary-foreground: var(--token-color-text-inverted);
+    --secondary: var(--token-color-surface-glass);
+    --secondary-foreground: var(--token-color-text-primary);
+    --muted: var(--token-color-surface-outline);
+    --muted-foreground: var(--token-color-text-muted);
+    --accent: var(--token-color-brand-accent);
+    --accent-foreground: var(--token-color-text-inverted);
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 74.1%;
+    --destructive-foreground: var(--token-color-text-inverted);
+    --border: var(--token-color-surface-outline);
+    --input: var(--token-color-surface-outline);
+    --ring: var(--token-color-brand-primary-strong);
   }
 }
 
@@ -85,6 +86,35 @@
     @apply bg-primary text-primary-foreground;
   }
 }
+
+  .contrast-high {
+    --token-color-surface-canvas: var(--token-color-contrast-surface);
+    --token-color-surface-outline: var(--token-color-contrast-outline);
+    --token-color-text-primary: var(--token-color-contrast-text);
+    --token-color-text-secondary: var(--token-color-contrast-text);
+    --token-color-text-muted: var(--token-color-contrast-text);
+    --background: hsl(var(--token-color-contrast-surface));
+    --foreground: hsl(var(--token-color-contrast-text));
+    --border: hsl(var(--token-color-contrast-outline));
+    --input: hsl(var(--token-color-contrast-outline));
+    --ring: hsl(var(--token-color-interaction-ring));
+  }
+
+  .contrast-high body {
+    @apply text-foreground bg-background;
+  }
+
+  .motion-reduce * {
+    transition-duration: 120ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  html.motion-reduce,
+  html.motion-reduce body {
+    scroll-behavior: auto !important;
+  }
+
 
 @layer components {
   .masonry-container {
@@ -313,6 +343,10 @@
 
   /* 减少动画偏好 */
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
     .animate-scale-in,
     .animate-slide-up,
     .animate-fade-in,
@@ -423,3 +457,6 @@
     background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
   }
 }
+
+
+

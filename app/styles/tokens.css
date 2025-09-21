@@ -1,0 +1,183 @@
+:root {
+  /* Light mode color tokens */
+  --token-color-text-primary: 225 21% 8%;
+  --token-color-text-secondary: 225 16% 32%;
+  --token-color-text-muted: 225 12% 48%;
+  --token-color-text-inverted: 0 0% 100%;
+
+  --token-color-brand-primary: 237 100% 65%;
+  --token-color-brand-primary-strong: 238 63% 50%;
+  --token-color-brand-accent: 198 77% 56%;
+
+  --token-color-surface-canvas: 216 29% 97%;
+  --token-color-surface-panel: 0 0% 100% / 0.72;
+  --token-color-surface-glass: 0 0% 100% / 0.56;
+  --token-color-surface-outline: 225 20% 92%;
+  --token-color-interaction-background: 0 0% 100% / 0.88;
+  --token-color-interaction-muted: 237 100% 65% / 0.08;
+  --token-color-interaction-border: 225 18% 82%;
+  --token-color-interaction-border-strong: 238 63% 50% / 0.35;
+  --token-color-interaction-ring: 237 100% 65%;
+  --token-color-interaction-focus: 235 100% 94%;
+
+  --token-color-contrast-surface: 216 24% 99%;
+  --token-color-contrast-outline: 238 63% 48%;
+  --token-color-contrast-text: 225 24% 6%;
+
+  --token-color-state-success: #34D399;
+  --token-color-state-warning: #FBBF24;
+  --token-color-state-danger: #F87171;
+
+  --token-color-overlay-backdrop: 225 40% 10% / 0.32;
+
+  /* Gradients */
+  --token-gradient-glow-primary: linear-gradient(135deg, rgba(99, 102, 241, 0.32) 0%, rgba(142, 155, 255, 0.05) 100%);
+  --token-gradient-glow-secondary: radial-gradient(60% 60% at 50% 40%, rgba(55, 176, 229, 0.25) 0%, rgba(107, 231, 255, 0) 80%);
+  --token-gradient-veil-deep: linear-gradient(180deg, rgba(15, 17, 23, 0.82) 0%, rgba(15, 17, 23, 0.68) 100%);
+
+  /* Typography */
+  --token-typography-display-font-family: "Playfair Display", "Source Han Serif SC", serif;
+  --token-typography-sans-font-family: "Inter", "Source Han Sans SC", system-ui, sans-serif;
+
+  --token-typography-display-font-size: 4rem;
+  --token-typography-display-line-height: 1.2;
+  --token-typography-display-letter-spacing: -0.02em;
+  --token-typography-display-font-weight: 300;
+
+  --token-typography-headline-font-size: 2.5rem;
+  --token-typography-headline-line-height: 1.35;
+  --token-typography-headline-letter-spacing: 0em;
+  --token-typography-headline-font-weight: 600;
+
+  --token-typography-body-font-size: 1rem;
+  --token-typography-body-line-height: 1.5;
+  --token-typography-body-letter-spacing: 0em;
+  --token-typography-body-font-weight: 400;
+
+  --token-typography-caption-font-size: 0.875rem;
+  --token-typography-caption-line-height: 1.5;
+  --token-typography-caption-letter-spacing: 0.02em;
+  --token-typography-caption-font-weight: 500;
+
+  /* Spacing (4px scale) */
+  --token-spacing-0: 0px;
+  --token-spacing-1: 4px;
+  --token-spacing-2: 8px;
+  --token-spacing-3: 12px;
+  --token-spacing-4: 16px;
+  --token-spacing-5: 20px;
+  --token-spacing-6: 24px;
+  --token-spacing-7: 28px;
+  --token-spacing-8: 32px;
+  --token-spacing-9: 36px;
+  --token-spacing-10: 40px;
+  --token-spacing-11: 44px;
+  --token-spacing-12: 48px;
+  --token-spacing-13: 52px;
+  --token-spacing-14: 56px;
+  --token-spacing-15: 60px;
+  --token-spacing-16: 64px;
+
+  /* Radius */
+  --token-radius-none: 0px;
+  --token-radius-xs: 4px;
+  --token-radius-sm: 8px;
+  --token-radius-md: 12px;
+  --token-radius-lg: 16px;
+  --token-radius-xl: 24px;
+  --token-radius-full: 999px;
+
+  /* Shadows */
+  --token-shadow-surface: 0 32px 60px -24px rgba(76, 84, 255, 0.35);
+  --token-shadow-floating: 0 12px 30px -12px rgba(24, 28, 50, 0.45);
+  --token-shadow-subtle: 0 4px 12px rgba(15, 17, 23, 0.18);
+  --token-shadow-focus: 0 0 0 3px rgba(76, 84, 255, 0.35);
+
+  /* Motion */
+  --token-motion-duration-xs: 120ms;
+  --token-motion-duration-sm: 160ms;
+  --token-motion-duration-md: 260ms;
+  --token-motion-duration-lg: 360ms;
+  --token-motion-curve-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --token-motion-curve-ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --token-motion-curve-linear: linear;
+  --token-motion-overlay-duration: 360ms;
+  --token-motion-overlay-curve: var(--token-motion-curve-ease-soft);
+  --token-motion-command-palette-duration: 260ms;
+  --token-motion-command-palette-curve: var(--token-motion-curve-ease-out);
+
+  /* Z-index */
+  --token-z-index-surface: 10;
+  --token-z-index-sticky: 20;
+  --token-z-index-overlay: 40;
+  --token-z-index-modal: 60;
+  --token-z-index-toast: 80;
+
+  /* Layout */
+  --token-layout-container-xs: 100%;
+  --token-layout-container-sm: 440px;
+  --token-layout-container-md: 704px;
+  --token-layout-container-lg: 960px;
+  --token-layout-container-xl: 1200px;
+
+  --token-layout-gutter-xs: 16px;
+  --token-layout-gutter-sm: 20px;
+  --token-layout-gutter-md: 24px;
+  --token-layout-gutter-lg: 32px;
+  --token-layout-gutter-xl: 40px;
+
+  --token-layout-sidebar-base: 240px;
+  --token-layout-sidebar-lg: 280px;
+
+  --token-layout-breakpoint-sm: 480px;
+  --token-layout-breakpoint-md: 768px;
+  --token-layout-breakpoint-lg: 1024px;
+  --token-layout-breakpoint-xl: 1440px;
+
+  --token-layout-content-hero-max-width: 1200px;
+  --token-layout-content-rail-gap: 24px;
+
+
+}
+
+.dark {
+  --token-color-text-primary: 216 29% 97%;
+  --token-color-text-secondary: 216 20% 84%;
+  --token-color-text-muted: 216 15% 68%;
+  --token-color-text-inverted: 225 21% 8%;
+
+  --token-color-brand-primary: 238 63% 68%;
+  --token-color-brand-primary-strong: 237 100% 65%;
+  --token-color-brand-accent: 198 77% 56%;
+
+  --token-color-surface-canvas: 225 21% 7%;
+  --token-color-surface-panel: 228 24% 12% / 0.88;
+  --token-color-surface-glass: 225 30% 10% / 0.68;
+  --token-color-surface-outline: 225 18% 30% / 0.8;
+  --token-color-interaction-background: 228 24% 12% / 0.72;
+  --token-color-interaction-muted: 238 63% 68% / 0.12;
+  --token-color-interaction-border: 225 22% 28% / 0.9;
+  --token-color-interaction-border-strong: 238 63% 68% / 0.4;
+  --token-color-interaction-ring: 238 63% 68%;
+  --token-color-interaction-focus: 238 63% 82% / 0.95;
+
+  --token-color-contrast-surface: 224 28% 12%;
+  --token-color-contrast-outline: 238 63% 62%;
+  --token-color-contrast-text: 216 32% 98%;
+
+  --token-color-state-success: #34D399;
+  --token-color-state-warning: #FBBF24;
+  --token-color-state-danger: #F87171;
+
+  --token-color-overlay-backdrop: 225 40% 6% / 0.45;
+
+  --token-shadow-surface: 0 12px 30px -12px rgba(24, 28, 50, 0.55);
+  --token-shadow-floating: 0 20px 45px -20px rgba(12, 10, 25, 0.55);
+  --token-shadow-subtle: 0 2px 8px rgba(5, 6, 12, 0.45);
+  --token-shadow-focus: 0 0 0 3px rgba(140, 144, 255, 0.45);
+  --token-motion-overlay-duration: 360ms;
+  --token-motion-overlay-curve: var(--token-motion-curve-ease-soft);
+  --token-motion-command-palette-duration: 260ms;
+  --token-motion-command-palette-curve: var(--token-motion-curve-ease-out);
+}
+

@@ -3,11 +3,19 @@
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Container } from '@/components/layout/container'
+import { Surface } from '@/components/ui/surface'
+import { Heading, Text } from '@/components/ui/typography'
+import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
+import { fadeInScale, listItemRise, createStaggerPreset } from '@/lib/motion/presets'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { Copy, Tags } from 'lucide-react'
 
 type Tag = { id: string; name: string; color: string; _count?: { photos: number } }
+
+const samplePreviewStagger = createStaggerPreset({ amount: 0.06, delayChildren: 0.02 })
+const tagGridStagger = createStaggerPreset({ amount: 0.08, delayChildren: 0.04 })
 
 export default function ManageTagsPage() {
   const [tags, setTags] = useState<Tag[]>([])
@@ -121,115 +129,164 @@ export default function ManageTagsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">标签管理</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">重命名、改颜色、合并或删除标签</p>
-            <div className="flex items-center gap-4 mt-3">
-              <Link
-                href="/admin/organize/duplicates"
-                className="inline-flex items-center text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-              >
-                <Copy className="w-4 h-4 mr-1" />
-                重复照片 →
-              </Link>
+    <div className="space-y-12 pb-20 pt-6">
+      <Container size="xl" bleed="none" className="space-y-6">
+        <AnimateOnScroll variants={fadeInScale}>
+          <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
+            <div className="space-y-2">
+              <Heading size="md" className="flex items-center gap-2">
+                <Tags className="h-5 w-5 text-primary" />
+                ��ǩ����
+              </Heading>
+              <Text tone="secondary" size="sm">����������ǩ��ɫ���ϲ���ɾ����ǩ</Text>
+              <div className="flex items-center gap-4 text-sm">
+                <Link
+                  href="/admin/organize/duplicates"
+                  className="inline-flex items-center text-sm text-primary transition-colors hover:text-primary/80"
+                >
+                  <Copy className="mr-1 h-4 w-4" />
+                  �ظ���Ƭ ����
+                </Link>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索标签" className="px-3 py-2 border rounded" />
-            <Button onClick={load} disabled={loading}>{loading ? '加载中...' : '刷新'}</Button>
-          </div>
-          {affected !== null && (
-            <span className="text-sm text-gray-500">预计影响照片数：{affected}</span>
-          )}
-        </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="������ǩ"
+                  className="w-full rounded-md border border-surface-outline/50 bg-surface-canvas px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-64"
+                />
+                <Button onClick={load} disabled={loading}>
+                  {loading ? '�����С�' : 'ˢ��'}
+                </Button>
+              </div>
+              {affected !== null ? (
+                <Text tone="secondary" size="sm" className="sm:ml-auto">Ԥ��Ӱ�� {affected} ����Ƭ</Text>
+              ) : null}
+            </div>
+          </Surface>
+        </AnimateOnScroll>
 
         {sampleIds.length > 0 && (
-          <div className="mt-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">受影响照片样例</div>
-            <div className="grid grid-cols-6 gap-2">
-              {sampleIds.map(id => (
-                <div key={id} className="relative aspect-square">
-                  <Image
-                    src={`/api/image/${id}/thumb?format=webp`}
-                    alt={`Photo sample for tag management`}
-                    fill
-                    sizes="96px"
-                    className="rounded object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <AnimateOnScroll variants={fadeInScale} delay={0.08}>
+            <Surface tone="panel" padding="lg" className="shadow-subtle space-y-3">
+              <Text tone="secondary" size="sm">��Ӱ��ͼƬԤ��</Text>
+              <AnimateOnScroll variants={samplePreviewStagger} className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {sampleIds.map((id) => (
+                  <AnimateOnScroll key={id} variants={listItemRise} className="block">
+                    <div className="relative aspect-square overflow-hidden rounded-lg bg-surface-outline/20">
+                      <Image
+                        src={`/api/image/${id}/thumb?format=webp`}
+                        alt="Photo sample for tag management"
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    </div>
+                  </AnimateOnScroll>
+                ))}
+              </AnimateOnScroll>
+            </Surface>
+          </AnimateOnScroll>
         )}
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map(tag => (
-              <div key={tag.id} className="border rounded p-3 flex items-center justify-between gap-3">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={selected.includes(tag.id)} onChange={() => toggle(tag.id)} />
-                  <span className="inline-flex items-center gap-2">
-                    <span className="w-3 h-3 rounded" style={{ backgroundColor: tag.color }} />
-                    <span className="font-medium">{tag.name}</span>
-                    <span className="text-xs text-gray-500">({tag._count?.photos || 0})</span>
-                  </span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => { setColorTouched(false); setEditing(tag) }}>编辑</Button>
-                  <Button size="sm" variant="destructive" onClick={() => remove(tag.id)}>删除</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AnimateOnScroll variants={fadeInScale} delay={0.12}>
+          <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
+            <Text tone="secondary" size="sm">�� {filtered.length} ����ǩ</Text>
+            <AnimateOnScroll variants={tagGridStagger} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((tag) => (
+                <AnimateOnScroll key={tag.id} variants={listItemRise} className="h-full">
+                  <Surface
+                    tone="canvas"
+                    padding="md"
+                    className="flex h-full items-center justify-between gap-3 border border-surface-outline/40"
+                  >
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(tag.id)}
+                        onChange={() => toggle(tag.id)}
+                        className="h-4 w-4 rounded border-surface-outline/60 text-primary focus:ring-primary/30"
+                      />
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-3 w-3 rounded" style={{ backgroundColor: tag.color }} />
+                        <span className="font-medium">{tag.name}</span>
+                        <span className="text-xs text-text-secondary">({tag._count?.photos || 0})</span>
+                      </span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={() => { setColorTouched(false); setEditing(tag) }}>�༭</Button>
+                      <Button size="sm" variant="destructive" onClick={() => remove(tag.id)}>ɾ��</Button>
+                    </div>
+                  </Surface>
+                </AnimateOnScroll>
+              ))}
+            </AnimateOnScroll>
+          </Surface>
+        </AnimateOnScroll>
 
-        <div className="mt-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex items-center gap-3">
-          <span className="text-sm">合并所选标签 到</span>
-          <select value={targetId} onChange={(e) => setTargetId(e.target.value)} className="px-3 py-2 border rounded">
-            <option value="">选择目标标签</option>
-            {tags.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
-          </select>
-          <Button onClick={merge} disabled={!targetId || selected.length === 0}>执行合并</Button>
-          {/* affected preview placeholder; will be inserted above */}
-        </div>
+        <AnimateOnScroll variants={fadeInScale} delay={0.16}>
+          <Surface tone="panel" padding="lg" className="shadow-subtle flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Text tone="secondary" size="sm">�ϲ���ѡ��ǩ����</Text>
+            <select
+              value={targetId}
+              onChange={(event) => setTargetId(event.target.value)}
+              className="w-full rounded-md border border-surface-outline/50 bg-surface-canvas px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-64"
+            >
+              <option value="">ѡ��Ŀ���ǩ</option>
+              {tags.map((tag) => (
+                <option key={tag.id} value={tag.id}>{tag.name}</option>
+              ))}
+            </select>
+            <Button onClick={merge} disabled={!targetId || selected.length === 0}>ִ�кϲ�</Button>
+          </Surface>
+        </AnimateOnScroll>
+      </Container>
 
-        {editing && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-xl p-4 space-y-3">
-              <h3 className="text-lg font-semibold">编辑标签</h3>
-              <div>
-                <label className="block text-sm mb-1">名称</label>
-                <input value={editing.name} onChange={(e) => {
-                  const newName = e.target.value
-                  setEditing(prev => {
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md space-y-3 rounded-xl bg-white p-4 shadow-lg dark:bg-gray-900">
+            <Heading size="sm">�༭��ǩ</Heading>
+            <div>
+              <label className="mb-1 block text-sm">����</label>
+              <input
+                value={editing.name}
+                onChange={(event) => {
+                  const newName = event.target.value
+                  setEditing((prev) => {
                     if (!prev) return prev
                     const next = { ...prev, name: newName }
                     if (!colorTouched) next.color = suggestColor(newName)
                     return next
                   })
-                }} className="w-full px-3 py-2 border rounded" />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">颜色</label>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={editing.color} onChange={(e) => { setColorTouched(true); setEditing({ ...editing, color: e.target.value }) }} />
-                  <input value={editing.color} onChange={(e) => { setColorTouched(true); setEditing({ ...editing, color: e.target.value }) }} className="flex-1 px-3 py-2 border rounded" />
-          {affected !== null && (
-            <span className="text-sm text-gray-500">预计影响照片数：{affected}</span>
-          )}
-        </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="ghost" onClick={() => setEditing(null)}>取消</Button>
-                <Button onClick={saveEdit}>保存</Button>
+                }}
+                className="w-full rounded-md border border-surface-outline/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm">��ɫ</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={editing.color}
+                  onChange={(event) => { setColorTouched(true); setEditing({ ...editing, color: event.target.value }) }}
+                  className="h-10 w-14 rounded border border-surface-outline/40"
+                />
+                <input
+                  value={editing.color}
+                  onChange={(event) => { setColorTouched(true); setEditing({ ...editing, color: event.target.value }) }}
+                  className="flex-1 rounded-md border border-surface-outline/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
               </div>
             </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="ghost" onClick={() => setEditing(null)}>ȡ��</Button>
+              <Button onClick={saveEdit}>����</Button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,24 +1,38 @@
-'use client'
+"use client"
 
 import { ReactNode } from 'react'
-import { SWRProvider } from './swr-provider'
-import { AppStateProvider } from './app-state-provider'
-import ErrorBoundary from '../error-boundary'
 
-interface ProvidersProps {
+import ErrorBoundary from '../error-boundary'
+import { AppStateProvider } from './app-state-provider'
+import { CommandPaletteProvider } from './command-palette-provider'
+import { SWRProvider } from './swr-provider'
+import { ThemeSettingsProvider } from './theme-settings-provider'
+import { UploadQueueProvider } from './upload-queue-provider'
+import { featureFlags } from '@/lib/config/feature-flags'
+
+interface RuntimeProvidersProps {
   children: ReactNode
 }
 
-export function Providers({ children }: ProvidersProps) {
+export function RuntimeProviders({ children }: RuntimeProvidersProps) {
+  const tree = featureFlags.enableCommandPalette ? (
+    <CommandPaletteProvider>
+      <UploadQueueProvider>{children}</UploadQueueProvider>
+    </CommandPaletteProvider>
+  ) : (
+    <UploadQueueProvider>{children}</UploadQueueProvider>
+  )
+
   return (
     <ErrorBoundary>
-      <SWRProvider>
-        <AppStateProvider>
-          {children}
-        </AppStateProvider>
-      </SWRProvider>
+      <ThemeSettingsProvider>
+        <SWRProvider>
+          <AppStateProvider>{tree}</AppStateProvider>
+        </SWRProvider>
+      </ThemeSettingsProvider>
     </ErrorBoundary>
   )
 }
 
-export default Providers
+export default RuntimeProviders
+

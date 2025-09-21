@@ -79,7 +79,7 @@ describe('auth module', () => {
     await withAuthModule(async ({ authOptions }) => {
       const authorize = getAuthorizeFn(authOptions)
       const result = await authorize({ email: 'test@example.com', password: 'secret' })
-      expect(result).toEqual({ id: 'u1', email: 'test@example.com' })
+      expect(result).toEqual({ id: 'u1', email: 'test@example.com', twoFactorEnabled: false })
     })
   })
 

@@ -39,7 +39,7 @@ describe('upload check route', () => {
     const response = await GET(request)
 
     expect(response.status).toBe(429)
-    expect(await response.json()).toEqual({ error: 'Too many duplicate checks' })
+    expect(await response.json()).toEqual({ error: '检查频率过高，请稍后再试' })
     expect(response.headers.get('X-RateLimit-Remaining')).toBe('0')
     expect(mockPhoto.findFirst).not.toHaveBeenCalled()
   })
@@ -52,7 +52,7 @@ describe('upload check route', () => {
     const response = await GET(request)
 
     expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({ error: 'invalid hash' })
+    expect(await response.json()).toEqual({ error: '文件哈希值无效' })
     expect(mockPhoto.findFirst).not.toHaveBeenCalled()
   })
 
