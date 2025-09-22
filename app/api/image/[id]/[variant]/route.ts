@@ -90,9 +90,10 @@ export async function GET(request: NextRequest, { params }: Params) {
       small: ['small', 'medium', 'thumb', 'large'],
       medium: ['medium', 'small', 'large', 'thumb'],
       large: ['large', 'medium', 'small', 'thumb'],
+      zoom: ['original', 'xlarge', 'large', 'medium', 'small'],
     }
     const sizes = sizePreference[reqVariant] || [reqVariant, 'small', 'medium', 'large', 'thumb']
-    const preferFormats = [requestedFormat, 'webp', 'jpeg', 'avif']
+    const preferFormats = reqVariant === 'zoom' ? ['jpeg', 'webp', requestedFormat, 'avif'] : [requestedFormat, 'webp', 'jpeg', 'avif']
 
     const chooseVariant = () => {
       for (const size of sizes) {

@@ -7,6 +7,7 @@ import { AppStateProvider } from './app-state-provider'
 import { CommandPaletteProvider } from './command-palette-provider'
 import { SWRProvider } from './swr-provider'
 import { ThemeSettingsProvider } from './theme-settings-provider'
+import { PreferenceProvider } from '@/components/context/preference-provider'
 import { UploadQueueProvider } from './upload-queue-provider'
 import { featureFlags } from '@/lib/config/feature-flags'
 
@@ -26,9 +27,11 @@ export function RuntimeProviders({ children }: RuntimeProvidersProps) {
   return (
     <ErrorBoundary>
       <ThemeSettingsProvider>
-        <SWRProvider>
-          <AppStateProvider>{tree}</AppStateProvider>
-        </SWRProvider>
+        <PreferenceProvider>
+          <SWRProvider>
+            <AppStateProvider>{tree}</AppStateProvider>
+          </SWRProvider>
+        </PreferenceProvider>
       </ThemeSettingsProvider>
     </ErrorBoundary>
   )

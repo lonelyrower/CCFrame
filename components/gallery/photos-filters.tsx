@@ -32,9 +32,17 @@ interface PhotosFiltersProps {
   params: FilterParams
   className?: string
   variant?: 'panel' | 'plain'
+  enableSearch?: boolean
 }
 
-export function PhotosFilters({ albums, tags, params, className, variant = 'panel' }: PhotosFiltersProps) {
+export function PhotosFilters({
+  albums,
+  tags,
+  params,
+  className,
+  variant = 'panel',
+  enableSearch = true,
+}: PhotosFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -67,6 +75,7 @@ export function PhotosFilters({ albums, tags, params, className, variant = 'pane
   }
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (!enableSearch) return
     event.preventDefault()
     const value = searchValue.trim()
     applyParams((next) => {
@@ -83,65 +92,70 @@ export function PhotosFilters({ albums, tags, params, className, variant = 'pane
   )
 
   return (
-    <div className={wrapperClassName}>
-      <form className="flex flex-wrap gap-4" onSubmit={handleSearchSubmit}>
+    <form
+      className={cn('flex flex-wrap items-center gap-4', wrapperClassName)}
+      onSubmit={enableSearch ? handleSearchSubmit : undefined}
+    >
+      {enableSearch ? (
         <div className="flex-1 min-w-60">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
             <input
               type="search"
               name="search"
-              placeholder="Search albums or tags"
+              placeholder="搜索专辑、标签或关键词"
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               className="w-full rounded-lg border border-surface-outline/60 bg-surface-canvas/80 py-2 pl-10 pr-4 text-sm text-text-primary shadow-subtle transition focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
             />
           </div>
         </div>
+      ) : null}
 
-        <select
-          name="sort"
-          value={params.sort || 'newest'}
-          onChange={handleSelectChange('sort')}
-          className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="name">Album name</option>
-        </select>
+      <select
+        name="sort"
+        value={params.sort || 'newest'}
+        onChange={handleSelectChange('sort')}
+        className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
+      >
+        <option value="newest">按最新排序</option>
+        <option value="oldest">按最早排序</option>
+        <option value="name">按专辑名称</option>
+      </select>
 
-        <select
-          name="album"
-          value={params.album || ''}
-          onChange={handleSelectChange('album')}
-          className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
-        >
-          <option value="">All albums</option>
-          {albums.map((album) => (
-            <option key={album.id} value={album.id}>
-              {album.title} ({album.count})
-            </option>
-          ))}
-        </select>
+      <select
+        name="album"
+        value={params.album || ''}
+        onChange={handleSelectChange('album')}
+        className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
+      >
+        <option value="">全部专辑</option>
+        {albums.map((album) => (
+          <option key={album.id} value={album.id}>
+            {album.title} ({album.count})
+          </option>
+        ))}
+      </select>
 
-        <select
-          name="tag"
-          value={params.tag || ''}
-          onChange={handleSelectChange('tag')}
-          className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
-        >
-          <option value="">All tags</option>
-          {tags.map((tag) => (
-            <option key={tag.id} value={tag.name}>
-              {tag.name} ({tag.count})
-            </option>
-          ))}
-        </select>
+      <select
+        name="tag"
+        value={params.tag || ''}
+        onChange={handleSelectChange('tag')}
+        className="min-w-36 rounded-lg border border-surface-outline/60 bg-surface-canvas/80 px-3 py-2 text-sm text-text-primary shadow-subtle focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface-panel/80"
+      >
+        <option value="">全部标签</option>
+        {tags.map((tag) => (
+          <option key={tag.id} value={tag.name}>
+            {tag.name} ({tag.count})
+          </option>
+        ))}
+      </select>
 
+      {enableSearch ? (
         <button type="submit" className="hidden" aria-hidden="true">
-          Apply
+          应用
         </button>
-      </form>
-    </div>
+      ) : null}
+    </form>
   )
 }

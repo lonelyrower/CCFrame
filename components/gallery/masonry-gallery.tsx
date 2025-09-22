@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Image from "next/image"
 import { motion, useReducedMotion } from "framer-motion"
 import type { PhotoWithDetails } from "@/types"
@@ -11,6 +11,7 @@ import { useOptionalLightbox } from "./lightbox-context"
 interface MasonryGalleryProps {
   photos: PhotoWithDetails[]
   loading?: boolean
+  renderOverlay?: (photo: PhotoWithDetails) => ReactNode
 }
 
 const LOAD_STEP = 60
@@ -24,7 +25,7 @@ type LayoutItem = {
   height: number
 }
 
-export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps) {
+export function MasonryGallery({ photos, loading = false, renderOverlay }: MasonryGalleryProps) {
   const lightbox = useOptionalLightbox()
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoWithDetails | null>(null)
   const [visibleCount, setVisibleCount] = useState(() => Math.min(LOAD_STEP, photos.length))
@@ -302,7 +303,9 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
                   }}
                 />
 
-                {photo.tags.length > 0 && (
+                {renderOverlay ? renderOverlay(photo) : null}
+
+                {photo.tags.length > 0 && ( 
                   <div className="pointer-events-none absolute inset-x-3 top-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     <div className="flex flex-wrap gap-2 text-xs text-white">
                       {photo.tags.slice(0, 2).map(({ tag }) => (
@@ -351,4 +354,9 @@ export function MasonryGallery({ photos, loading = false }: MasonryGalleryProps)
     </>
   )
 }
+
+
+
+
+
 

@@ -6,6 +6,7 @@ import Lenis from 'lenis'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { featureFlags } from '@/lib/config/feature-flags'
 import { useThemeSettings } from './theme-settings-provider'
+import { useOptionalPreferenceContext } from '@/components/context/preference-provider'
 
 const isSmoothScrollEnabled = featureFlags.enableSmoothScroll
 
@@ -16,7 +17,8 @@ interface LenisProviderProps {
 export function LenisProvider({ children }: LenisProviderProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const { resolvedMotion } = useThemeSettings()
-  const shouldReduceMotion = prefersReducedMotion || resolvedMotion === 'reduce'
+  const preference = useOptionalPreferenceContext()
+  const shouldReduceMotion = preference ? preference.reducedMotion : prefersReducedMotion || resolvedMotion === 'reduce'
 
   useEffect(() => {
     if (!isSmoothScrollEnabled || shouldReduceMotion) {

@@ -27,8 +27,11 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "storybook:test": "storybook test --watch",
+    "storybook:ci": "storybook build --quiet",
     "benchmark:layout": "node scripts/benchmark-layout.mjs",
-    "verify:quality": "node scripts/run-quality-checks.js"
+    "verify:quality": "node scripts/run-quality-checks.js",
+    "test:lightbox": "jest lib/lightbox/__tests__/tag-story-service.test.ts lib/lightbox/__tests__/zoom-service.test.ts components/gallery/__tests__/lightbox-controller.test.tsx",
+    "zoom:generate": "tsx scripts/generate-zoom-tiles.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.470.0",

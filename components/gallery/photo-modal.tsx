@@ -1,19 +1,38 @@
 'use client'
 
-import { useEffect, useCallback, useState, useRef, memo } from 'react'
+import { useEffect, useCallback, useState, useRef, memo, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight, Calendar, Camera, MapPin, HelpCircle } from 'lucide-react'
-import { PhotoWithDetails } from '@/types'
-import { formatDate } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { PhotoZoomCanvas } from './photo-zoom-canvas'
+import { X, ChevronLeft, ChevronRight, Calendar, Camera, MapPin, HelpCircle, BookOpen, Image as ImageIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { PhotoWithDetails } from '@/types'
+import { formatDate, getImageUrl } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { DeepZoomCanvas, shouldUseDeepZoom } from './deep-zoom-canvas'
+import type { FilmstripEntry } from './filmstrip-view'
+import { TagStoryTooltip } from './tag-story-tooltip'
+import { useOptionalCatalogEventBus } from '@/components/catalog/catalog-event-bus'
+import type { CatalogRecommendationItem } from '@/types/catalog'
+import type { TagStory } from '@/types/lightbox'
+import { StoryDock } from './story-dock'
+import { buildPhotoMetadata } from '@/lib/lightbox/metadata'
 // Defer heavy sub-components to reduce initial bundle
 import { usePrefetchPhotos } from './use-prefetch-photos'
 import { useOptionalLightbox } from './lightbox-context'
 import { useFocusTrap } from './use-focus-trap'
 import { usePhotoTags } from './use-photo-tags'
 import { LightboxHelpOverlay } from './lightbox-help-overlay'
+
+function useOptionalRouter() {
+  try {
+    return useRouter()
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Lightbox] router unavailable, falling back to location', error)
+    }
+    return null
+  }
+}
 
 const LABELS = {
   dialog: String.fromCharCode(0x7167, 0x7247, 0x9884, 0x89c8),
@@ -27,7 +46,17 @@ const LABELS = {
   filmstripLoading: String.fromCharCode(0x6b63, 0x5728, 0x52a0, 0x8f7d, 0x7f29, 0x7565, 0x56fe, 0x2026),
 }
 
-const PhotoFilmstrip = dynamic(() => import('./photo-filmstrip').then(m => m.PhotoFilmstrip), { ssr: false, loading: () => <div className="h-16 flex items-center justify-center text-xs text-gray-400">{LABELS.filmstripLoading}</div> })
+const FilmstripView = dynamic(
+  () => import('./filmstrip-view').then((m) => m.FilmstripView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-16 flex items-center justify-center text-xs text-gray-400">
+        {LABELS.filmstripLoading}
+      </div>
+    ),
+  }
+)
 interface PhotoModalProps {
   photo: PhotoWithDetails
   photos: PhotoWithDetails[]
@@ -40,7 +69,18 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
   const lightbox = useOptionalLightbox()
   const helpOpen = lightbox?.helpOpen ?? false
   const toggleHelp = lightbox?.toggleHelp ?? (() => {})
-  const filmstripEnabled = Boolean(lightbox)
+  const filmstripEnabled = lightbox?.showFilmstrip ?? Boolean(lightbox)
+  const go = lightbox?.go ?? (() => {})
+  const mode = lightbox?.mode ?? 'lightbox'
+  const setMode = lightbox?.setMode ?? (() => {})
+  const storySequence = lightbox?.storySequence ?? null
+  const storyIndex = lightbox?.storyIndex ?? 0
+  const setStoryIndex = lightbox?.setStoryIndex ?? (() => {})
+  const nextStoryEntry = lightbox?.nextStoryEntry ?? (() => {})
+  const prevStoryEntry = lightbox?.prevStoryEntry ?? (() => {})
+  const setStorySequence = lightbox?.setStorySequence ?? (() => {})
+  const router = useOptionalRouter()
+  const catalogBus = useOptionalCatalogEventBus()
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const [newTag, setNewTag] = useState('')
   const { tags: localTags, editing: editingTags, toggleEditing, addTag: addTagHook, removeTag: removeTagHook } = usePhotoTags(photo.id, photo.tags.map(t => t.tag))
@@ -62,8 +102,83 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
   const removeTag = async (tagId: string) => { await removeTagHook(tagId) }
 
   const currentIndex = photos.findIndex(p => p.id === photo.id)
-  const exifData = photo.exifJson as any
   usePrefetchPhotos(photos, currentIndex)
+
+  const deepZoomEnabled = useMemo(() => shouldUseDeepZoom(photo), [photo])
+
+  const storyTags = useMemo(
+    () => (editingTags ? [] : localTags.filter((tag) => !tag.id.startsWith('temp-'))),
+    [localTags, editingTags],
+  )
+
+  const hasStorySequence = Boolean(storySequence && storySequence.entries.length > 0)
+
+  useEffect(() => {
+    if (mode === 'story' && !hasStorySequence) {
+      setMode('lightbox')
+    }
+  }, [mode, hasStorySequence, setMode])
+
+  useEffect(() => {
+    if (!photo.id) return
+    const shouldFetch = !storySequence || storySequence.id.startsWith('auto-sequence-')
+    if (!shouldFetch || typeof window === 'undefined' || process.env.NODE_ENV === 'test') return
+
+    const controller = new AbortController()
+
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/lightbox/story?${new URLSearchParams({ id: photo.id, context: 'catalog' }).toString() }`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data?.sequence) {
+          setStorySequence(data.sequence)
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production' && (error as any)?.name !== 'AbortError') {
+          console.warn('[Lightbox] failed to load story sequence', error)
+        }
+      }
+    })()
+
+    return () => controller.abort()
+  }, [photo.id, storySequence, setStorySequence])
+
+  const handleTagStoryNavigate = useCallback(
+    ({ story, item }: { story: TagStory; item?: CatalogRecommendationItem }) => {
+      const patch = item?.patch ?? story.cta.patch
+      if (patch) {
+        catalogBus?.emit('filters:update', { patch, timestamp: Date.now() })
+      }
+
+      const href = item?.href ?? story.cta.href
+      if (story.cta.target === '_blank') {
+        window.open(href, '_blank', 'noopener,noreferrer')
+      } else if (router) {
+        router.push(href)
+      } else {
+        window.location.href = href
+      }
+
+      lightbox?.close()
+    },
+    [catalogBus, router, lightbox],
+  )
+
+  const filmstripEntries = useMemo<FilmstripEntry[]>(
+    () =>
+      photos.map((item) => ({
+        id: item.id,
+        src: getImageUrl(item.id, 'small', 'webp'),
+        width: item.width || photo.width || 1,
+        height: item.height || photo.height || 1,
+      })),
+    [photos, photo.width, photo.height]
+  )
+
+  const metadata = useMemo(() => buildPhotoMetadata(photo), [photo])
 
   return (
     <AnimatePresence>
@@ -116,6 +231,20 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
           >
             <X className="h-6 w-6" aria-hidden />
           </Button>
+          {hasStorySequence ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-28 z-10 bg-black/20 hover:bg-black/40 text-white"
+              onClick={(e) => {
+                e.stopPropagation()
+                setMode(mode === 'story' ? 'lightbox' : 'story')
+              }}
+              aria-label={mode === 'story' ? '切换回光箱模式' : '切换到故事模式'}
+            >
+              {mode === 'story' ? <ImageIcon className="h-5 w-5" aria-hidden /> : <BookOpen className="h-5 w-5" aria-hidden />}
+            </Button>
+          ) : null}
           <Button
             variant="ghost"
             size="icon"
@@ -145,21 +274,54 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
           >
             <div className="flex flex-col lg:flex-row gap-6 max-h-full">
               {/* Image / Zoom Canvas */}
-              <PhotoZoomCanvas photo={photo} />
+              <div className="relative">
+                <DeepZoomCanvas photo={photo} enabled={deepZoomEnabled} />
+                {storyTags.length > 0 && (
+                  <div className="pointer-events-none absolute left-4 top-4 flex max-w-[80%] flex-wrap gap-2">
+                    {storyTags.map((tag) => (
+                      <TagStoryTooltip
+                        key={tag.id}
+                        tagId={tag.id}
+                        tagName={tag.name}
+                        accentColor={tag.color}
+                        photoId={photo.id}
+                        onNavigate={handleTagStoryNavigate}
+                        className="pointer-events-auto"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              {/* Info Panel */}
-              <div className="w-full lg:w-80 bg-white dark:bg-gray-900 rounded-lg p-6 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]" tabIndex={0}>
-                <div className="space-y-6">
-                  {/* Basic Info */}
+              {/* Info / Story Panel */}
+              {mode === 'story' && storySequence ? (
+                <div className="w-full lg:w-96 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]">
+                  <StoryDock
+                    sequence={storySequence}
+                    activeIndex={storyIndex}
+                    onSelect={(index) => {
+                      setMode('story')
+                      setStoryIndex(index)
+                    }}
+                    onNext={() => {
+                      setMode('story')
+                      nextStoryEntry()
+                    }}
+                    onPrev={() => {
+                      setMode('story')
+                      prevStoryEntry()
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full lg:w-80 bg-white dark:bg-gray-900 rounded-lg p-6 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]" tabIndex={0}>
+                  <div className="space-y-6">
+                    {/* Basic Info */}
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">
-                      {photo.album?.title || '未命名'}
-                    </h2>
-                    {photo.album?.description && (
-                      <p className="text-gray-600 dark:text-gray-400">
-                        {photo.album.description}
-                      </p>
-                    )}
+                    <h2 className="text-2xl font-bold mb-2">{metadata.headline}</h2>
+                    {metadata.summary ? (
+                      <p className="text-gray-600 dark:text-gray-400">{metadata.summary}</p>
+                    ) : null}
                   </div>
 
                   {/* Date */}
@@ -171,18 +333,15 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                   )}
 
                   {/* Location */}
-                  {photo.location && (
+                  {metadata.location && (
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4" />
-                      <span>
-                        {(photo.location as any)?.address || 
-                         `${(photo.location as any).lat?.toFixed(4)}, ${(photo.location as any).lng?.toFixed(4)}`}
-                      </span>
+                      <span>{metadata.location}</span>
                     </div>
                   )}
 
                   {/* Camera Info */}
-                  {exifData && (
+                  {metadata.exif.length > 0 && (
                     <div className="space-y-2">
                       <button onClick={() => toggleSection('exif')} className="flex items-center justify-between w-full text-sm font-medium">
                         <span className="flex items-center gap-2"><Camera className="h-4 w-4" />相机信息</span>
@@ -190,12 +349,9 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                       </button>
                       {!collapse.exif && (
                         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 pl-6">
-                          {exifData.camera && <div>相机： {exifData.camera}</div>}
-                          {exifData.lens && <div>镜头： {exifData.lens}</div>}
-                          {exifData.focalLength && <div>焦距： {exifData.focalLength}mm</div>}
-                          {exifData.aperture && <div>光圈： f/{exifData.aperture}</div>}
-                          {exifData.shutterSpeed && <div>快门： {exifData.shutterSpeed}s</div>}
-                          {exifData.iso && <div>ISO： {exifData.iso}</div>}
+                          {metadata.exif.map((field) => (
+                            <div key={field.label}>{field.label}： {field.value}</div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -257,7 +413,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                     </button>
                     {!collapse.tech && (
                       <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div>Dimensions: {photo.width} × {photo.height}</div>
+                        <div>Dimensions: {metadata.dimensions}</div>
                         <div>File: {photo.fileKey?.split('/').pop() || 'Unknown'}</div>
                         {photo.location && (photo.location as any).lat && (photo.location as any).lng && (
                           <div className="mt-2">
@@ -289,11 +445,25 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                       </div>
                     )}
                   </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 pointer-events-none select-none">
-              {filmstripEnabled && photos.length > 1 && <PhotoFilmstrip />}
+              {filmstripEnabled && photos.length > 1 ? (
+                <div className="pointer-events-auto">
+                  <FilmstripView
+                    entries={filmstripEntries}
+                    activeId={photo.id}
+                    onSelect={(id) => {
+                      const targetIndex = photos.findIndex((item) => item.id === id)
+                      if (targetIndex >= 0) {
+                        go(targetIndex)
+                      }
+                    }}
+                  />
+                </div>
+              ) : null}
             </div>
           </motion.div>
           <LightboxHelpOverlay open={helpOpen} onClose={() => toggleHelp()} />

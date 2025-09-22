@@ -216,7 +216,8 @@ async function LibraryContent({ searchParams }: { searchParams: { filter?: strin
     </div>
   )
 }
-\n\nexport default function LibraryPage({
+
+export default function LibraryPage({
   searchParams,
 }: {
   searchParams: { filter?: string; page?: string }
