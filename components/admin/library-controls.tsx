@@ -62,7 +62,7 @@ export function LibraryControls({ initialFilter = '', initialViewMode = 'grid' }
         <Filter className="w-4 h-4" />
       </button>
       
-      <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+      <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" role="group" aria-label="切换视图">
         <button 
           onClick={() => handleViewModeChange('grid')}
           className={`p-2 transition-colors ${

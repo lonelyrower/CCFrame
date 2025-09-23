@@ -3,6 +3,7 @@ import type { Queue, Worker, Job } from 'bullmq'
 import { db } from '@/lib/db'
 import { getStorageManager } from '@/lib/storage-manager'
 import { ImageProcessor } from '@/lib/image-processing'
+import { processLookbookExport, markLookbookFailure, markLookbookProcessing, type LookbookExportJobData } from '@/lib/lookbook/exporter'
 import { PHOTO_STATUS } from '@/lib/constants'
 import { ExifProcessor } from '@/lib/exif'
 import { logger } from '@/lib/logger'
@@ -12,10 +13,12 @@ async function reuseDuplicatePhoto(params: { userId: string; contentHash: string
   const { userId, contentHash, photoId, fileKey, storage } = params
   const duplicate = await db.photo.findFirst({
     where: { userId, contentHash, status: PHOTO_STATUS.COMPLETED },
-    include: { variants: true }
+    include: { variants: true },
   })
   if (!duplicate) return null
-  try { await storage.deleteObject(fileKey) } catch {}
+  try {
+    await storage.deleteObject(fileKey)
+  } catch {}
   const variantRecordsDup = duplicate.variants.map((v: any) => ({
     variant: v.variant,
     format: v.format,
@@ -38,15 +41,28 @@ async function reuseDuplicatePhoto(params: { userId: string; contentHash: string
       location: duplicate.location as any,
       status: PHOTO_STATUS.COMPLETED,
       variants: { createMany: { data: variantRecordsDup } },
-    }
+    },
   })
   logger.info({ photoId, duplicateFrom: duplicate.id, variants: variantRecordsDup.length }, 'duplicate photo reused variants')
+  await db.audit.create({
+    data: {
+      userId,
+      action: 'UPLOAD_DEDUPED',
+      targetType: 'photo',
+      targetId: photoId,
+      meta: {
+        deduplicatedFrom: duplicate.id,
+        variants: variantRecordsDup.length,
+      } as any,
+    },
+  })
   return duplicate
 }
 
-// Queue for processing uploaded images
 let _imageQueue: Queue | null = null
 let _embeddingQueue: Queue | null = null
+let _lookbookQueue: Queue | null = null
+
 async function getImageQueue(): Promise<Queue> {
   if (_imageQueue) return _imageQueue
   const { Queue } = await import('bullmq')
@@ -81,10 +97,30 @@ async function getEmbeddingQueue(): Promise<Queue> {
       removeOnComplete: 100,
       removeOnFail: 50,
       attempts: 2,
-      backoff: { type: 'fixed', delay: 3000 }
-    }
+      backoff: { type: 'fixed', delay: 3000 },
+    },
   })
   return _embeddingQueue
+}
+
+async function getLookbookQueue(): Promise<Queue> {
+  if (_lookbookQueue) return _lookbookQueue
+  const { Queue } = await import('bullmq')
+  const { getRedis } = await import('@/lib/redis')
+  const redis = await getRedis()
+  if (!redis) {
+    throw new Error('Redis connection not configured (set REDIS_URL)')
+  }
+  _lookbookQueue = new Queue('lookbook-export', {
+    connection: redis,
+    defaultJobOptions: {
+      removeOnComplete: 20,
+      removeOnFail: 50,
+      attempts: 2,
+      backoff: { type: 'exponential', delay: 1500 },
+    },
+  })
+  return _lookbookQueue
 }
 
 export const imageProcessingQueue = {
@@ -100,11 +136,16 @@ export const embeddingQueue = {
     const q = await getEmbeddingQueue()
     // @ts-ignore
     return q.add(...args)
-  }
+  },
 }
 
-// Queue for AI tasks
-// AI 相关功能与队列已移除，专注于上传与展示
+export const lookbookExportQueue = {
+  add: async (...args: Parameters<Queue['add']>) => {
+    const q = await getLookbookQueue()
+    // @ts-ignore
+    return q.add(...args)
+  },
+}
 
 interface ImageProcessingJobData {
   photoId: string
@@ -112,9 +153,6 @@ interface ImageProcessingJobData {
   userId: string
 }
 
-// AIProcessingJobData removed (AI features disabled)
-
-// Image processing worker
 const startImageWorker = async () => {
   const { Worker } = await import('bullmq')
   const { getRedis } = await import('@/lib/redis')
@@ -125,120 +163,143 @@ const startImageWorker = async () => {
   const concurrency = Math.max(1, parseInt(process.env.IMG_WORKER_CONCURRENCY || '3', 10))
   return new Worker(
     'image-processing',
-  async (job: Job<ImageProcessingJobData>) => {
-    const { photoId, fileKey, userId } = job.data
+    async (job: Job<ImageProcessingJobData>) => {
+      const { photoId, fileKey, userId } = job.data
 
-    try {
-      // Update job progress
-      await job.updateProgress(10)
-
-      // Download original image from S3
-      const storage = getStorageManager()
-      let buffer: Buffer
       try {
-        buffer = await storage.downloadBuffer(fileKey)
-      } catch (err) {
-        const downloadUrl = await storage.getPresignedDownloadUrl(fileKey)
-        const response = await fetch(downloadUrl)
-        buffer = Buffer.from(await response.arrayBuffer())
-      }
-
-      await job.updateProgress(30)
-
-      // Before heavy processing, compute content hash and check exact duplicates for this user
-      const contentHash = await ImageProcessor.calculateContentHash(buffer)
-
-      const reused = await reuseDuplicatePhoto({ userId, contentHash, photoId, fileKey, storage })
-      if (reused) {
-        await job.updateProgress(100)
-        return { success: true, variants: reused.variants.length, deduplicatedFrom: reused.id }
-      }
-
-      // Extract EXIF data
-      const exifData = await ExifProcessor.extractExif(buffer)
-
-      await job.updateProgress(50)
-
-      // Process image variants
-  const { variants, blurhash, metadata, timings } = await ImageProcessor.processImage(buffer)
-  recordImageProcess(timings)
-
-      await job.updateProgress(70)
-
-      // Upload variants to S3 with limited concurrency
-      const variantRecords: any[] = []
-      const uploadConcurrency = Math.max(1, parseInt(process.env.UPLOAD_CONCURRENCY || '4', 10))
-      const tasks = variants.map((variant) => async () => {
-        const variantKey = `variants/${photoId}/${variant.variant}.${variant.format}`
-        await storage.uploadBuffer(variantKey, variant.buffer, `image/${variant.format}`)
-        variantRecords.push({
-          variant: variant.variant,
-          format: variant.format,
-          width: variant.width,
-          height: variant.height,
-          fileKey: variantKey,
-          sizeBytes: variant.size,
-        })
-      })
-      for (let i = 0; i < tasks.length; i += uploadConcurrency) {
-        await Promise.all(tasks.slice(i, i + uploadConcurrency).map(fn => fn()))
-      }
-
-      await job.updateProgress(90)
-
-      // Calculate hashes for similarity (pHash) and exact binary equality (sha256)
-      const hash = await ImageProcessor.calculateHash(buffer)
-
-      // Update photo record in database
-      await db.photo.update({
-        where: { id: photoId },
-        data: {
-          hash,
-          contentHash,
-          width: metadata.width!,
-          height: metadata.height!,
-          blurhash,
-          exifJson: exifData ? JSON.parse(JSON.stringify(exifData)) : undefined,
-          takenAt: exifData?.takenAt,
-          location: exifData?.location ? JSON.parse(JSON.stringify(exifData.location)) : undefined,
-          status: PHOTO_STATUS.COMPLETED,
-          variants: {
-            createMany: {
-              data: variantRecords
-            }
-          }
+        await job.updateProgress(10)
+        const storage = getStorageManager()
+        let buffer: Buffer
+        try {
+          buffer = await storage.downloadBuffer(fileKey)
+        } catch (err) {
+          const downloadUrl = await storage.getPresignedDownloadUrl(fileKey)
+          const response = await fetch(downloadUrl)
+          buffer = Buffer.from(await response.arrayBuffer())
         }
-      })
 
-      await job.updateProgress(100)
+        await job.updateProgress(30)
 
-      // 在更新 photo 后调度嵌入生成（延迟以便主事务完成）
-      try {
-        const eq = await getEmbeddingQueue()
-        await eq.add('generate', { photoId, userId }, { delay: 1000 })
-      } catch (e) {
-        logger.warn({ photoId, err: String(e) }, 'failed to enqueue embedding job')
+        const contentHash = await ImageProcessor.calculateContentHash(buffer)
+        const reused = await reuseDuplicatePhoto({ userId, contentHash, photoId, fileKey, storage })
+        if (reused) {
+          await db.audit.create({
+            data: {
+              userId,
+              action: 'UPLOAD_PROCESSED',
+              targetType: 'photo',
+              targetId: photoId,
+              meta: {
+                variants: reused.variants.length,
+                deduplicatedFrom: reused.id,
+              } as any,
+            },
+          })
+
+          await job.updateProgress(100)
+          return { success: true, variants: reused.variants.length, deduplicatedFrom: reused.id }
+        }
+
+        const exifData = await ExifProcessor.extractExif(buffer)
+        await job.updateProgress(50)
+
+        const { variants, blurhash, metadata, timings } = await ImageProcessor.processImage(buffer)
+        recordImageProcess(timings)
+
+        await job.updateProgress(70)
+
+        const variantRecords: any[] = []
+        const uploadConcurrency = Math.max(1, parseInt(process.env.UPLOAD_CONCURRENCY || '4', 10))
+        const tasks = variants.map((variant) => async () => {
+          const variantKey = `variants/${photoId}/${variant.variant}.${variant.format}`
+          await storage.uploadBuffer(variantKey, variant.buffer, `image/${variant.format}`)
+          variantRecords.push({
+            variant: variant.variant,
+            format: variant.format,
+            width: variant.width,
+            height: variant.height,
+            fileKey: variantKey,
+            sizeBytes: variant.size,
+          })
+        })
+        for (let i = 0; i < tasks.length; i += uploadConcurrency) {
+          await Promise.all(tasks.slice(i, i + uploadConcurrency).map((fn) => fn()))
+        }
+
+        await job.updateProgress(90)
+
+        const hash = await ImageProcessor.calculateHash(buffer)
+
+        await db.photo.update({
+          where: { id: photoId },
+          data: {
+            hash,
+            contentHash,
+            width: metadata.width!,
+            height: metadata.height!,
+            blurhash,
+            exifJson: exifData ? JSON.parse(JSON.stringify(exifData)) : undefined,
+            takenAt: exifData?.takenAt,
+            location: exifData?.location ? JSON.parse(JSON.stringify(exifData.location)) : undefined,
+            status: PHOTO_STATUS.COMPLETED,
+            variants: {
+              createMany: {
+                data: variantRecords,
+              },
+            },
+          },
+        })
+
+        await job.updateProgress(100)
+
+        try {
+          const eq = await getEmbeddingQueue()
+          await eq.add('generate', { photoId, userId }, { delay: 1000 })
+        } catch (e) {
+          logger.warn({ photoId, err: String(e) }, 'failed to enqueue embedding job')
+        }
+
+        await db.audit.create({
+          data: {
+            userId,
+            action: 'UPLOAD_PROCESSED',
+            targetType: 'photo',
+            targetId: photoId,
+            meta: {
+              variants: variantRecords.length,
+            } as any,
+          },
+        })
+
+        return { success: true, variants: variantRecords.length, embeddingQueued: true }
+      } catch (error) {
+        await db.photo.update({
+          where: { id: photoId },
+          data: { status: PHOTO_STATUS.FAILED },
+        })
+
+        await db.audit.create({
+          data: {
+            userId,
+            action: 'UPLOAD_FAILED',
+            targetType: 'photo',
+            targetId: photoId,
+            meta: {
+              error: error instanceof Error ? error.message : String(error),
+            } as any,
+          },
+        })
+
+        throw error
       }
-
-      return { success: true, variants: variantRecords.length, embeddingQueued: true }
-    } catch (error) {
-      // Mark photo as failed
-      await db.photo.update({
-        where: { id: photoId },
-        data: { status: PHOTO_STATUS.FAILED }
-      })
-
-      throw error
-    }
     },
     {
       connection: redis,
-      concurrency: 3,
-    }
+      concurrency,
+    },
   )
 }
 
-// Embedding worker (初期：随机向量占位 / 调用外部模型留接口)
 const startEmbeddingWorker = async () => {
   const { Worker } = await import('bullmq')
   const { getRedis } = await import('@/lib/redis')
@@ -250,45 +311,87 @@ const startEmbeddingWorker = async () => {
   const { generatePhotoEmbedding } = await import('@/lib/embedding-provider')
   const { recordEmbeddingGeneration } = await import('@/lib/metrics')
   const { getSemanticConfig } = await import('@/lib/semantic-config')
-  return new Worker('embedding-generation', async (job: Job<{ photoId: string; userId: string }>) => {
-    const { photoId } = job.data
-    const cfg = getSemanticConfig()
-    if (!cfg.enabled) {
-      return { skipped: true, reason: 'semantic disabled' }
-    }
-    const photo = await db.photo.findUnique({ where: { id: photoId } })
-    if (!photo || photo.status !== PHOTO_STATUS.COMPLETED) {
-      return { skipped: true, reason: 'photo not completed' }
-    }
-  const dim = cfg.dim || DEFAULT_EMBEDDING_DIM
-    const t0 = Date.now()
-    try {
-      const { embedding, model, provider } = await generatePhotoEmbedding(photoId, { dim, model: cfg.model })
-      await savePhotoEmbedding(photoId, embedding, { model })
-      const ms = Date.now() - t0
-      recordEmbeddingGeneration({ ms, ok: true, model })
-      logger.info({ photoId, model, dim, provider, ms }, 'embedding generated')
-      return { success: true }
-    } catch (e) {
-      const ms = Date.now() - t0
-      recordEmbeddingGeneration({ ms, ok: false, model: cfg.model })
-      logger.warn({ photoId, err: String(e), ms }, 'embedding generation failed')
-      return { success: false, error: String(e) }
-    }
-  }, { connection: redis, concurrency: 2 })
+  return new Worker(
+    'embedding-generation',
+    async (job: Job<{ photoId: string; userId: string }>) => {
+      const { photoId } = job.data
+      const cfg = getSemanticConfig()
+      if (!cfg.enabled) {
+        return { skipped: true, reason: 'semantic disabled' }
+      }
+      const photo = await db.photo.findUnique({ where: { id: photoId } })
+      if (!photo || photo.status !== PHOTO_STATUS.COMPLETED) {
+        return { skipped: true, reason: 'photo not completed' }
+      }
+      const dim = cfg.dim || DEFAULT_EMBEDDING_DIM
+      const t0 = Date.now()
+      try {
+        const { embedding, model, provider } = await generatePhotoEmbedding(photoId, { dim, model: cfg.model })
+        await savePhotoEmbedding(photoId, embedding, { model })
+        const ms = Date.now() - t0
+        recordEmbeddingGeneration({ ms, ok: true, model })
+        logger.info({ photoId, model, dim, provider, ms }, 'embedding generated')
+        await db.audit.create({
+          data: {
+            userId: job.data.userId,
+            action: 'UPLOAD_EMBEDDED',
+            targetType: 'photo',
+            targetId: photoId,
+            meta: { model, provider, durationMs: ms } as any,
+          },
+        })
+        return { success: true }
+      } catch (e) {
+        const ms = Date.now() - t0
+        recordEmbeddingGeneration({ ms, ok: false, model: cfg.model })
+        logger.warn({ photoId, err: String(e), ms }, 'embedding generation failed')
+        await db.audit.create({
+          data: {
+            userId: job.data.userId,
+            action: 'UPLOAD_EMBED_FAILED',
+            targetType: 'photo',
+            targetId: photoId,
+            meta: { error: e instanceof Error ? e.message : String(e), durationMs: ms } as any,
+          },
+        })
+        return { success: false, error: String(e) }
+      }
+    },
+    { connection: redis, concurrency: 2 },
+  )
 }
 
-// AI worker removed
+const startLookbookWorker = async () => {
+  const { Worker } = await import('bullmq')
+  const { getRedis } = await import('@/lib/redis')
+  const redis = await getRedis()
+  if (!redis) {
+    throw new Error('Redis connection not configured (set REDIS_URL)')
+  }
+  return new Worker(
+    'lookbook-export',
+    async (job: Job<LookbookExportJobData>) => {
+      try {
+        await markLookbookProcessing(job.data.exportId)
+        const result = await processLookbookExport(job.data)
+        return { success: true, downloadUrl: result.downloadUrl ?? null }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        await markLookbookFailure(job.data.exportId, message)
+        throw error
+      }
+    },
+    { connection: redis, concurrency: 1 },
+  )
+}
 
-// AI processing functions removed
-
-// 启动 Worker 仅在明确标志下进行，避免构建期连接 Redis
 let workersStarted = false
 export async function ensureWorkers() {
   if (workersStarted) return
   if (process.env.START_WORKERS === 'true') {
     await startImageWorker()
     await startEmbeddingWorker()
+    await startLookbookWorker()
     workersStarted = true
   }
 }

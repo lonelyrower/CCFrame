@@ -8,6 +8,8 @@ interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   footer?: ReactNode
   overlays?: ReactNode
   sidebarPosition?: 'start' | 'end'
+  sidebarLabel?: string
+  statusMessage?: string
   contentClassName?: string
   contentPadding?: 'auto' | 'none' | 'compact'
 }
@@ -18,6 +20,8 @@ export function AppShell({
   footer,
   overlays,
   sidebarPosition = 'start',
+  sidebarLabel,
+  statusMessage,
   contentClassName,
   contentPadding = 'auto',
   children,
@@ -61,7 +65,7 @@ export function AppShell({
       ) : null}
 
       {header ? (
-        <header className="sticky top-0 z-sticky border-b border-surface-outline/40 bg-surface-canvas/90 backdrop-blur">
+        <header className="sticky top-0 z-sticky border-b border-surface-outline/40 bg-surface-canvas/90 backdrop-blur" role="banner">
           {header}
         </header>
       ) : null}
@@ -69,6 +73,8 @@ export function AppShell({
       <div className={cn('relative flex flex-1 flex-col lg:flex-row', sidebar ? 'lg:gap-8' : undefined)}>
         {sidebar ? (
           <aside
+            role="complementary"
+            aria-label={sidebarLabel || 'Secondary navigation'}
             className={cn(
               'w-full border-surface-outline/40 bg-surface-panel/80 backdrop-blur-sm lg:min-h-[calc(100vh-4rem)] lg:w-[var(--token-layout-sidebar-lg)] lg:max-w-[var(--token-layout-sidebar-lg)] lg:border-r',
               sidebarFirst ? 'order-[-1] lg:order-none' : 'order-last lg:order-none',
@@ -85,8 +91,14 @@ export function AppShell({
 
         <main
           id="main-content"
+          role="main"
+          tabIndex={-1}
+          aria-label={sidebar ? 'Main content area' : 'Content area'}
           className={cn('flex flex-1 flex-col bg-surface-canvas/60', paddingClasses, contentClassName)}
         >
+          <div aria-live="polite" aria-atomic="true" className="sr-only" id="app-shell-status-region">
+            {statusMessage ?? null}
+          </div>
           {children}
         </main>
       </div>

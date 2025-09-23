@@ -1,10 +1,9 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import Image from "next/image"
 import { motion, useReducedMotion } from "framer-motion"
 import type { PhotoWithDetails } from "@/types"
-import { getImageUrl, toBase64 } from "@/lib/utils"
+import { GalleryPicture } from "./gallery-picture"
 import { PhotoModal } from "./photo-modal"
 import { useOptionalLightbox } from "./lightbox-context"
 
@@ -274,33 +273,18 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
                 }
               }}
             >
-              <div className="relative w-full h-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm transition-all duration-500 ease-[var(--ease-soft)] hover:-translate-y-1 hover:shadow-lg">
-                <Image
-                  src={getImageUrl(photo.id, "small", "webp")}
-                  alt={photo.album?.title || "Photo"}
-                  width={photo.width || 400}
-                  height={photo.height || 300}
+              <div
+                className="relative h-full w-full overflow-hidden rounded-xl bg-surface-panel/60 shadow-sm transition-all duration-500 ease-[var(--ease-soft)] hover:-translate-y-1 hover:shadow-lg dark:bg-surface-panel/40"
+                style={{
+                  aspectRatio: photo.width && photo.height
+                    ? `${photo.width} / ${photo.height}`
+                    : '4 / 3'
+                }}
+              >
+                <GalleryPicture
+                  photo={photo}
                   sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                  className="w-full h-full rounded-xl object-cover transition-transform duration-[var(--duration-medium)] ease-[var(--ease-out)] group-hover:scale-[1.03]"
-                  style={{
-                    aspectRatio: photo.width && photo.height
-                      ? `${photo.width} / ${photo.height}`
-                      : '4 / 3'
-                  }}
-                  placeholder="blur"
-                  blurDataURL={`data:image/svg+xml;base64,${toBase64(
-                    `<svg width=\"400\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"400\" height=\"300\" fill=\"#f3f4f6\"/></svg>`
-                  )}`}
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement
-                    if (img.src.includes("webp")) {
-                      img.src = `/api/image/${photo.id}/small?format=jpeg`
-                    } else if (img.src.includes("/api/image/") && img.src.includes("small")) {
-                      img.src = `/api/image/${photo.id}/thumb?format=jpeg`
-                    } else if (!img.src.includes("serve")) {
-                      img.src = `/api/image/serve/${photo.id}/small?format=jpeg`
-                    }
-                  }}
+                  imgClassName="rounded-xl object-cover transition-transform duration-[var(--duration-medium)] ease-[var(--ease-out)] group-hover:scale-[1.03]"
                 />
 
                 {renderOverlay ? renderOverlay(photo) : null}
@@ -354,6 +338,8 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
     </>
   )
 }
+
+
 
 
 

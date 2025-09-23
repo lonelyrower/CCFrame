@@ -82,7 +82,7 @@ export function PhotoActions({
   return (
     <>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-        <div className="flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-md p-1">
+        <div className="flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-md p-1" role="toolbar" aria-label="照片操作">
           <button
             className="p-1.5 text-white hover:bg-white/20 rounded transition-colors"
             title="编辑"

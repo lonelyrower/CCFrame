@@ -1,283 +1,62 @@
-import { Suspense } from 'react'
-import { db } from '@/lib/db'
-import { PhotoWithDetails } from '@/types'
-import { Calendar, Clock, MapPin, Camera } from 'lucide-react'
-import Image from 'next/image'
-import { getImageUrl } from '@/lib/utils'
+import type { Metadata } from 'next'
 
-interface TimelineGroup {
-  date: string
-  displayDate: string
-  photos: PhotoWithDetails[]
+import { TimelineFilterBar } from '@/components/visual/timeline-filter-bar'
+import { TimelineRiver } from '@/components/visual/timeline-river'
+import { parseTimelineFilters } from '@/lib/timeline/filters'
+import { getTimelineQuery } from '@/lib/timeline/timeline-service'
+
+interface TimelinePageProps {
+  searchParams?: Record<string, string | string[] | undefined>
 }
 
-async function getTimelinePhotos(): Promise<TimelineGroup[]> {
-  const photos = await db.photo.findMany({
-    where: {
-      visibility: 'PUBLIC',
-      status: 'COMPLETED'
-    },
-    include: {
-      variants: true,
-      tags: {
-        include: {
-          tag: true
-        }
-      },
-      album: true
-    },
-    orderBy: {
-      takenAt: 'desc'
-    },
-    take: 200
-  })
-
-  // 按日期分组
-  const groupedPhotos = photos.reduce((groups, photo) => {
-    const date = photo.takenAt || photo.createdAt
-    const dateKey = date.toISOString().split('T')[0] // YYYY-MM-DD
-
-    if (!groups[dateKey]) {
-      groups[dateKey] = []
-    }
-    groups[dateKey].push(photo)
-    return groups
-  }, {} as Record<string, PhotoWithDetails[]>)
-
-  // 转换为时间线格式并排序
-  const timelineGroups: TimelineGroup[] = Object.entries(groupedPhotos)
-    .map(([date, photos]) => ({
-      date,
-      displayDate: new Date(date).toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
-      }),
-      photos
-    }))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-
-  return timelineGroups
+export const metadata: Metadata = {
+  title: '时间线 · CC Frame',
+  description: '按照年份、人物与标签探索作品的演变轨迹，发现每一次造型背后的故事节点。',
 }
 
-function TimelineItem({ group, index }: { group: TimelineGroup; index: number }) {
-  const mainPhoto = group.photos[0]
-  const additionalPhotos = group.photos.slice(1)
+export const revalidate = 180
+
+export default async function TimelinePage({ searchParams }: TimelinePageProps) {
+  const filters = parseTimelineFilters(searchParams)
+  const result = await getTimelineQuery(filters)
+  const { events, stats, filters: filterContext } = result
 
   return (
-    <div className="relative">
-      {/* 时间线连接线 */}
-      {index < 4 && (
-        <div className="absolute left-6 top-12 bottom-0 w-px bg-gradient-to-b from-primary/50 to-primary/20" />
-      )}
-
-      {/* 时间点 */}
-      <div className="absolute left-4 top-4 w-4 h-4 bg-primary rounded-full border-4 border-white dark:border-gray-900 shadow-lg" />
-
-      {/* 内容区域 */}
-      <div className="ml-16">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow duration-300">
-          {/* 日期头部 */}
-          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-primary" />
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {group.displayDate}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {group.photos.length} 张照片
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 照片网格 */}
-          <div className="p-6">
-            {group.photos.length <= 4 ? (
-              // 1-4张照片 - 网格布局
-              <div className={`grid gap-3 ${
-                group.photos.length === 1 ? 'grid-cols-1' :
-                group.photos.length === 2 ? 'grid-cols-2' :
-                group.photos.length === 3 ? 'grid-cols-3' : 'grid-cols-2'
-              }`}>
-                {group.photos.map((photo, idx) => (
-                  <div key={photo.id} className={`
-                    relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700
-                    ${group.photos.length === 4 && idx >= 2 ? 'col-span-1' : ''}
-                  `}>
-                    <Image
-                      src={getImageUrl(photo.id, 'small', 'webp')}
-                      alt={photo.album?.title || 'Photo'}
-                      fill
-                      className="object-cover hover:scale-105 transition-transform duration-200"
-                      sizes="200px"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              // 5张以上照片 - 主图 + 缩略图
-              <div className="space-y-4">
-                <div className="relative aspect-[16/9] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                  <Image
-                    src={getImageUrl(mainPhoto.id, 'medium', 'webp')}
-                    alt={mainPhoto.album?.title || 'Photo'}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 600px"
-                  />
-                </div>
-                <div className="grid grid-cols-6 gap-2">
-                  {additionalPhotos.slice(0, 5).map((photo, idx) => (
-                    <div key={photo.id} className="relative aspect-square rounded overflow-hidden bg-gray-100 dark:bg-gray-700">
-                      <Image
-                        src={getImageUrl(photo.id, 'thumb', 'webp')}
-                        alt={photo.album?.title || 'Photo'}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-200"
-                        sizes="80px"
-                      />
-                    </div>
-                  ))}
-                  {additionalPhotos.length > 5 && (
-                    <div className="relative aspect-square rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                      <div className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        +{additionalPhotos.length - 5}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 照片信息 */}
-            {mainPhoto.exifJson && (mainPhoto.exifJson as any).location && (
-              <div className="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <MapPin className="w-4 h-4" />
-                <span>{(mainPhoto.exifJson as any).location}</span>
-              </div>
-            )}
-
-            {/* 标签 */}
-            {group.photos[0].tags.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {group.photos[0].tags.slice(0, 3).map(({ tag }) => (
-                  <span
-                    key={tag.id}
-                    className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full"
-                  >
-                    {tag.name}
-                  </span>
-                ))}
-                {group.photos[0].tags.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
-                    +{group.photos[0].tags.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-12 pb-32">
+      <TimelineIntro stats={stats} />
+      <TimelineFilterBar options={filterContext.options} active={filterContext.active} availableYears={filterContext.availableYears} />
+      <TimelineRiver events={events} />
     </div>
   )
 }
 
-function TimelineLoading() {
+function TimelineIntro({ stats }: { stats: { totalEvents: number; totalPhotos: number; distinctPersonas: number; distinctTags: number } }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse mb-2" />
-        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-64 animate-pulse" />
-      </div>
-
-      <div className="space-y-12">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="relative">
-            <div className="absolute left-6 top-12 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
-            <div className="absolute left-4 top-4 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full" />
-            <div className="ml-16">
-              <div className="bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse">
-                <div className="px-6 py-4 border-b border-gray-300 dark:border-gray-600">
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 bg-gray-300 dark:bg-gray-700 rounded" />
-                    <div>
-                      <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20 mb-1" />
-                      <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-16" />
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="aspect-[16/9] bg-gray-300 dark:bg-gray-700 rounded-lg" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-async function TimelineContent() {
-  const timelineGroups = await getTimelinePhotos()
-
-  return <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
-          时间线
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          按时间顺序浏览你的照片，重温美好时光
-        </p>
-      </div>
-
-      {timelineGroups.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-12 h-12 text-gray-400" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-            暂时还没有照片
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            开始上传照片来创建你的时间线
+    <section className="relative overflow-hidden rounded-[48px] border border-white/10 bg-gradient-to-br from-[#101026]/90 via-[#0b0b1b]/80 to-[#05050d] p-8 text-white shadow-2xl backdrop-blur-lg md:p-12">
+      <div className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-end">
+        <div className="space-y-4">
+          <p className="text-xs uppercase tracking-[0.45em] text-white/50">Timeline</p>
+          <h1 className="font-serif text-3xl leading-tight md:text-4xl">作品时间线</h1>
+          <p className="max-w-2xl text-base leading-relaxed text-white/70">
+            记录每一次造型实验、展览节点与幕后跨界合作。通过年份、人物与标签筛选，快速定位重要时刻，并可直接跳转至光箱或主题页继续浏览。
           </p>
         </div>
-      ) : (
-        <div>
-          <div className="space-y-0">
-            {timelineGroups.map((group, index) => (
-              <TimelineItem
-                key={group.date}
-                group={group}
-                index={index}
-              />
-            ))}
-          </div>
-
-          <div className="relative">
-            <div className="absolute left-6 -top-6 w-px h-6 bg-gradient-to-b from-primary/50 to-transparent" />
-            <div className="absolute left-4 top-0 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full border-4 border-white dark:border-gray-900" />
-            <div className="ml-16 text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                这是时间的开始 ✨
-              </p>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 gap-4 text-center text-white/80 sm:grid-cols-4">
+          <StatBlock label="事件" value={stats.totalEvents} />
+          <StatBlock label="作品" value={stats.totalPhotos} />
+          <StatBlock label="人物/系列" value={stats.distinctPersonas} />
+          <StatBlock label="标签" value={stats.distinctTags} />
         </div>
-      )}
-    </div>
-}
-
-export default function TimelinePage() {
-  return (
-    <Suspense fallback={<TimelineLoading />}>
-      <TimelineContent />
-    </Suspense>
+      </div>
+    </section>
   )
 }
 
-export const dynamic = 'force-dynamic'
+function StatBlock({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-3xl border border-white/15 bg-white/5 px-4 py-6">
+      <p className="text-xs uppercase tracking-[0.4em] text-white/40">{label}</p>
+      <p className="mt-3 text-2xl font-semibold">{Intl.NumberFormat('zh-CN').format(value)}</p>
+    </div>
+  )
+}

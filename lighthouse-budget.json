@@ -1,0 +1,56 @@
+[
+  {
+    "path": "/",
+    "timings": [
+      { "metric": "largest-contentful-paint", "budget": 2300 },
+      { "metric": "cumulative-layout-shift", "budget": 0.08 },
+      { "metric": "total-blocking-time", "budget": 120 },
+      { "metric": "interactive", "budget": 3000 }
+    ],
+    "resourceSizes": [
+      { "resourceType": "total", "budget": 1800 },
+      { "resourceType": "script", "budget": 550 },
+      { "resourceType": "image", "budget": 900 },
+      { "resourceType": "font", "budget": 150 }
+    ],
+    "resourceCounts": [
+      { "resourceType": "third-party", "budget": 2 }
+    ]
+  },
+  {
+    "path": "/photos",
+    "timings": [
+      { "metric": "largest-contentful-paint", "budget": 2300 },
+      { "metric": "cumulative-layout-shift", "budget": 0.08 },
+      { "metric": "total-blocking-time", "budget": 140 },
+      { "metric": "interactive", "budget": 3200 }
+    ],
+    "resourceSizes": [
+      { "resourceType": "total", "budget": 2100 },
+      { "resourceType": "script", "budget": 650 },
+      { "resourceType": "image", "budget": 1200 },
+      { "resourceType": "font", "budget": 150 }
+    ],
+    "resourceCounts": [
+      { "resourceType": "third-party", "budget": 2 }
+    ]
+  },
+  {
+    "path": "/admin",
+    "timings": [
+      { "metric": "largest-contentful-paint", "budget": 2300 },
+      { "metric": "cumulative-layout-shift", "budget": 0.08 },
+      { "metric": "total-blocking-time", "budget": 150 },
+      { "metric": "interactive", "budget": 3400 }
+    ],
+    "resourceSizes": [
+      { "resourceType": "total", "budget": 2300 },
+      { "resourceType": "script", "budget": 750 },
+      { "resourceType": "image", "budget": 1000 },
+      { "resourceType": "font", "budget": 200 }
+    ],
+    "resourceCounts": [
+      { "resourceType": "third-party", "budget": 3 }
+    ]
+  }
+]

@@ -172,13 +172,21 @@ export function DeepZoomCanvas({ photo, enabled = true }: DeepZoomCanvasProps) {
   }, [sources, shouldEnable])
 
   useEffect(() => {
+    const objectUrlMap = objectUrlRef.current
+    const cacheHandle = cacheHandleRef.current
+
     return () => {
-      for (const url of Array.from(objectUrlRef.current.values())) {
+      for (const url of Array.from(objectUrlMap.values())) {
         URL.revokeObjectURL(url)
       }
-      objectUrlRef.current.clear()
-      cacheHandleRef.current?.db?.close()
-      cacheHandleRef.current = null
+      objectUrlMap.clear()
+
+      if (cacheHandle?.db) {
+        cacheHandle.db.close()
+      }
+      if (cacheHandleRef.current === cacheHandle) {
+        cacheHandleRef.current = null
+      }
     }
   }, [])
 

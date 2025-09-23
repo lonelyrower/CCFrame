@@ -3,11 +3,12 @@ import { NextResponse } from 'next/server'
 import type { ReactNode } from 'react'
 
 import { AppShell } from '@/components/layout/app-shell'
-import { AdminSidebar } from '@/components/layout/admin-sidebar'
-import { AdminTopbar } from '@/components/layout/admin-topbar'
 import { AppOverlays } from '@/components/layout/app-overlays'
 import { featureFlags } from '@/lib/config/feature-flags'
 import { requireAdmin } from '@/lib/admin-auth'
+import { AdminControlHeader } from '@/components/admin/admin-control-header'
+import { AdminNavigationSidebar } from '@/components/admin/admin-navigation'
+import { AdminCommandDrawer } from '@/components/admin/admin-command-drawer'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,13 +33,13 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <AppShell
-      header={<AdminTopbar />}
-      sidebar={<AdminSidebar />}
+      header={<AdminControlHeader />}
+      sidebar={<AdminNavigationSidebar className="pt-8" />}
       overlays={featureFlags.enableOverlays ? <AppOverlays /> : undefined}
-      contentClassName="bg-surface-canvas px-4 pb-16 pt-6 md:px-6 lg:px-10"
+      contentPadding="auto"
     >
+      <AdminCommandDrawer />
       {children}
     </AppShell>
   )
 }
-

@@ -1,6 +1,8 @@
 'use client'
 
 import { createContext, useContext, ReactNode, useCallback } from 'react'
+import * as Sentry from '@sentry/nextjs'
+import LogRocket from 'logrocket'
 import { mutate } from 'swr'
 import toast from 'react-hot-toast'
 
@@ -95,10 +97,32 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
       toast.error('操作失败，请重试')
     }
 
-    // Report to error tracking service in production
+    // Report to observability tools in production
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Integrate with error tracking service like Sentry
-      console.error('Production error to be reported:', error)
+      try {
+        Sentry.withScope((scope) => {
+          if (context) {
+            scope.setContext('app', { context })
+          }
+          scope.setExtra('handledBy', 'AppStateProvider.handleError')
+          scope.setLevel('error')
+          scope.setFingerprint([error.name, context ?? 'unknown'])
+        })
+        Sentry.captureException(error)
+      } catch (sentryError) {
+        console.warn('[observability] Sentry capture failed', sentryError)
+      }
+
+      try {
+        const logrocket: any = LogRocket
+        if (logrocket && typeof logrocket.captureException === 'function') {
+          logrocket.captureException(error, { tags: context ? { context } : undefined })
+        } else if (logrocket && typeof logrocket.log === 'function') {
+          logrocket.log('[error] ' + (context ?? 'App') + ': ' + error.message)
+        }
+      } catch (logrocketError) {
+        console.warn('[observability] LogRocket capture failed', logrocketError)
+      }
     }
   }, [])
 

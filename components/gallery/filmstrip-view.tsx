@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { memo, useMemo, useRef, useState, useCallback } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -106,7 +107,9 @@ export const FilmstripView = memo(function FilmstripView({ entries, activeId, on
                   onSelect?.(entry.id)
                 }}
               >
-                <img src={entry.src} alt={entry.id} className="h-full w-full object-cover" />
+                <div className="relative h-full w-full">
+                  <Image src={entry.src} alt={entry.id} fill sizes="(max-width: 768px) 40vw, 18vw" className="object-cover" />
+                </div>
                 {isActive ? (
                   <motion.span layoutId="filmstrip-highlight" className="pointer-events-none absolute inset-0 rounded-xl border-2 border-primary/70" />
                 ) : null}

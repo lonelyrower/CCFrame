@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useState, useRef, memo, useMemo } from 'react'
+import { useEffect, useCallback, useState, useRef, memo, useMemo, useId } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Calendar, Camera, MapPin, HelpCircle, BookOpen, Image as ImageIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
@@ -72,16 +72,24 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
   const filmstripEnabled = lightbox?.showFilmstrip ?? Boolean(lightbox)
   const go = lightbox?.go ?? (() => {})
   const mode = lightbox?.mode ?? 'lightbox'
-  const setMode = lightbox?.setMode ?? (() => {})
+  const setMode = lightbox?.setMode
   const storySequence = lightbox?.storySequence ?? null
   const storyIndex = lightbox?.storyIndex ?? 0
   const setStoryIndex = lightbox?.setStoryIndex ?? (() => {})
   const nextStoryEntry = lightbox?.nextStoryEntry ?? (() => {})
   const prevStoryEntry = lightbox?.prevStoryEntry ?? (() => {})
-  const setStorySequence = lightbox?.setStorySequence ?? (() => {})
+  const setStorySequence = lightbox?.setStorySequence
   const router = useOptionalRouter()
   const catalogBus = useOptionalCatalogEventBus()
   const dialogRef = useRef<HTMLDivElement | null>(null)
+  const baseId = useId()
+  const dialogTitleId = `${baseId}-title`
+  const dialogDescriptionId = `${baseId}-description`
+  const exifPanelId = `${baseId}-panel-exif`
+  const tagsPanelId = `${baseId}-panel-tags`
+  const techPanelId = `${baseId}-panel-tech`
+  const dialogTitleText = photo.title || photo.album?.title || (photo as any)?.fileName || photo.id
+  const dialogDescriptionText = "使用左右方向键浏览图片，按 Escape 关闭。按 H 查看快捷键。"
   const [newTag, setNewTag] = useState('')
   const { tags: localTags, editing: editingTags, toggleEditing, addTag: addTagHook, removeTag: removeTagHook } = usePhotoTags(photo.id, photo.tags.map(t => t.tag))
   const [collapse, setCollapse] = useState<{[k:string]: boolean}>({ exif: false, tags: false, tech: false })
@@ -115,7 +123,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
 
   useEffect(() => {
     if (mode === 'story' && !hasStorySequence) {
-      setMode('lightbox')
+      setMode?.('lightbox')
     }
   }, [mode, hasStorySequence, setMode])
 
@@ -134,7 +142,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
         if (!res.ok) return
         const data = await res.json()
         if (data?.sequence) {
-          setStorySequence(data.sequence)
+          setStorySequence?.(data.sequence)
         }
       } catch (error) {
         if (process.env.NODE_ENV !== 'production' && (error as any)?.name !== 'AbortError') {
@@ -189,7 +197,13 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
         className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm"
         onClick={onClose}
       >
-  <div ref={dialogRef} className="absolute inset-0 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={LABELS.dialog}>
+  <div ref={dialogRef} className="absolute inset-0 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby={dialogTitleId} aria-describedby={dialogDescriptionId}>
+          <h2 id={dialogTitleId} className="sr-only">
+            {dialogTitleText}
+          </h2>
+          <p id={dialogDescriptionId} className="sr-only">
+            {dialogDescriptionText}
+          </p>
           {/* Navigation Buttons */}
           {photos.length > 1 && (
             <>
@@ -238,7 +252,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
               className="absolute top-4 right-28 z-10 bg-black/20 hover:bg-black/40 text-white"
               onClick={(e) => {
                 e.stopPropagation()
-                setMode(mode === 'story' ? 'lightbox' : 'story')
+                setMode?.(mode === 'story' ? 'lightbox' : 'story')
               }}
               aria-label={mode === 'story' ? '切换回光箱模式' : '切换到故事模式'}
             >
@@ -257,7 +271,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
 
           {/* Photo Counter */}
           {photos.length > 1 && (
-            <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-sm">
+            <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-sm" role="status" aria-live="polite" aria-atomic="true">
               {`${LABELS.counterPrefix}${currentIndex + 1}${LABELS.counterSuffix} / ${LABELS.counterTotal}${photos.length}${LABELS.counterSuffix}`}
             </div>
           )}
@@ -300,15 +314,15 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                     sequence={storySequence}
                     activeIndex={storyIndex}
                     onSelect={(index) => {
-                      setMode('story')
+                      setMode?.('story')
                       setStoryIndex(index)
                     }}
                     onNext={() => {
-                      setMode('story')
+                      setMode?.('story')
                       nextStoryEntry()
                     }}
                     onPrev={() => {
-                      setMode('story')
+                      setMode?.('story')
                       prevStoryEntry()
                     }}
                   />
@@ -343,12 +357,12 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                   {/* Camera Info */}
                   {metadata.exif.length > 0 && (
                     <div className="space-y-2">
-                      <button onClick={() => toggleSection('exif')} className="flex items-center justify-between w-full text-sm font-medium">
+                      <button onClick={() => toggleSection('exif')} className="flex items-center justify-between w-full text-sm font-medium" id={exifPanelId + '-heading'} aria-expanded={!collapse.exif} aria-controls={exifPanelId}>
                         <span className="flex items-center gap-2"><Camera className="h-4 w-4" />相机信息</span>
                         <span className="text-xs opacity-60">{collapse.exif ? '展开' : '收起'}</span>
                       </button>
                       {!collapse.exif && (
-                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 pl-6">
+                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 pl-6" id={exifPanelId} role="region" aria-labelledby={exifPanelId + '-heading'}>
                           {metadata.exif.map((field) => (
                             <div key={field.label}>{field.label}： {field.value}</div>
                           ))}
@@ -361,14 +375,14 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                   {localTags.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between w-full text-sm font-medium">
-                        <button onClick={() => toggleSection('tags')} className="flex items-center gap-2">
+                        <button onClick={() => toggleSection('tags')} className="flex items-center gap-2" id={tagsPanelId + '-heading'} aria-expanded={!collapse.tags} aria-controls={tagsPanelId}>
                           <span>标签</span>
                           <span className="text-xs opacity-60">{collapse.tags ? '展开' : '收起'}</span>
                         </button>
                         <button className="text-xs underline" onClick={toggleEditing}>{editingTags ? '完成' : '编辑'}</button>
                       </div>
                       {!collapse.tags && (
-                        <div className="flex flex-wrap gap-2 items-center">
+                        <div className="flex flex-wrap gap-2 items-center" id={tagsPanelId} role="region" aria-labelledby={tagsPanelId + '-heading'}>
                           {localTags.map(tag => {
                             const pending = tag.id.startsWith('temp-')
                             return (
@@ -407,12 +421,12 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
 
                   {/* Technical Info */}
                   <div className="space-y-2">
-                    <button onClick={() => toggleSection('tech')} className="flex items-center justify-between w-full text-sm font-medium">
+                    <button onClick={() => toggleSection('tech')} className="flex items-center justify-between w-full text-sm font-medium" id={techPanelId + '-heading'} aria-expanded={!collapse.tech} aria-controls={techPanelId}>
                       <span>Technical Info</span>
                       <span className="text-xs opacity-60">{collapse.tech ? 'Show' : 'Hide'}</span>
                     </button>
                     {!collapse.tech && (
-                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400" id={techPanelId} role="region" aria-labelledby={techPanelId + '-heading'}>
                         <div>Dimensions: {metadata.dimensions}</div>
                         <div>File: {photo.fileKey?.split('/').pop() || 'Unknown'}</div>
                         {photo.location && (photo.location as any).lat && (photo.location as any).lng && (
@@ -473,3 +487,6 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
     </AnimatePresence>
   )
 })
+
+
+

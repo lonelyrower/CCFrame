@@ -12,6 +12,8 @@ export const featureFlags = {
   enableOverlays: readBoolean('NEXT_PUBLIC_ENABLE_APP_OVERLAYS', true),
   enableCommandPalette: readBoolean('NEXT_PUBLIC_ENABLE_COMMAND_PALETTE', true),
   enableSmoothScroll: readBoolean('NEXT_PUBLIC_ENABLE_SMOOTH_SCROLL', true),
+  enableThemeExperience: readBoolean('NEXT_PUBLIC_FEATURE_THEME_EXPERIENCE', true),
+  enableTagUniverse: readBoolean('NEXT_PUBLIC_FEATURE_TAG_UNIVERSE', true),
 }
 
 export type FeatureFlagKey = keyof typeof featureFlags

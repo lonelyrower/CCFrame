@@ -4,20 +4,22 @@ const withAnalyzer = require('@next/bundle-analyzer')({
 
 /** @type {import('next').NextConfig} */
 const baseConfig = {
-  reactStrictMode: false, // 开发时禁用严格模式提升性能
+  reactStrictMode: false, // ����ʱ�����ϸ�ģʽ��������
   swcMinify: process.env.NODE_ENV === 'production',
   output: 'standalone',
-  // 构建性能优化
+  poweredByHeader: false,
+  compress: true,
+  // ���������Ż�
   webpack: (config, { dev, isServer }) => {
-    // 生产环境构建优化
+    // �������������Ż�
     if (!dev) {
-      // 优化模块解析
+      // �Ż�ģ�����
       config.resolve.symlinks = false
-      
-      // 限制并行处理数量，避免内存溢出
+
+      // ���Ʋ��д��������������ڴ����
       config.parallelism = 2
-      
-      // 优化分包策略（保持简单）
+
+      // �Ż��ְ����ԣ����ּ򵥣�
       if (config.optimization && config.optimization.splitChunks) {
         config.optimization.splitChunks = {
           ...config.optimization.splitChunks,
@@ -34,10 +36,10 @@ const baseConfig = {
         }
       }
     }
-    
+
     return config
   },
-  // 允许外网访问开发服务器
+  // �����������ʿ���������
   ...(process.env.NODE_ENV === 'development' && {
     allowedDevOrigins: ['172.22.230.246'],
   }),
@@ -46,19 +48,19 @@ const baseConfig = {
       removeConsole: true,
     },
   }),
-  // 构建性能优化 - 在 Docker 构建时跳过类型检查和 ESLint
+  // ���������Ż� - �� Docker ����ʱ�������ͼ��� ESLint
   typescript: {
-    ignoreBuildErrors: true, // Docker 环境中跳过 TS 检查以提升构建速度
+    ignoreBuildErrors: true, // Docker ���������� TS ��������������ٶ�
   },
   eslint: {
-    ignoreDuringBuilds: true, // Docker 环境中跳过 ESLint 检查以提升构建速度
+    ignoreDuringBuilds: true, // Docker ���������� ESLint ��������������ٶ�
   },
   experimental: {
     serverComponentsExternalPackages: ['sharp', 'exifr'],
     optimizePackageImports: ['lucide-react', '@aws-sdk/client-s3'],
-    // 开发环境优化：禁用慢速功能
+    webVitalsAttribution: ['CLS', 'FCP', 'FID', 'INP', 'LCP', 'TTFB'],
+    // ���������Ż����������ٹ���
     ...(process.env.NODE_ENV === 'development' && {
-      webVitalsAttribution: [],
       optimizeCss: false,
       esmExternals: true,
       turbo: {
@@ -72,12 +74,12 @@ const baseConfig = {
     }),
   },
   images: {
-    // 我们已在后端生成多尺寸/格式的变体，禁用 Next 内置优化，
-    // 直接使用 /api/image 路由，避免 /_next/image 二次代理导致的 500。
+    // �������ں�����ɶ�ߴ�/��ʽ�ı��壬���� Next �����Ż���
+    // ֱ��ʹ�� /api/image ·�ɣ����� /_next/image ���δ������µ� 500��
     unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
-      // 允许通过 http 访问 MinIO/S3 签名地址（内网/开发环境常见）
+      // ����ͨ�� http ���� MinIO/S3 ǩ����ַ������/��������������
       { protocol: 'http', hostname: '**' },
     ],
     formats: ['image/avif', 'image/webp'],

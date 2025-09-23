@@ -24,6 +24,7 @@ model User {
   photos  Photo[]
   jobs    Job[]
   audits  Audit[]
+  photoNotes PhotoNote[]
   smartAlbums SmartAlbum[]
   
   @@map("users")
@@ -76,6 +77,7 @@ model Photo {
   albumCovers  Album[]        @relation("AlbumCover")
   smartAlbumCovers SmartAlbum[] @relation("SmartAlbumCover")
   editVersions EditVersion[]
+  notes        PhotoNote[]
   embedding  PhotoEmbedding?
   
   @@index([userId])
@@ -233,4 +235,17 @@ model PhotoEmbedding {
   photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@map("photo_embeddings")
+}
+model PhotoNote {
+  photoId  String @map("photo_id")
+  userId   String @map("user_id")
+  note     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([photoId, userId])
+  @@map("photo_notes")
 }

@@ -1,8 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { GalleryPicture } from '@/components/gallery/gallery-picture'
 import { PhotoTagsInline } from '@/components/admin/photo-tags-inline'
 import { PhotoActions } from '@/components/admin/photo-actions'
 import { 
@@ -285,16 +285,14 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3 md:gap-4">
         {items.map(photo => (
           <div key={photo.id} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/50 dark:border-gray-600/50">
-            {/* 主图片 */}
-            <Image
-              src={`/api/image/${photo.id}/small`}
-              alt={photo.albumTitle || 'Photo thumbnail'}
-              fill
+            <GalleryPicture
+              photo={{ id: photo.id, albumTitle: photo.albumTitle ?? undefined, tags: photo.tags }}
               sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, 50vw"
-              className="object-cover transition-all duration-500 group-hover:scale-110"
+              className="absolute inset-0 h-full w-full"
+              imgClassName="object-cover transition-all duration-500 group-hover:scale-110"
             />
-
-            {/* 选择框 - 改为现代化设计 */}
+            {/* 主图片 */}
+{/* 选择框 - 改为现代化设计 */}
             <div className="absolute top-3 left-3 z-10">
               <label className="flex items-center cursor-pointer">
                 <input
