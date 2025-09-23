@@ -14,7 +14,7 @@ const CONFIG_MAX_SEED = Math.min(
   HARD_MAX_SEED
 )
 
-const SEED_TOKEN = process.env.SEED_TOKEN || ''
+const DEV_SEED_TOKEN = process.env.DEV_SEED_TOKEN || process.env.SEED_TOKEN || ''
 const SEED_ALLOWED_IPS = (process.env.SEED_ALLOWED_IPS || '')
   .split(',')
   .map(ip => ip.trim())
@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 简化的权限验证：只要是登录用户就可以使用
-    // 可选的额外安全层：如果设置了SEED_TOKEN，仍然验证
-    if (SEED_TOKEN) {
+    // 可选的额外安全层：如果设置了DEV_SEED_TOKEN，仍然验证
+    if (DEV_SEED_TOKEN) {
       const providedToken = request.headers.get('x-seed-token') || ''
-      if (providedToken !== SEED_TOKEN) {
+      if (providedToken !== DEV_SEED_TOKEN) {
         return NextResponse.json({ error: 'Token验证失败' }, { status: 403 })
       }
     }

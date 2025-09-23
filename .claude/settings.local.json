@@ -71,7 +71,8 @@
       "Bash(./scripts/ultra-fast-build.js)",
       "Bash(timeout 30s npm run dev:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

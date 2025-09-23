@@ -18,12 +18,14 @@ export async function GET() {
     const envApiKey = process.env.PIXABAY_API_KEY
     const finalApiKey = dbApiKey || envApiKey
 
+    const seedToken = process.env.DEV_SEED_TOKEN || process.env.SEED_TOKEN || ''
+
     // 获取关键配置信息（不暴露敏感数据）
     const config = {
       NODE_ENV: process.env.NODE_ENV,
       STORAGE_PROVIDER: process.env.STORAGE_PROVIDER || 'local',
-      SEED_TOKEN_SET: !!process.env.SEED_TOKEN,
-      SEED_TOKEN_VALUE: process.env.SEED_TOKEN ? `${process.env.SEED_TOKEN.substring(0, 6)}***` : 'optional',
+      SEED_TOKEN_SET: !!seedToken,
+      SEED_TOKEN_VALUE: seedToken ? `${seedToken.substring(0, 6)}***` : 'optional',
       PIXABAY_API_KEY_SET: !!finalApiKey,
       PIXABAY_API_KEY_VALUE: finalApiKey ? `${finalApiKey.substring(0, 6)}***` : 'not set',
       PIXABAY_API_KEY_SOURCE: dbApiKey ? 'database' : (envApiKey ? 'environment' : 'none'),
@@ -37,3 +39,6 @@ export async function GET() {
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 })
   }
 }
+
+
+

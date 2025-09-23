@@ -23,6 +23,7 @@ import {
   type UploadQueueItem,
   type UploadQueueStatus,
 } from '@/components/providers/upload-queue-provider'
+import { useCSRF } from '@/hooks/use-csrf'
 
 interface UploadFile extends File {
   id: string
@@ -36,6 +37,7 @@ export function UploadInterface() {
   const [files, setFiles] = useState<UploadFile[]>([])
   const [selectedAlbum, setSelectedAlbum] = useState<string>('')
   const [isUploading, setIsUploading] = useState(false)
+  const { secureRequest, csrfToken, refreshToken } = useCSRF()
 
   const {
     stats: uploadStats,
@@ -132,56 +134,117 @@ export function UploadInterface() {
     })
 
     try {
-      if (!file.contentHash && !file.hashing) {
+      let contentHash = file.contentHash ?? null
+
+      if (!contentHash && !file.hashing) {
         setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, hashing: true, hashProgress: 0 } : f)))
         patchUpload(file.id, { status: 'hashing', progress: 0 })
         try {
-          const hash = await sha256Hex(file, (r) => {
-            const percent = Math.round(r * 100)
+          const hash = await sha256Hex(file, (ratio) => {
+            const percent = Math.round(ratio * 100)
             setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, hashProgress: percent } : f)))
             patchUpload(file.id, { status: 'hashing', progress: percent })
           })
+          contentHash = hash
           setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, contentHash: hash, hashing: false } : f)))
         } catch (error) {
           setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, hashing: false } : f)))
         }
       }
 
-      patchUpload(file.id, { status: 'uploading', progress: 0 })
+      const presignBody = {
+        filename: file.name,
+        contentType: file.type || 'application/octet-stream',
+        size: file.size,
+        albumId: selectedAlbum || undefined,
+        ...(contentHash ? { contentHash } : {}),
+      }
 
-      const form = new FormData()
-      form.append('file', file)
-      form.append('photoId', file.id)
-      form.append('albumId', selectedAlbum)
+      if (!csrfToken) {
+        await refreshToken()
+      }
 
-      const res = await fetch('/api/upload/local', {
+      let presignResponse = await secureRequest('/api/upload/presign', {
         method: 'POST',
-        body: form,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(presignBody),
       })
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null)
-        const message = error?.error ?? '上传失败'
+      if (presignResponse.status === 403) {
+        await refreshToken()
+        presignResponse = await secureRequest('/api/upload/presign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(presignBody),
+        })
+      }
+
+      if (!presignResponse.ok) {
+        const payload = await presignResponse.json().catch(() => null)
+        const message = payload?.error || '预签名请求失败'
         throw new Error(message)
       }
 
-      patchUpload(file.id, { status: 'processing', progress: 60 })
+      const presignData: {
+        photoId: string
+        uploadUrl?: string
+        fileKey?: string
+        completed?: boolean
+        duplicate?: boolean
+      } = await presignResponse.json()
 
-      const commitRes = await fetch('/api/upload/commit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ photoId: file.id, fileKey: `${file.id}/${file.name}` }),
+      if (presignData.completed && presignData.duplicate && presignData.photoId) {
+        patchUpload(file.id, { status: 'completed', progress: 100 })
+        return 'completed'
+      }
+
+      const { uploadUrl, photoId, fileKey } = presignData
+      if (!uploadUrl || !photoId || !fileKey) {
+        throw new Error('上传信息不完整')
+      }
+
+      patchUpload(file.id, { status: 'uploading', progress: 10 })
+
+      const uploadHeaders: Record<string, string> = {}
+      if (file.type) {
+        uploadHeaders['Content-Type'] = file.type
+      }
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: uploadHeaders,
+        body: file,
       })
 
-      if (!commitRes.ok) {
-        const error = await commitRes.json().catch(() => null)
-        const message = error?.error ?? '提交处理任务失败'
+      if (!uploadResponse.ok) {
+        const details = await uploadResponse.text().catch(() => '')
+        throw new Error(details || '文件上传失败')
+      }
+
+      patchUpload(file.id, { status: 'processing', progress: 70 })
+
+      let commitResponse = await secureRequest('/api/upload/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoId, fileKey }),
+      })
+
+      if (commitResponse.status === 403) {
+        await refreshToken()
+        commitResponse = await secureRequest('/api/upload/commit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoId, fileKey }),
+        })
+      }
+
+      if (!commitResponse.ok) {
+        const payload = await commitResponse.json().catch(() => null)
+        const message = payload?.error || '提交上传记录失败'
         throw new Error(message)
       }
 
-      patchUpload(file.id, { status: 'processing', progress: 100 })
+      patchUpload(file.id, { status: 'completed', progress: 100 })
       return 'completed'
     } catch (error) {
       patchUpload(file.id, {
@@ -191,6 +254,8 @@ export function UploadInterface() {
       return 'failed'
     }
   }
+
+
 
   const handleUploadAll = async () => {
     if (files.length === 0) {
@@ -427,4 +492,8 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: str
     </div>
   )
 }
+
+
+
+
 

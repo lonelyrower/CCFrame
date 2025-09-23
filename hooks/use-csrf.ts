@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 
 interface CSRFToken {
@@ -11,11 +11,13 @@ interface CSRFToken {
 export function useCSRF() {
   const [csrfToken, setCSRFToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const tokenRef = useRef<string | null>(null)
   const { data: session } = useSession()
 
   const fetchToken = useCallback(async () => {
     if (!session?.user) {
       setCSRFToken(null)
+      tokenRef.current = null
       return
     }
 
@@ -24,19 +26,22 @@ export function useCSRF() {
       const response = await fetch('/api/csrf-token')
       if (response.ok) {
         const data: CSRFToken = await response.json()
+        tokenRef.current = data.token
         setCSRFToken(data.token)
 
         // 在过期前自动刷新令牌
-        const refreshTime = data.expires - Date.now() - (5 * 60 * 1000) // 5分钟前刷新
+        const refreshTime = data.expires - Date.now() - 5 * 60 * 1000
         if (refreshTime > 0) {
           setTimeout(fetchToken, refreshTime)
         }
       } else {
         setCSRFToken(null)
+        tokenRef.current = null
       }
     } catch (error) {
       console.error('Failed to fetch CSRF token:', error)
       setCSRFToken(null)
+      tokenRef.current = null
     } finally {
       setLoading(false)
     }
@@ -51,12 +56,12 @@ export function useCSRF() {
       'Content-Type': 'application/json'
     }
 
-    if (csrfToken) {
-      headers['X-CSRF-Token'] = csrfToken
+    if (tokenRef.current) {
+      headers['X-CSRF-Token'] = tokenRef.current
     }
 
     return headers
-  }, [csrfToken])
+  }, [])
 
   const secureRequest = useCallback(async (
     url: string,
@@ -81,3 +86,4 @@ export function useCSRF() {
     refreshToken: fetchToken
   }
 }
+

@@ -385,6 +385,14 @@ export class StorageManager {
   }
 
   getPublicUrl(key: string): string {
+    if (this.fallback && typeof this.fallback.getPublicUrl === 'function') {
+      return this.fallback.getPublicUrl(key)
+    }
+
+    if (this.config.provider === 'local') {
+      return getLocalStorageManager().getPublicUrl(key)
+    }
+
     if (this.config.cdnUrl) {
       return `${this.config.cdnUrl}/${key}`
     }

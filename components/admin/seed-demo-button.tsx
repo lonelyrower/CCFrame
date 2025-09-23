@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { ChevronDown, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 
+const DEV_SEED_TOKEN_HEADER = process.env.NEXT_PUBLIC_DEV_SEED_TOKEN || ''
+
 export function SeedDemoButton({ count: propCount }: { count?: number }) {
   const [loading, setLoading] = useState(false)
   const [defaultCount, setDefaultCount] = useState(propCount || 12)
@@ -40,12 +42,16 @@ export function SeedDemoButton({ count: propCount }: { count?: number }) {
       // 显示开始导入的提示
       toast.loading('正在导入示例图片，请稍候...', { id: 'import-loading' })
       
+      const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (DEV_SEED_TOKEN_HEADER) {
+        requestHeaders['x-seed-token'] = DEV_SEED_TOKEN_HEADER
+      }
+
       const res = await fetch('/api/dev/seed/pixabay', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-seed-token': 'dev-seed-123'  // 生产环境授权token
-        },
+        headers: requestHeaders,
         body: JSON.stringify({ count: selectedCount, query: 'nature', visibility: 'PUBLIC' }),
       })
       
@@ -130,4 +136,6 @@ export function SeedDemoButton({ count: propCount }: { count?: number }) {
     </div>
   )
 }
+
+
 

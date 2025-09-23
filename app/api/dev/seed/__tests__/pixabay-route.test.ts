@@ -123,7 +123,7 @@ describe('Pixabay seed route', () => {
   }
 
   it('returns 401 when session missing', async () => {
-    process.env.SEED_TOKEN = 'token'
+    process.env.DEV_SEED_TOKEN = 'token'
     getServerSession.mockResolvedValue(null)
     const request = new NextRequest('http://localhost/api/dev/seed/pixabay', { method: 'POST' })
 
@@ -134,7 +134,7 @@ describe('Pixabay seed route', () => {
   })
 
   it('rejects when seed token mismatch', async () => {
-    process.env.SEED_TOKEN = 'token'
+    process.env.DEV_SEED_TOKEN = 'token'
     process.env.SEED_ALLOWED_IPS = ''
     getServerSession.mockResolvedValue({ user: { id: 'user-1' } })
     mockDb.user.findUnique.mockResolvedValue({ id: 'user-1', pixabayApiKey: 'key' })
@@ -153,7 +153,7 @@ describe('Pixabay seed route', () => {
   })
 
   it('returns seeded count zero when pixabay returns no hits', async () => {
-    process.env.SEED_TOKEN = 'token'
+    process.env.DEV_SEED_TOKEN = 'token'
     process.env.SEED_ALLOWED_IPS = ''
     process.env.SEED_MAX_COUNT = '5'
     getServerSession.mockResolvedValue({ user: { id: 'user-1' } })
@@ -174,7 +174,7 @@ describe('Pixabay seed route', () => {
   })
 
   it('processes images and uploads when hits returned', async () => {
-    process.env.SEED_TOKEN = 'token'
+    process.env.DEV_SEED_TOKEN = 'token'
     process.env.SEED_ALLOWED_IPS = ''
     process.env.SEED_MAX_COUNT = '5'
     getServerSession.mockResolvedValue({ user: { id: 'user-1' } })
@@ -226,3 +226,4 @@ describe('Pixabay seed route', () => {
     })
   })
 })
+
