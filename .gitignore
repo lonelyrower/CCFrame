@@ -56,6 +56,10 @@ prisma/*.db-journal
 # OS
 Thumbs.db
 .DS_Store
+
+# Storybook build output
+storybook-static/
+
 # design system docs (local only)
 docs/
 

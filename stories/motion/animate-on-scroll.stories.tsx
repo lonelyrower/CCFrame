@@ -23,9 +23,9 @@ export const Showcase: Story = {
         {[0, 1, 2].map((index) => (
           <AnimateOnScroll key={index} delay={index * 0.08}>
             <Surface tone="panel" padding="lg" className="shadow-subtle space-y-2">
-              <Heading size="sm">面板 {index + 1}</Heading>
+              <Heading size="sm"> {index + 1}</Heading>
               <Text tone="secondary" size="sm">
-                滚动至视窗时渐显，并遵循 prefers-reduced-motion 自动降级。
+                哟时裕循 prefers-reduced-motion 远
               </Text>
             </Surface>
           </AnimateOnScroll>

@@ -2,12 +2,13 @@ import type { StorybookConfig } from '@storybook/nextjs';
 
 const config: StorybookConfig = {
   stories: ['../stories/**/*.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
+
   addons: [
-    '@storybook/addon-essentials',
     '@storybook/addon-a11y',
-    '@storybook/addon-interactions',
-    '@storybook/addon-themes'
+    '@storybook/addon-themes',
+    '@storybook/addon-docs'
   ],
+
   framework: {
     name: '@storybook/nextjs',
     options: {
@@ -16,9 +17,7 @@ const config: StorybookConfig = {
       }
     }
   },
-  docs: {
-    autodocs: 'tag'
-  },
+
   staticDirs: ['../public']
 };
 

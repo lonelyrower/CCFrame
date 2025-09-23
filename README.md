@@ -325,6 +325,10 @@ S3_ACCESS_KEY_ID="your-access-key"
 S3_SECRET_ACCESS_KEY="your-secret-key"
 S3_BUCKET_NAME="your-bucket"
 
+# Demo Seed 按钮演示用 token
+DEV_SEED_TOKEN="dev-seed-123"
+NEXT_PUBLIC_DEV_SEED_TOKEN="dev-seed-123"
+
 # 缓存配置
 REDIS_URL="redis://localhost:6379"
 
