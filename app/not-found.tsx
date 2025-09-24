@@ -22,6 +22,7 @@ export default function NotFound() {
   const [mounted, setMounted] = useState(false)
   const [clickCount, setClickCount] = useState(0)
   const [showEasterEgg, setShowEasterEgg] = useState(false)
+  const [easterEggPhase, setEasterEggPhase] = useState(0)
 
   useEffect(() => {
     setMounted(true)
@@ -31,7 +32,17 @@ export default function NotFound() {
     setClickCount(prev => prev + 1)
     if (clickCount >= 4) {
       setShowEasterEgg(true)
-      setTimeout(() => setShowEasterEgg(false), 3000)
+      setEasterEggPhase(0)
+
+      // 分阶段展示彩蛋效果
+      setTimeout(() => setEasterEggPhase(1), 500)
+      setTimeout(() => setEasterEggPhase(2), 1500)
+      setTimeout(() => setEasterEggPhase(3), 3000)
+      setTimeout(() => {
+        setShowEasterEgg(false)
+        setEasterEggPhase(0)
+      }, 6000)
+
       setClickCount(0)
     }
   }
@@ -67,13 +78,141 @@ export default function NotFound() {
 
         {/* 主要内容区域 */}
         <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-          {/* 彩蛋提示 */}
+          {/* 彩蛋提示 - 多阶段动画 */}
           {showEasterEgg && (
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gradient-to-r from-yellow-400 to-orange-500 text-text-inverted px-6 py-3 rounded-full shadow-floating animate-bounce">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5" />
-                <span className="font-medium">📸 你发现了隐藏功能！试试点击相机图标 5 次！</span>
-              </div>
+            <div className="fixed inset-0 z-50 pointer-events-none">
+              {/* 背景光效 */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-pink-900/10 to-blue-900/20 animate-pulse" />
+
+              {/* 阶段 0: 初始爆炸效果 */}
+              {easterEggPhase >= 0 && (
+                <>
+                  {/* 中心爆炸光晕 */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className="w-32 h-32 bg-gradient-radial from-yellow-400/80 via-orange-500/60 to-transparent rounded-full animate-ping" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-radial from-white/90 to-yellow-400/80 rounded-full animate-bounce" />
+                  </div>
+
+                  {/* 围绕的火花效果 */}
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const angle = (i * 30) * (Math.PI / 180)
+                    const radius = 120
+                    const x = Math.cos(angle) * radius
+                    const y = Math.sin(angle) * radius
+
+                    return (
+                      <div
+                        key={i}
+                        className="absolute top-1/2 left-1/2 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2"
+                        style={{
+                          transform: `translate(${x}px, ${y}px)`,
+                        }}
+                      >
+                        <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-ping"
+                             style={{ animationDelay: `${i * 100}ms`, animationDuration: '1s' }} />
+                        <Sparkles
+                          className="absolute top-0 left-0 w-4 h-4 text-yellow-300 animate-spin"
+                          style={{ animationDelay: `${i * 100}ms` }}
+                        />
+                      </div>
+                    )
+                  })}
+                </>
+              )}
+
+              {/* 阶段 1: 发现消息 */}
+              {easterEggPhase >= 1 && (
+                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-fade-in">
+                  <div className="relative">
+                    <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 text-white px-8 py-4 rounded-2xl shadow-2xl border-2 border-white/20 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
+                          <Lightbulb className="w-5 h-5 text-yellow-900" />
+                        </div>
+                        <div>
+                          <div className="text-lg font-bold animate-typing overflow-hidden whitespace-nowrap">
+                            📸 恭喜发现隐藏彩蛋！
+                          </div>
+                          <div className="text-sm opacity-90 mt-1">
+                            你是第 {Math.floor(Math.random() * 42) + 1} 位发现这个秘密的探索者
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-2 left-8 w-4 h-4 bg-gradient-to-r from-purple-600 to-pink-500 rotate-45" />
+                  </div>
+                </div>
+              )}
+
+              {/* 阶段 2: 相机变身动画 */}
+              {easterEggPhase >= 2 && (
+                <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 animate-slide-up">
+                  <div className="flex items-center gap-6 bg-gradient-to-r from-blue-600/90 via-purple-600/90 to-pink-600/90 backdrop-blur-lg text-white px-10 py-6 rounded-3xl shadow-2xl border border-white/20">
+                    <div className="relative">
+                      <Camera className="w-12 h-12 animate-bounce" />
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse flex items-center justify-center">
+                        <Zap className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold mb-1">✨ 相机升级中...</div>
+                      <div className="flex items-center gap-2 text-sm opacity-90">
+                        <div className="flex space-x-1">
+                          {[0, 1, 2].map((i) => (
+                            <div
+                              key={i}
+                              className="w-2 h-2 bg-white rounded-full animate-pulse"
+                              style={{ animationDelay: `${i * 0.2}s` }}
+                            />
+                          ))}
+                        </div>
+                        <span>正在解锁高级功能</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 阶段 3: 成就解锁 */}
+              {easterEggPhase >= 3 && (
+                <div className="absolute top-2/3 left-1/2 -translate-x-1/2 animate-zoom-in">
+                  <div className="text-center">
+                    <div className="relative inline-block">
+                      <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 p-8 rounded-3xl shadow-2xl border-4 border-white/30">
+                        <div className="text-6xl mb-4">🏆</div>
+                        <div className="text-white font-bold text-xl mb-2">成就解锁</div>
+                        <div className="text-white/90 text-lg mb-3">「好奇的探索者」</div>
+                        <div className="text-white/80 text-sm">
+                          你发现了 CC Frame 的隐藏彩蛋！<br />
+                          真正的摄影师从不停止探索 📷
+                        </div>
+                      </div>
+
+                      {/* 成就光环 */}
+                      <div className="absolute -inset-4 bg-gradient-to-r from-yellow-400/20 via-orange-500/20 to-red-500/20 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
+                      <div className="absolute -inset-2 bg-gradient-to-r from-white/30 to-yellow-300/30 rounded-full animate-ping" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 全屏彩带效果 */}
+              {easterEggPhase >= 1 && (
+                <div className="absolute inset-0 overflow-hidden">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-2 bg-gradient-to-b from-transparent via-yellow-400 to-transparent h-full animate-fall opacity-70"
+                      style={{
+                        left: `${(i * 5) % 100}%`,
+                        animationDelay: `${i * 0.1}s`,
+                        animationDuration: `${2 + (i % 3)}s`,
+                        transform: `rotate(${-15 + (i % 30)}deg)`
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

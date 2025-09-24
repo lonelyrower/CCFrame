@@ -71,9 +71,6 @@ export function PublicHeader() {
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               CC Frame
             </span>
-            <span className="text-xs text-text-secondary -mt-1 font-normal">
-              个人相册
-            </span>
           </div>
         </Link>
 

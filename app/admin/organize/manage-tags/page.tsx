@@ -136,16 +136,16 @@ export default function ManageTagsPage() {
             <div className="space-y-2">
               <Heading size="md" className="flex items-center gap-2">
                 <Tags className="h-5 w-5 text-primary" />
-                ��ǩ����
+                标签管理
               </Heading>
-              <Text tone="secondary" size="sm">����������ǩ��ɫ���ϲ���ɾ����ǩ</Text>
+              <Text tone="secondary" size="sm">编辑标签名称、颜色，合并或删除标签</Text>
               <div className="flex items-center gap-4 text-sm">
                 <Link
                   href="/admin/organize/duplicates"
                   className="inline-flex items-center text-sm text-primary transition-colors hover:text-primary/80"
                 >
                   <Copy className="mr-1 h-4 w-4" />
-                  �ظ���Ƭ ����
+                  重复照片 检测
                 </Link>
               </div>
             </div>
@@ -154,15 +154,15 @@ export default function ManageTagsPage() {
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="������ǩ"
+                  placeholder="搜索标签"
                   className="w-full rounded-md border border-surface-outline/50 bg-surface-canvas px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-64"
                 />
                 <Button onClick={load} disabled={loading}>
-                  {loading ? '�����С�' : 'ˢ��'}
+                  {loading ? '加载中...' : '刷新'}
                 </Button>
               </div>
               {affected !== null ? (
-                <Text tone="secondary" size="sm" className="sm:ml-auto">Ԥ��Ӱ�� {affected} ����Ƭ</Text>
+                <Text tone="secondary" size="sm" className="sm:ml-auto">预计影响 {affected} 张照片</Text>
               ) : null}
             </div>
           </Surface>
@@ -171,7 +171,7 @@ export default function ManageTagsPage() {
         {sampleIds.length > 0 && (
           <AnimateOnScroll variants={fadeInScale} delay={0.08}>
             <Surface tone="panel" padding="lg" className="shadow-subtle space-y-3">
-              <Text tone="secondary" size="sm">��Ӱ��ͼƬԤ��</Text>
+              <Text tone="secondary" size="sm">受影响图片预览</Text>
               <AnimateOnScroll variants={samplePreviewStagger} className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {sampleIds.map((id) => (
                   <AnimateOnScroll key={id} variants={listItemRise} className="block">
@@ -193,7 +193,7 @@ export default function ManageTagsPage() {
 
         <AnimateOnScroll variants={fadeInScale} delay={0.12}>
           <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
-            <Text tone="secondary" size="sm">�� {filtered.length} ����ǩ</Text>
+            <Text tone="secondary" size="sm">共 {filtered.length} 个标签</Text>
             <AnimateOnScroll variants={tagGridStagger} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
               {filtered.map((tag) => (
                 <AnimateOnScroll key={tag.id} variants={listItemRise} className="h-full">
@@ -216,8 +216,8 @@ export default function ManageTagsPage() {
                       </span>
                     </label>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => { setColorTouched(false); setEditing(tag) }}>�༭</Button>
-                      <Button size="sm" variant="destructive" onClick={() => remove(tag.id)}>ɾ��</Button>
+                      <Button size="sm" variant="outline" onClick={() => { setColorTouched(false); setEditing(tag) }}>编辑</Button>
+                      <Button size="sm" variant="destructive" onClick={() => remove(tag.id)}>删除</Button>
                     </div>
                   </Surface>
                 </AnimateOnScroll>
@@ -228,18 +228,18 @@ export default function ManageTagsPage() {
 
         <AnimateOnScroll variants={fadeInScale} delay={0.16}>
           <Surface tone="panel" padding="lg" className="shadow-subtle flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Text tone="secondary" size="sm">�ϲ���ѡ��ǩ����</Text>
+            <Text tone="secondary" size="sm">合并已选标签到：</Text>
             <select
               value={targetId}
               onChange={(event) => setTargetId(event.target.value)}
               className="w-full rounded-md border border-surface-outline/50 bg-surface-canvas px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-64"
             >
-              <option value="">ѡ��Ŀ���ǩ</option>
+              <option value="">选择目标标签</option>
               {tags.map((tag) => (
                 <option key={tag.id} value={tag.id}>{tag.name}</option>
               ))}
             </select>
-            <Button onClick={merge} disabled={!targetId || selected.length === 0}>ִ�кϲ�</Button>
+            <Button onClick={merge} disabled={!targetId || selected.length === 0}>执行合并</Button>
           </Surface>
         </AnimateOnScroll>
       </Container>
@@ -247,9 +247,9 @@ export default function ManageTagsPage() {
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-contrast-surface/50 p-4">
           <div className="w-full max-w-md space-y-3 rounded-xl bg-surface-panel p-4 shadow-surface dark:bg-surface-canvas">
-            <Heading size="sm">�༭��ǩ</Heading>
+            <Heading size="sm">编辑标签</Heading>
             <div>
-              <label className="mb-1 block text-sm">����</label>
+              <label className="mb-1 block text-sm">名称</label>
               <input
                 value={editing.name}
                 onChange={(event) => {
@@ -265,7 +265,7 @@ export default function ManageTagsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm">��ɫ</label>
+              <label className="mb-1 block text-sm">颜色</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -281,8 +281,8 @@ export default function ManageTagsPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={() => setEditing(null)}>ȡ��</Button>
-              <Button onClick={saveEdit}>����</Button>
+              <Button variant="ghost" onClick={() => setEditing(null)}>取消</Button>
+              <Button onClick={saveEdit}>保存</Button>
             </div>
           </div>
         </div>

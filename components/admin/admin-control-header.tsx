@@ -59,7 +59,7 @@ export function AdminControlHeader() {
           <span className="rounded-lg bg-primary/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary/90">
             Admin
           </span>
-          <span>CC Frame Console</span>
+          <span>管理中心</span>
         </Link>
 
         {commandPaletteEnabled ? (

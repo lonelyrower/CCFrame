@@ -72,7 +72,8 @@
       "Bash(timeout 30s npm run dev:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(xargs:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "WebFetch(domain:2.135.147.52)"
     ],
     "deny": [],
     "ask": []

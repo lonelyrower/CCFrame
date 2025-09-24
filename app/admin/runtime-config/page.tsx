@@ -11,9 +11,9 @@ export default function RuntimeConfigPage() {
       <Container size="xl" bleed="none" className="flex flex-col gap-6">
         <AnimateOnScroll>
           <div className="space-y-2">
-            <Heading size="lg">Runtime configuration</Heading>
+            <Heading size="lg">运行时配置</Heading>
             <Text tone="secondary">
-            Adjust storage, CDN, and semantic search providers. Changes take effect immediately after saving.
+            调整存储、CDN 和语义搜索提供商设置。保存后立即生效。
           </Text>
           </div>
         </AnimateOnScroll>

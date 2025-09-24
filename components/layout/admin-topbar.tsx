@@ -33,7 +33,7 @@ export function AdminTopbar() {
     >
       <Link href="/admin" className="flex items-center gap-2 font-display text-base font-semibold text-text-primary">
         <span className="rounded-xl bg-primary/15 px-3 py-2 text-xs font-semibold text-primary">Admin</span>
-        <span>CC Frame Console</span>
+        <span>管理中心</span>
       </Link>
 
       <div className="flex items-center gap-2">

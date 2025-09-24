@@ -28,23 +28,23 @@ export interface NavigationSection {
 }
 
 export const publicPrimaryNavigation: NavigationItem[] = [
-  { title: 'Home', href: '/', icon: Camera },
-  { title: 'Gallery', href: '/photos', icon: Grid3X3 },
-  { title: 'Timeline', href: '/timeline', icon: Calendar },
-  { title: 'Tags', href: '/tags', icon: Tag },
+  { title: '首页', href: '/', icon: Camera },
+  { title: '相册', href: '/photos', icon: Grid3X3 },
+  { title: '时间线', href: '/timeline', icon: Calendar },
+  { title: '标签', href: '/tags', icon: Tag },
 ]
 
 export const publicHighlightActions: NavigationItem[] = [
   {
-    title: 'Services',
+    title: '服务项目',
     href: '/services',
-    description: 'Discover shooting packages, workflows, and success stories.',
+    description: '探索拍摄套餐、工作流程和成功案例。',
     icon: Sparkles,
   },
   {
-    title: 'Book a session',
+    title: '联系我们',
     href: '/contact',
-    description: 'Submit your brief and get a tailored recommendation.',
+    description: '欢迎联系咨询合作事宜。',
     icon: Aperture,
   },
 ]

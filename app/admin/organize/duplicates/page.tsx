@@ -69,11 +69,11 @@ export default function DuplicatesPage() {
         <AnimateOnScroll variants={fadeInScale}>
           <Surface tone="panel" padding="lg" className="shadow-subtle flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-text-primary dark:text-text-inverted">�ظ�/���� ��Ƭ����</h1>
-              <p className="text-sm text-text-secondary dark:text-text-muted">���ڸ�֪��ϣ���ƶȣ�����ɾ�����ั��</p>
+              <h1 className="text-2xl font-bold text-text-primary dark:text-text-inverted">重复/相似 照片检测</h1>
+              <p className="text-sm text-text-secondary dark:text-text-muted">基于感知哈希算法，找出并删除重复的照片</p>
             </div>
             <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
-              <label>��ֵ</label>
+              <label>阈值</label>
               <input
                 type="number"
                 min={0}
@@ -82,7 +82,7 @@ export default function DuplicatesPage() {
                 onChange={(e) => setThreshold(parseInt(e.target.value || '8'))}
                 className="w-24 rounded-md border border-surface-outline/50 bg-surface-canvas px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
-              <label>ɨ������</label>
+              <label>扫描限制</label>
               <input
                 type="number"
                 min={50}
@@ -91,19 +91,19 @@ export default function DuplicatesPage() {
                 onChange={(e) => setLimit(parseInt(e.target.value || '500'))}
                 className="w-28 rounded-md border border-surface-outline/50 bg-surface-canvas px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
-              <Button onClick={scan} disabled={loading}>{loading ? 'ɨ���С�' : '����ɨ��'}</Button>
+              <Button onClick={scan} disabled={loading}>{loading ? '扫描中...' : '重新扫描'}</Button>
             </div>
           </Surface>
         </AnimateOnScroll>
 
         {clusters.length === 0 ? (
-          <AnimateOnScroll variants={fadeInScale} delay={0.08} className="text-center text-text-muted">δ�����ظ�/���Ƶ���Ƭ</AnimateOnScroll>
+          <AnimateOnScroll variants={fadeInScale} delay={0.08} className="text-center text-text-muted">未发现重复/相似的照片</AnimateOnScroll>
         ) : (
           <AnimateOnScroll variants={fadeInScale} delay={0.08} className="space-y-6">
             {clusters.map((cluster, index) => (
               <AnimateOnScroll key={cluster.primaryId ?? index} variants={fadeInScale}>
                 <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
-                  <div className="text-sm text-text-secondary dark:text-text-muted">��������<span className="font-medium">{cluster.primaryId}</span></div>
+                  <div className="text-sm text-text-secondary dark:text-text-muted">主照片：<span className="font-medium">{cluster.primaryId}</span></div>
                   <AnimateOnScroll variants={clusterStagger} className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
                     {cluster.ids.map((id) => (
                       <AnimateOnScroll key={id} variants={listItemRise} className="block">
@@ -126,7 +126,7 @@ export default function DuplicatesPage() {
                             />
                           )}
                           {id === cluster.primaryId && (
-                            <span className="absolute top-1 right-1 rounded bg-green-500 px-1 text-xs text-text-inverted">����</span>
+                            <span className="absolute top-1 right-1 rounded bg-green-500 px-1 text-xs text-text-inverted">主图</span>
                           )}
                         </label>
                       </AnimateOnScroll>
@@ -141,7 +141,7 @@ export default function DuplicatesPage() {
         {clusters.length > 0 && (
           <AnimateOnScroll variants={fadeInScale} delay={0.16}>
             <div className="flex justify-end">
-              <Button variant="destructive" onClick={deleteSelected} disabled={loading}>ɾ����ѡ</Button>
+              <Button variant="destructive" onClick={deleteSelected} disabled={loading}>删除已选</Button>
             </div>
           </AnimateOnScroll>
         )}
