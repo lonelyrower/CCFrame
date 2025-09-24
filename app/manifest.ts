@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'CC Frame - Creative Camera',
+    name: 'CC Frame - 我的摄影时光',
     short_name: 'CC Frame',
-    description: 'CC Frame 是一个现代化的相册网站，专注照片展示与管理',
+    description: 'CC Frame 是一个简洁优雅的个人相册，记录生活中的美好瞬间，分享摄影路上的点点滴滴',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

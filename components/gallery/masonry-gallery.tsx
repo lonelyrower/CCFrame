@@ -261,7 +261,7 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
               }}
               tabIndex={0}
               role="button"
-              aria-label={photo.album?.title || photo.tags?.[0]?.tag?.name || "Open photo"}
+              aria-label={photo.album?.title || photo.tags?.[0]?.tag?.name || "查看照片"}
               onClick={() => handleSelect(photo)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -314,7 +314,7 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
       <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
       {hasMore && (
         <div className="py-6 text-center text-sm text-muted-foreground">
-          Loading more inspiration...
+          加载更多内容...
         </div>
       )}
 

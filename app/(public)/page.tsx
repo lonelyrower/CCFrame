@@ -16,8 +16,8 @@ import { getLandingSnapshot } from '@/lib/landing-data'
 import { getSemanticConfig } from '@/lib/semantic-config'
 import { getImageUrl } from '@/lib/utils'
 
-const landingTitle = 'CC Frame · 创意摄影内容中台'
-const landingDescription = '以专业级的自动化处理、语义检索与叙事工具，帮助摄影团队构建高效的作品管理与交付体验。'
+const landingTitle = 'CC Frame · 我的摄影时光'
+const landingDescription = '记录生活中的美好瞬间，分享摄影路上的点点滴滴。一个简洁优雅的个人相册，让每一张照片都有它的故事。'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const ogImage = '/icons/icon-512.png'
 
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     description: landingDescription,
     images: [ogImage],
   },
-  keywords: ['摄影作品集', '语义搜索', '数字影像', '自动化管线', 'CC Frame'],
+  keywords: ['个人相册', '摄影作品', '生活记录', '美好时光', 'CC Frame'],
 }
 
 export const dynamic = 'force-dynamic'

@@ -51,7 +51,7 @@ export function AppShell({
         href="#main-content"
         className="absolute left-6 top-4 z-[100] -translate-y-20 rounded-full bg-surface-panel px-4 py-2 text-sm font-medium text-text-primary shadow-subtle transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary"
       >
-        Skip to main content
+        跳转到主要内容
       </a>
 
       {overlays ? (
@@ -74,7 +74,7 @@ export function AppShell({
         {sidebar ? (
           <aside
             role="complementary"
-            aria-label={sidebarLabel || 'Secondary navigation'}
+            aria-label={sidebarLabel || '侧边导航'}
             className={cn(
               'w-full border-surface-outline/40 bg-surface-panel/80 backdrop-blur-sm lg:min-h-[calc(100vh-4rem)] lg:w-[var(--token-layout-sidebar-lg)] lg:max-w-[var(--token-layout-sidebar-lg)] lg:border-r',
               sidebarFirst ? 'order-[-1] lg:order-none' : 'order-last lg:order-none',
@@ -93,7 +93,7 @@ export function AppShell({
           id="main-content"
           role="main"
           tabIndex={-1}
-          aria-label={sidebar ? 'Main content area' : 'Content area'}
+          aria-label={sidebar ? '主要内容区域' : '内容区域'}
           className={cn('flex flex-1 flex-col bg-surface-canvas/60', paddingClasses, contentClassName)}
         >
           <div aria-live="polite" aria-atomic="true" className="sr-only" id="app-shell-status-region">

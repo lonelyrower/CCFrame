@@ -6,16 +6,23 @@ import './globals.css'
 import { Providers } from './providers'
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+  preload: true,
+})
 const notoSansSC = Noto_Sans_SC({
   subsets: ['latin'],
   variable: '--font-noto-sans-sc',
   display: 'swap',
+  preload: true,
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
-  title: 'CC Frame - Creative Camera',
-  description: 'CC Frame 是一个聚焦摄影作品展示与资源管理的现代平台。',
+  title: 'CC Frame - 我的摄影时光',
+  description: 'CC Frame 是一个简洁优雅的个人相册，记录生活中的美好瞬间，分享摄影路上的点点滴滴。',
   manifest: '/manifest.webmanifest',
   themeColor: '#6366f1',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',

@@ -59,6 +59,12 @@ const baseConfig = {
     serverComponentsExternalPackages: ['sharp', 'exifr'],
     optimizePackageImports: ['lucide-react', '@aws-sdk/client-s3'],
     webVitalsAttribution: ['CLS', 'FCP', 'FID', 'INP', 'LCP', 'TTFB'],
+    // 优化资源加载
+    fetchCacheKeyPrefix: 'cc-frame-',
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
     // ���������Ż����������ٹ���
     ...(process.env.NODE_ENV === 'development' && {
       optimizeCss: false,
@@ -102,6 +108,47 @@ const baseConfig = {
           },
         ],
       },
+      ...(process.env.NODE_ENV === 'production' ? [
+        {
+          source: '/(.*)',
+          headers: [
+            {
+              key: 'X-Frame-Options',
+              value: 'DENY',
+            },
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff',
+            },
+            {
+              key: 'Referrer-Policy',
+              value: 'strict-origin-when-cross-origin',
+            },
+            {
+              key: 'Cross-Origin-Opener-Policy',
+              value: 'same-origin',
+            },
+            {
+              key: 'Cross-Origin-Embedder-Policy',
+              value: 'require-corp',
+            },
+          ],
+        },
+      ] : [
+        {
+          source: '/(.*)',
+          headers: [
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff',
+            },
+            {
+              key: 'Referrer-Policy',
+              value: 'no-referrer-when-downgrade',
+            },
+          ],
+        },
+      ]),
     ]
   },
 }
