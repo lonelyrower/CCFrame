@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server'
 
-/**
- * 安全响应头配置
- */
-export const SECURITY_HEADERS = {
-  // 内容安全策略
+const BASE_SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js 需要 unsafe-inline 和 unsafe-eval
-    "style-src 'self' 'unsafe-inline'", // Tailwind CSS 需要 unsafe-inline
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     "connect-src 'self' https:",
@@ -19,52 +15,49 @@ export const SECURITY_HEADERS = {
     "frame-ancestors 'none'",
     "form-action 'self'",
     "base-uri 'self'",
-    "upgrade-insecure-requests"
+    'upgrade-insecure-requests'
   ].join('; '),
-
-  // 防止点击劫持
   'X-Frame-Options': 'DENY',
-
-  // 防止 MIME 类型嗅探
   'X-Content-Type-Options': 'nosniff',
-
-  // XSS 保护
   'X-XSS-Protection': '1; mode=block',
-
-  // 强制 HTTPS
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-
-  // 引用策略
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-
-  // 权限策略
   'Permissions-Policy': [
     'camera=()',
     'microphone=()',
     'geolocation=()',
     'interest-cohort=()'
   ].join(', '),
-
-  // 跨域策略
-  'Cross-Origin-Embedder-Policy': 'credentialless',
-  'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Resource-Policy': 'same-origin'
 }
 
-/**
- * 为响应添加安全头
- */
+const PROD_ONLY_SECURITY_HEADERS: Record<string, string> = {
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'Cross-Origin-Embedder-Policy': 'credentialless',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin',
+}
+
+function resolveSecurityHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { ...BASE_SECURITY_HEADERS }
+
+  if (process.env.NODE_ENV === 'production') {
+    Object.assign(headers, PROD_ONLY_SECURITY_HEADERS)
+
+    if (process.env.FORCE_HTTPS === 'false') {
+      delete headers['Strict-Transport-Security']
+    }
+  }
+
+  return headers
+}
+
 export function addSecurityHeaders(response: NextResponse): NextResponse {
-  Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
+  Object.entries(resolveSecurityHeaders()).forEach(([key, value]) => {
     response.headers.set(key, value)
   })
 
   return response
 }
 
-/**
- * 创建带安全头的响应
- */
 export function createSecureResponse(
   body?: BodyInit | null,
   init?: ResponseInit
@@ -73,9 +66,6 @@ export function createSecureResponse(
   return addSecurityHeaders(response)
 }
 
-/**
- * JSON 响应包装器，自动添加安全头
- */
 export function secureJsonResponse(
   data: any,
   status: number = 200,
