@@ -52,18 +52,29 @@ export function PublicHeader() {
       >
         <Link
           href="/"
-          className={cn(
-            'group flex items-center gap-3 font-display text-lg font-semibold text-text-primary transition hover:text-primary',
-          )}
+          className="flex items-center gap-3 font-bold text-xl text-text-primary group"
           aria-label="Go to home"
         >
-          <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/90 to-accent/90 text-primary-foreground shadow-floating group-hover:shadow-surface">
-            <span className="text-base font-bold">CC</span>
-          </span>
-          <span className="leading-tight">
-            CC Frame
-            <span className="block text-xs font-normal text-text-secondary">我的摄影时光</span>
-          </span>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-lg blur-sm opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="relative bg-gradient-to-r from-primary to-accent p-2 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 3v18"/>
+                <path d="m16.24 7.76-8.48 8.48"/>
+                <path d="m7.76 7.76 8.48 8.48"/>
+                <path d="M3 12h18"/>
+              </svg>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              CC Frame
+            </span>
+            <span className="text-xs text-text-secondary -mt-1 font-normal">
+              个人相册
+            </span>
+          </div>
         </Link>
 
         <div className="hidden flex-1 items-center justify-center gap-4 lg:flex xl:gap-6">

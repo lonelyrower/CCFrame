@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { unstable_noStore as noStore } from 'next/cache'
+import { headers } from 'next/headers'
 
 import {
   LandingHero,
@@ -18,7 +19,31 @@ import { getImageUrl } from '@/lib/utils'
 
 const landingTitle = 'CC Frame · 我的摄影时光'
 const landingDescription = '记录生活中的美好瞬间，分享摄影路上的点点滴滴。一个简洁优雅的个人相册，让每一张照片都有它的故事。'
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://2.135.147.52'
+
+function getSiteUrl() {
+  // 优先使用环境变量
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL
+  }
+
+  // 生产环境尝试从请求头获取
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const headersList = headers()
+      const host = headersList.get('host')
+      const proto = headersList.get('x-forwarded-proto') || 'https'
+      if (host) {
+        return `${proto}://${host}`
+      }
+    } catch {
+      // headers() 在某些情况下可能无法使用
+    }
+  }
+
+  // 开发环境默认值
+  return 'http://localhost:3000'
+}
+
 const ogImage = '/icons/icon-512.png'
 
 export const metadata: Metadata = {
@@ -60,6 +85,7 @@ export default async function HomePage() {
     Promise.resolve(getSemanticConfig()),
   ])
 
+  const siteUrl = getSiteUrl()
   const toAbsolute = (path: string) => (path.startsWith('http') ? path : `${siteUrl}${path}`)
 
   const structuredData = {
