@@ -69,8 +69,8 @@ export default function DuplicatesPage() {
         <AnimateOnScroll variants={fadeInScale}>
           <Surface tone="panel" padding="lg" className="shadow-subtle flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">�ظ�/���� ��Ƭ����</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">���ڸ�֪��ϣ���ƶȣ�����ɾ�����ั��</p>
+              <h1 className="text-2xl font-bold text-text-primary dark:text-text-inverted">�ظ�/���� ��Ƭ����</h1>
+              <p className="text-sm text-text-secondary dark:text-text-muted">���ڸ�֪��ϣ���ƶȣ�����ɾ�����ั��</p>
             </div>
             <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
               <label>��ֵ</label>
@@ -97,18 +97,18 @@ export default function DuplicatesPage() {
         </AnimateOnScroll>
 
         {clusters.length === 0 ? (
-          <AnimateOnScroll variants={fadeInScale} delay={0.08} className="text-center text-gray-500">δ�����ظ�/���Ƶ���Ƭ</AnimateOnScroll>
+          <AnimateOnScroll variants={fadeInScale} delay={0.08} className="text-center text-text-muted">δ�����ظ�/���Ƶ���Ƭ</AnimateOnScroll>
         ) : (
           <AnimateOnScroll variants={fadeInScale} delay={0.08} className="space-y-6">
             {clusters.map((cluster, index) => (
               <AnimateOnScroll key={cluster.primaryId ?? index} variants={fadeInScale}>
                 <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">��������<span className="font-medium">{cluster.primaryId}</span></div>
+                  <div className="text-sm text-text-secondary dark:text-text-muted">��������<span className="font-medium">{cluster.primaryId}</span></div>
                   <AnimateOnScroll variants={clusterStagger} className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
                     {cluster.ids.map((id) => (
                       <AnimateOnScroll key={id} variants={listItemRise} className="block">
                         <label
-                          className={`relative block aspect-square overflow-hidden rounded border ${id === cluster.primaryId ? 'border-green-500' : 'border-gray-200 dark:border-gray-700'}`}
+                          className={`relative block aspect-square overflow-hidden rounded border ${id === cluster.primaryId ? 'border-green-500' : 'border-surface-outline/40 dark:border-surface-outline/70'}`}
                         >
                           <Image
                             src={`/api/image/${id}/thumb?format=webp`}
@@ -126,7 +126,7 @@ export default function DuplicatesPage() {
                             />
                           )}
                           {id === cluster.primaryId && (
-                            <span className="absolute top-1 right-1 rounded bg-green-500 px-1 text-xs text-white">����</span>
+                            <span className="absolute top-1 right-1 rounded bg-green-500 px-1 text-xs text-text-inverted">����</span>
                           )}
                         </label>
                       </AnimateOnScroll>

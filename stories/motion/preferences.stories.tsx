@@ -10,7 +10,7 @@ const meta: Meta = {
   decorators: [
     (Story) => (
       <PreferenceProvider>
-        <div className="min-h-screen bg-black/90 p-10 text-white">
+        <div className="min-h-screen bg-contrast-surface/90 p-10 text-text-inverted">
           <Story />
         </div>
       </PreferenceProvider>
@@ -27,10 +27,10 @@ function PreferenceDemo() {
   const [log, setLog] = useState<string[]>([])
 
   return (
-    <Surface tone="panel" className="max-w-xl space-y-4 p-6 text-sm text-white">
+    <Surface tone="panel" className="max-w-xl space-y-4 p-6 text-sm text-text-inverted">
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Reduced Motion</h3>
-        <p className="text-xs text-white/60">
+        <p className="text-xs text-text-inverted/60">
           当前状态：{reducedMotion ? '静态' : '动效开启'}（{reducedMotionFromSystem ? '系统偏好' : '用户自定义'}）
         </p>
         <div className="flex gap-2">
@@ -45,7 +45,7 @@ function PreferenceDemo() {
 
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Audio Preference</h3>
-        <p className="text-xs text-white/60">默认静音，通过按钮切换是否启用音频。</p>
+        <p className="text-xs text-text-inverted/60">默认静音，通过按钮切换是否启用音频。</p>
         <div className="flex gap-2">
           <Button size="sm" variant={audioEnabled ? 'default' : 'secondary'} onClick={() => setAudioEnabled(true)}>
             开启音频
@@ -58,7 +58,7 @@ function PreferenceDemo() {
 
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">日志记录</h3>
-        <div className="rounded bg-black/50 p-3 text-xs text-white/70">
+        <div className="rounded bg-contrast-surface/50 p-3 text-xs text-text-inverted/70">
           {log.length === 0 ? <p>暂无操作</p> : log.map((item, index) => <p key={index}>{item}</p>)}
         </div>
         <Button

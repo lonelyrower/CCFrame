@@ -50,7 +50,7 @@ const GridItem = React.memo<{
       className="cursor-pointer group"
       onClick={() => onPhotoClick(photo, index)}
     >
-      <div className="relative w-full h-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+      <div className="relative w-full h-full overflow-hidden rounded-lg bg-surface-panel dark:bg-surface-panel">
         {/* Blur hash placeholder */}
         {photo.blurhash && (
           <div
@@ -88,15 +88,15 @@ const GridItem = React.memo<{
         />
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200" />
+        <div className="absolute inset-0 bg-contrast-surface bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200" />
 
         {/* Photo info overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <p className="text-white text-sm font-medium truncate">
+          <p className="text-text-inverted text-sm font-medium truncate">
             {photo.album?.title || photo.tags?.[0]?.tag?.name || `Photo ${index + 1}`}
           </p>
           {photo.takenAt && (
-            <p className="text-white/80 text-xs">
+            <p className="text-text-inverted/80 text-xs">
               {new Date(photo.takenAt).toLocaleDateString('zh-CN')}
             </p>
           )}
@@ -169,7 +169,7 @@ export const VirtualizedGallery: React.FC<VirtualizedGalleryProps> = ({
 
   if (photos.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-center h-64 text-text-muted dark:text-text-muted">
         <p>暂无照片</p>
       </div>
     )

@@ -75,14 +75,14 @@ export function ErrorState({
         </div>
 
         <h3 className={cn(
-          "font-semibold mb-2 text-gray-900 dark:text-white",
+          "font-semibold mb-2 text-text-primary dark:text-text-inverted",
           sizeConfig.title
         )}>
           {title}
         </h3>
 
         <p className={cn(
-          "text-gray-600 dark:text-gray-400 mb-6",
+          "text-text-secondary dark:text-text-muted mb-6",
           sizeConfig.message
         )}>
           {message}
@@ -90,10 +90,10 @@ export function ErrorState({
 
         {error && process.env.NODE_ENV === 'development' && (
           <details className="mb-6 text-left">
-            <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+            <summary className="cursor-pointer text-sm text-text-muted hover:text-text-secondary dark:hover:text-text-muted">
               查看错误详情
             </summary>
-            <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-auto text-red-600 dark:text-red-400">
+            <pre className="mt-2 text-xs bg-surface-panel dark:bg-surface-panel p-3 rounded-lg overflow-auto text-red-600 dark:text-red-400">
               {typeof error === 'string' ? error : error.message}
               {typeof error !== 'string' && error.stack && '\n\n' + error.stack}
             </pre>

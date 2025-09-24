@@ -78,23 +78,23 @@ export function ThemeAudioController({ soundtrack }: ThemeAudioControllerProps) 
   }
 
   return (
-    <div className="flex w-full flex-col gap-4 rounded-3xl border border-white/15 bg-black/40 p-5">
+    <div className="flex w-full flex-col gap-4 rounded-3xl border border-contrast-outline/15 bg-contrast-surface/40 p-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-white/50">Soundtrack</p>
-          <p className="mt-2 text-base font-semibold text-white">{soundtrack.title}</p>
-          {soundtrack.artist ? <p className="text-xs text-white/60">{soundtrack.artist}</p> : null}
+          <p className="text-xs uppercase tracking-[0.3em] text-text-inverted/50">Soundtrack</p>
+          <p className="mt-2 text-base font-semibold text-text-inverted">{soundtrack.title}</p>
+          {soundtrack.artist ? <p className="text-xs text-text-inverted/60">{soundtrack.artist}</p> : null}
         </div>
         <button
           type="button"
           onClick={togglePlay}
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:-translate-y-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-contrast-outline/20 bg-surface-panel/10 text-text-inverted transition hover:-translate-y-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </button>
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-white/60">
+      <div className="flex items-center gap-3 text-xs text-text-inverted/60">
         <input
           type="range"
           min={0}
@@ -103,7 +103,7 @@ export function ThemeAudioController({ soundtrack }: ThemeAudioControllerProps) 
           value={progressRatio * 100}
           onChange={(event) => handleSeek(Number.parseFloat(event.target.value))}
           aria-label="Soundtrack progress"
-          className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10"
+          className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-surface-panel/10"
         />
         <span>{formattedTime}</span>
       </div>
@@ -112,7 +112,7 @@ export function ThemeAudioController({ soundtrack }: ThemeAudioControllerProps) 
         <button
           type="button"
           onClick={toggleMute}
-          className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          className="flex items-center gap-2 rounded-full border border-contrast-outline/20 px-4 py-2 text-xs uppercase tracking-[0.3em] text-text-inverted/70 transition hover:text-text-inverted focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
         >
           {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           {isMuted ? '静音' : '音量'}
@@ -125,7 +125,7 @@ export function ThemeAudioController({ soundtrack }: ThemeAudioControllerProps) 
           value={volume}
           onChange={(event) => handleVolumeChange(Number.parseFloat(event.target.value))}
           aria-label="Soundtrack volume"
-          className={cn('h-1 w-32 cursor-pointer appearance-none rounded-full bg-white/10', isMuted ? 'opacity-40' : 'opacity-100')}
+          className={cn('h-1 w-32 cursor-pointer appearance-none rounded-full bg-surface-panel/10', isMuted ? 'opacity-40' : 'opacity-100')}
         />
       </div>
 

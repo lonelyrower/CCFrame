@@ -98,7 +98,7 @@ export const PhotosClientGallerySWR = memo<PhotosClientGallerySWRProps>(function
         <div ref={sentinelRef} className="h-10 w-full" aria-hidden="true" />
 
         {isLoadingMore && (
-          <div className="py-4 text-center text-sm text-gray-500">
+          <div className="py-4 text-center text-sm text-text-muted">
             Loading more photos...
           </div>
         )}
@@ -117,13 +117,13 @@ export const PhotosClientGallerySWR = memo<PhotosClientGallerySWRProps>(function
         )}
 
         {completed && photos.length > 0 && (
-          <div className="py-4 text-center text-xs text-gray-400">
+          <div className="py-4 text-center text-xs text-text-muted">
             All photos loaded ({total || totalLoaded})
           </div>
         )}
 
         {photos.length === 0 && !isLoading && !error && (
-          <div className="py-8 text-center text-gray-500">
+          <div className="py-8 text-center text-text-muted">
             <p>No photos found</p>
             {(album || tag || search) && (
               <button

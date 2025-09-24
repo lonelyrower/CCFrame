@@ -185,7 +185,7 @@ function PhotoCard({
       onHoverEnd={() => setHover(false)}
       aria-label={accessibleLabel}
     >
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 shadow-lg hover:shadow-2xl transition-shadow duration-500">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-surface-panel/90 to-surface-panel/70 dark:from-surface-panel/80 dark:to-surface-canvas/90 shadow-surface hover:shadow-floating transition-shadow duration-500">
 
         {/* 照片 */}
         <div className="relative overflow-hidden">
@@ -196,7 +196,7 @@ function PhotoCard({
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <div className="animate-pulse bg-gray-300 dark:bg-gray-600 w-8 h-8 rounded-full" />
+                <div className="animate-pulse bg-surface-panel dark:bg-surface-panel w-8 h-8 rounded-full" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -240,14 +240,14 @@ function PhotoCard({
         </div>
 
         {/* 遮罩 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-contrast-surface/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* 信息 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: hover ? 1 : 0, y: hover ? 0 : 20 }}
           transition={{ duration: 0.3 }}
-          className="absolute bottom-0 left-0 right-0 p-4 text-white"
+          className="absolute bottom-0 left-0 right-0 p-4 text-text-inverted"
         >
           {photo.album?.title && (
             <h3 className="text-sm font-medium truncate mb-1">
@@ -260,13 +260,13 @@ function PhotoCard({
               {photo.tags.slice(0, 2).map(({ tag }) => (
                 <span
                   key={tag.id}
-                  className="px-2 py-1 text-xs font-medium bg-white/20 rounded-full backdrop-blur-sm"
+                  className="px-2 py-1 text-xs font-medium bg-surface-panel/20 rounded-full backdrop-blur-sm"
                 >
                   {tag.name}
                 </span>
               ))}
               {photo.tags.length > 2 && (
-                <span className="px-2 py-1 text-xs font-medium bg-white/20 rounded-full backdrop-blur-sm">
+                <span className="px-2 py-1 text-xs font-medium bg-surface-panel/20 rounded-full backdrop-blur-sm">
                   +{photo.tags.length - 2}
                 </span>
               )}
@@ -295,7 +295,7 @@ function EnhancedGallerySkeleton() {
           return (
             <div
               key={i}
-              className="animate-pulse bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-xl"
+              className="animate-pulse bg-gradient-to-br from-surface-panel/80 to-surface-panel/70 dark:from-surface-panel/70 dark:to-surface-canvas/80 rounded-xl"
               style={{
                 height: `${height}px`,
                 animationDelay: `${i * 80}ms`

@@ -23,7 +23,7 @@ export function AnimatedThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="relative w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+      <div className="relative w-16 h-8 bg-surface-panel dark:bg-surface-panel rounded-full animate-pulse" />
     )
   }
 
@@ -65,7 +65,7 @@ export function AnimatedThemeToggle() {
             ? 'opacity-0 transform translate-x-8 scale-50'
             : 'opacity-100 transform translate-x-0 scale-100'
           }
-          bg-gradient-to-br from-yellow-300 to-orange-400 shadow-lg
+          bg-gradient-to-br from-yellow-300 to-orange-400 shadow-surface
         `}
       >
         {/* 太阳光线 */}
@@ -100,7 +100,7 @@ export function AnimatedThemeToggle() {
             ? 'opacity-100 transform translate-x-0 scale-100'
             : 'opacity-0 transform -translate-x-8 scale-50'
           }
-          bg-gradient-to-br from-slate-200 to-slate-300 shadow-lg
+          bg-gradient-to-br from-slate-200 to-slate-300 shadow-surface
         `}
       >
         {/* 月亮阴影 */}
@@ -125,7 +125,7 @@ export function AnimatedThemeToggle() {
             <div
               key={i}
               className={`
-                absolute w-1 h-1 bg-white rounded-full opacity-0
+                absolute w-1 h-1 bg-surface-panel rounded-full opacity-0
                 ${isDark ? 'animate-twinkle' : ''}
               `}
               style={{
@@ -142,9 +142,9 @@ export function AnimatedThemeToggle() {
       {!isDark && (
         <div className="absolute top-2 left-8 opacity-60">
           <div className="relative">
-            <div className="w-3 h-1.5 bg-white rounded-full" />
-            <div className="absolute -top-0.5 left-1 w-2 h-1.5 bg-white rounded-full" />
-            <div className="absolute -top-0.5 right-0.5 w-1.5 h-1 bg-white rounded-full" />
+            <div className="w-3 h-1.5 bg-surface-panel rounded-full" />
+            <div className="absolute -top-0.5 left-1 w-2 h-1.5 bg-surface-panel rounded-full" />
+            <div className="absolute -top-0.5 right-0.5 w-1.5 h-1 bg-surface-panel rounded-full" />
           </div>
         </div>
       )}

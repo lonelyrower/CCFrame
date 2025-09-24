@@ -74,7 +74,7 @@ export const FilmstripView = memo(function FilmstripView({ entries, activeId, on
   return (
     <div
       ref={containerRef}
-      className="relative h-28 w-full cursor-grab overflow-x-auto overflow-y-hidden rounded-3xl border border-white/15 bg-black/40 p-3 shadow-inner active:cursor-grabbing"
+      className="relative h-28 w-full cursor-grab overflow-x-auto overflow-y-hidden rounded-3xl border border-contrast-outline/15 bg-contrast-surface/40 p-3 shadow-inner active:cursor-grabbing"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={clearDragState}
@@ -93,7 +93,7 @@ export const FilmstripView = memo(function FilmstripView({ entries, activeId, on
               <motion.button
                 key={entry.id}
                 type="button"
-                className="absolute top-0 h-22 overflow-hidden rounded-xl border border-white/10 bg-black/50"
+                className="absolute top-0 h-22 overflow-hidden rounded-xl border border-contrast-outline/10 bg-contrast-surface/50"
                 style={{ left: position.left, width: position.width }}
                 animate={{ opacity: isActive ? 1 : 0.75 }}
                 whileHover={{ opacity: 1 }}

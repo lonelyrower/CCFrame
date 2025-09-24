@@ -83,7 +83,7 @@ export function PhotoFilmstrip() {
     <div className="pointer-events-auto relative">
       <div
         ref={containerRef}
-        className="flex gap-2 overflow-x-auto rounded-2xl bg-black/40 p-2 shadow-inner backdrop-blur touch-pan-x snap-x snap-mandatory"
+        className="flex gap-2 overflow-x-auto rounded-2xl bg-contrast-surface/40 p-2 shadow-inner backdrop-blur touch-pan-x snap-x snap-mandatory"
         onWheel={handleWheel}
       >
         {slice.map((photo, i) => {
@@ -113,7 +113,7 @@ export function PhotoFilmstrip() {
                 loading="lazy"
               />
               {isActive && (
-                <span className="absolute bottom-1 right-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white shadow">
+                <span className="absolute bottom-1 right-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-text-inverted shadow">
                   {absoluteIndex + 1}
                 </span>
               )}

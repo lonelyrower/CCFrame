@@ -118,7 +118,7 @@ type BadgeTone = AdminNavigationBadge['tone']
 function getBadgeToneClass(tone: BadgeTone) {
   switch (tone) {
     case 'danger':
-      return 'border-transparent bg-red-500/90 text-white dark:bg-red-500'
+      return 'border-transparent bg-red-500/90 text-text-inverted dark:bg-red-500'
     case 'warning':
       return 'border-transparent bg-amber-200/70 text-amber-900 dark:bg-amber-300/80 dark:text-amber-950'
     case 'success':

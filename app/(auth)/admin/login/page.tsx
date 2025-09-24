@@ -63,18 +63,18 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-surface-canvas px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
             <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-full">
-              <Camera className="h-8 w-8 text-white" />
+              <Camera className="h-8 w-8 text-text-inverted" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-3xl font-bold text-text-primary">
             管理员登录
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">登录后可管理你的相册</p>
+          <p className="mt-2 text-sm text-text-secondary">登录后可管理你的相册</p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -88,7 +88,7 @@ function LoginForm() {
               type="email"
               autoComplete="email"
               required
-              className="relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-white dark:bg-gray-800"
+              className="relative block w-full px-3 py-2 border border-surface-outline/60 placeholder:text-text-muted text-text-primary rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-surface-panel"
               placeholder="邮箱"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -105,7 +105,7 @@ function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               required
-              className="relative block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-white dark:bg-gray-800"
+              className="relative block w-full px-3 py-2 pr-10 border border-surface-outline/60 placeholder:text-text-muted text-text-primary rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-surface-panel"
               placeholder="密码"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -116,9 +116,9 @@ function LoginForm() {
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400" />
+                <EyeOff className="h-5 w-5 text-text-muted" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400" />
+                <Eye className="h-5 w-5 text-text-muted" />
               )}
             </button>
           </div>
@@ -135,12 +135,12 @@ function LoginForm() {
                 autoComplete="one-time-code"
                 required={requiresTwoFactor}
                 maxLength={6}
-                className="relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-center tracking-widest"
+                className="relative block w-full px-3 py-2 border border-surface-outline/60 placeholder:text-text-muted text-text-primary rounded-md focus:outline-none focus:ring-primary focus:border-primary bg-surface-panel text-center tracking-widest"
                 placeholder="000000"
                 value={twoFactorCode}
                 onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+              <p className="mt-1 text-xs text-text-muted text-center">
                 请输入认证器应用中的6位验证码
               </p>
             </div>
@@ -178,10 +178,10 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-surface-canvas px-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">加载中...</p>
+          <p className="mt-2 text-sm text-text-secondary">加载中...</p>
         </div>
       </div>
     }>

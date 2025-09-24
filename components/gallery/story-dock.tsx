@@ -32,7 +32,7 @@ export function StoryDock({ sequence, activeIndex, onSelect, onNext, onPrev }: S
   }, [preference])
 
   return (
-    <aside className="flex w-full flex-col gap-4 rounded-3xl border border-white/8 bg-white/5 p-6 text-white shadow-soft backdrop-blur-2xl">
+    <aside className="flex w-full flex-col gap-4 rounded-3xl border border-contrast-outline/8 bg-surface-panel/5 p-6 text-text-inverted shadow-soft backdrop-blur-2xl">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold leading-tight">{sequence.title}</h2>
@@ -53,7 +53,7 @@ export function StoryDock({ sequence, activeIndex, onSelect, onNext, onPrev }: S
             disabled={!hasAudio}
             aria-pressed={audioEnabled}
             aria-label={hasAudio ? (audioEnabled ? '暂停音频讲解' : '开启音频讲解') : '暂无音频'}
-            className={cn('rounded-full text-white hover:bg-white/20', audioEnabled ? 'bg-white/20' : 'bg-transparent', !hasAudio && 'opacity-40')}
+            className={cn('rounded-full text-text-inverted hover:bg-surface-panel/20', audioEnabled ? 'bg-surface-panel/20' : 'bg-transparent', !hasAudio && 'opacity-40')}
             onClick={() => {
               if (!hasAudio) return
               if (preference) {
@@ -77,9 +77,9 @@ export function StoryDock({ sequence, activeIndex, onSelect, onNext, onPrev }: S
       </div>
 
       {sequence.tags && sequence.tags.length > 0 ? (
-        <div className="flex flex-wrap gap-2 text-[11px] text-white/70">
+        <div className="flex flex-wrap gap-2 text-[11px] text-text-inverted/70">
           {sequence.tags.slice(0, 6).map((tag) => (
-            <span key={tag} className="rounded-full border border-white/15 bg-white/10 px-3 py-1">
+            <span key={tag} className="rounded-full border border-contrast-outline/15 bg-surface-panel/10 px-3 py-1">
               #{tag}
             </span>
           ))}

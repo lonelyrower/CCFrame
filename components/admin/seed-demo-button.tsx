@@ -105,9 +105,9 @@ export function SeedDemoButton({ count: propCount }: { count?: number }) {
       </div>
 
       {showOptions && (
-        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[120px]">
+        <div className="absolute top-full left-0 mt-1 bg-surface-panel dark:bg-surface-panel border border-surface-outline/40 dark:border-surface-outline/70 rounded-lg shadow-surface z-10 min-w-[120px]">
           <div className="p-2">
-            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">选择数量:</div>
+            <div className="text-xs font-medium text-text-secondary dark:text-text-muted mb-2">选择数量:</div>
             {countOptions.map((option) => (
               <button
                 key={option}
@@ -115,18 +115,18 @@ export function SeedDemoButton({ count: propCount }: { count?: number }) {
                   setSelectedCount(option)
                   setShowOptions(false)
                 }}
-                className={`w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                className={`w-full text-left px-2 py-1 text-sm rounded hover:bg-surface-panel dark:hover:bg-surface-panel transition-colors ${
                   selectedCount === option 
                     ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' 
-                    : 'text-gray-700 dark:text-gray-300'
+                    : 'text-text-secondary dark:text-text-muted'
                 }`}
               >
                 {option} 张
               </button>
             ))}
             
-            <div className="border-t border-gray-200 dark:border-gray-600 mt-2 pt-2">
-              <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="border-t border-surface-outline/40 dark:border-surface-outline/70 mt-2 pt-2">
+              <div className="text-xs text-text-muted dark:text-text-muted">
                 💡 建议首次导入3-6张
               </div>
             </div>

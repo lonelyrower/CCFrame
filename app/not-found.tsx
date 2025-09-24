@@ -69,7 +69,7 @@ export default function NotFound() {
         <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
           {/* 彩蛋提示 */}
           {showEasterEgg && (
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-full shadow-2xl animate-bounce">
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gradient-to-r from-yellow-400 to-orange-500 text-text-inverted px-6 py-3 rounded-full shadow-floating animate-bounce">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5" />
                 <span className="font-medium">📸 你发现了隐藏功能！试试点击相机图标 5 次！</span>
@@ -85,12 +85,12 @@ export default function NotFound() {
 
               {/* 主相机容器 */}
               <div
-                className="relative glass-card rounded-3xl p-12 shadow-2xl cursor-pointer transform hover:scale-105 transition-all duration-300"
+                className="relative glass-card rounded-3xl p-12 shadow-floating cursor-pointer transform hover:scale-105 transition-all duration-300"
                 onClick={handleLogoClick}
               >
                 <div className="relative">
                   {/* 主相机图标 */}
-                  <Camera className="w-24 h-24 text-gray-600 dark:text-gray-400 mx-auto mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                  <Camera className="w-24 h-24 text-text-secondary dark:text-text-muted mx-auto mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
 
                   {/* 闪光效果 */}
                   <div className="absolute top-2 right-2 w-4 h-4 bg-yellow-400 rounded-full animate-ping" />
@@ -99,7 +99,7 @@ export default function NotFound() {
                   {/* 404 标记 */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="bg-red-500/90 backdrop-blur-sm rounded-full p-3">
-                      <FileX className="w-8 h-8 text-white" />
+                      <FileX className="w-8 h-8 text-text-inverted" />
                     </div>
                   </div>
 
@@ -117,7 +117,7 @@ export default function NotFound() {
                   <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     CC Frame
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">创意相册</p>
+                  <p className="text-sm text-text-muted dark:text-text-muted">创意相册</p>
                 </div>
               </div>
             </div>
@@ -130,14 +130,14 @@ export default function NotFound() {
             </h1>
 
             <div className="glass-card rounded-2xl p-8 max-w-lg mx-auto">
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-3">
+              <h3 className="text-3xl font-bold text-text-primary dark:text-text-inverted mb-4 flex items-center justify-center gap-3">
                 <Camera className="w-8 h-8 text-blue-600" />
                 照片失焦了...
               </h3>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+              <p className="text-lg text-text-secondary dark:text-text-muted mb-4 leading-relaxed">
                 看起来这个页面跑到镜头之外了 📸
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-text-muted dark:text-text-muted">
                 不过没关系，让我们重新对焦，寻找更精彩的画面！
               </p>
             </div>
@@ -146,18 +146,18 @@ export default function NotFound() {
           {/* 操作按钮 */}
           <div className="flex flex-col sm:flex-row gap-6 mb-16">
             <Link href="/">
-              <button className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
+              <button className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-text-inverted font-semibold py-4 px-8 rounded-2xl shadow-floating hover:shadow-floating transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity" />
                 <div className="relative flex items-center gap-3">
                   <Home className="w-6 h-6 group-hover:scale-110 transition-transform" />
                   <span className="text-lg">回到首页</span>
                 </div>
-                <div className="absolute inset-0 border-2 border-white/20 rounded-2xl group-hover:border-white/40 transition-colors" />
+                <div className="absolute inset-0 border-2 border-contrast-outline/20 rounded-2xl group-hover:border-contrast-outline/40 transition-colors" />
               </button>
             </Link>
 
             <Link href="/photos">
-              <button className="group relative overflow-hidden glass-card hover:bg-white/90 dark:hover:bg-gray-700/90 text-gray-700 dark:text-gray-300 font-semibold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
+              <button className="group relative overflow-hidden glass-card hover:bg-surface-panel/90 dark:hover:bg-surface-panel/90 text-text-secondary dark:text-text-muted font-semibold py-4 px-8 rounded-2xl shadow-surface hover:shadow-floating transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
                 <div className="relative flex items-center gap-3">
                   <Grid3X3 className="w-6 h-6 group-hover:scale-110 transition-transform text-blue-600" />
                   <span className="text-lg">浏览照片</span>
@@ -168,7 +168,7 @@ export default function NotFound() {
 
           {/* 快速导航卡片 */}
           <div className="glass-card rounded-3xl p-8 max-w-2xl w-full mb-12">
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 text-center flex items-center justify-center gap-3">
+            <h3 className="text-2xl font-bold text-text-primary dark:text-text-muted mb-6 text-center flex items-center justify-center gap-3">
               <Aperture className="w-7 h-7 text-blue-600 animate-spin" style={{ animationDuration: '8s' }} />
               快速导航
             </h3>
@@ -176,11 +176,11 @@ export default function NotFound() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Link
                 href="/timeline"
-                className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 hover:from-blue-100 hover:to-indigo-200 dark:hover:from-blue-800/30 dark:hover:to-indigo-800/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 hover:from-blue-100 hover:to-indigo-200 dark:hover:from-blue-800/30 dark:hover:to-indigo-800/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-surface"
               >
                 <Calendar className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">时间线</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">按时间浏览照片</p>
+                <h4 className="font-semibold text-text-primary dark:text-text-muted mb-1">时间线</h4>
+                <p className="text-sm text-text-secondary dark:text-text-muted">按时间浏览照片</p>
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Sparkles className="w-4 h-4 text-blue-400" />
                 </div>
@@ -188,11 +188,11 @@ export default function NotFound() {
 
               <Link
                 href="/tags"
-                className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 hover:from-purple-100 hover:to-pink-200 dark:hover:from-purple-800/30 dark:hover:to-pink-800/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 hover:from-purple-100 hover:to-pink-200 dark:hover:from-purple-800/30 dark:hover:to-pink-800/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-surface"
               >
                 <Tag className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">标签分类</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">按标签查找照片</p>
+                <h4 className="font-semibold text-text-primary dark:text-text-muted mb-1">标签分类</h4>
+                <p className="text-sm text-text-secondary dark:text-text-muted">按标签查找照片</p>
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Sparkles className="w-4 h-4 text-purple-400" />
                 </div>
@@ -200,11 +200,11 @@ export default function NotFound() {
 
               <Link
                 href="/photos"
-                className="group relative overflow-hidden bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 hover:from-green-100 hover:to-emerald-200 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                className="group relative overflow-hidden bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 hover:from-green-100 hover:to-emerald-200 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-surface"
               >
                 <Grid3X3 className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">全部照片</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">浏览所有内容</p>
+                <h4 className="font-semibold text-text-primary dark:text-text-muted mb-1">全部照片</h4>
+                <p className="text-sm text-text-secondary dark:text-text-muted">浏览所有内容</p>
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Sparkles className="w-4 h-4 text-green-400" />
                 </div>
@@ -215,13 +215,13 @@ export default function NotFound() {
           {/* 底部引用 */}
           <div className="text-center space-y-4">
             <div className="glass-card rounded-2xl px-6 py-4 inline-block">
-              <p className="text-gray-600 dark:text-gray-400 italic">
+              <p className="text-text-secondary dark:text-text-muted italic">
                 有时候迷路，是为了发现更美的风景
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">— 某位摄影师的箴言</p>
+              <p className="text-sm text-text-muted dark:text-text-muted mt-1">— 某位摄影师的箴言</p>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-600">
+            <div className="flex items-center justify-center gap-2 text-xs text-text-muted dark:text-text-secondary">
               <Camera className="w-3 h-3" />
               <span>错误代码: 404</span>
               <span>•</span>

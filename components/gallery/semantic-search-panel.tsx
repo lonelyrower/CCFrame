@@ -73,12 +73,12 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
 
   if (disabledReason) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 p-6">
-        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+      <div className="rounded-xl border border-dashed border-surface-outline/60 dark:border-surface-outline/70 bg-surface-canvas dark:bg-surface-canvas/30 p-6">
+        <div className="flex items-center gap-3 text-text-secondary dark:text-text-muted">
           <AlertCircle className="h-5 w-5" />
           <div>
             <p className="font-medium">语义搜索未启用</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{disabledReason}</p>
+            <p className="text-sm text-text-muted dark:text-text-muted">{disabledReason}</p>
           </div>
         </div>
       </div>
@@ -86,7 +86,7 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+    <div className="rounded-2xl border border-surface-outline/40 dark:border-surface-outline/70 bg-surface-panel dark:bg-surface-canvas shadow-subtle">
       <div className="p-6 md:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -94,8 +94,8 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
               <Sparkles className="h-4 w-4" />
               语义搜索 · {model || '未运行'}
             </div>
-            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">用自然语言探索照片</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <h3 className="text-2xl font-semibold text-text-primary dark:text-text-inverted mt-2">用自然语言探索照片</h3>
+            <p className="text-sm text-text-muted dark:text-text-muted mt-1">
               模式：<span className="font-medium">{mode}</span> · 支持中文/英文描述
             </p>
           </div>
@@ -113,18 +113,18 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
               <input
                 name="query"
                 defaultValue={query}
                 placeholder="例如：蓝色天空下的现代建筑"
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-10 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="w-full rounded-lg border border-surface-outline/40 dark:border-surface-outline/70 bg-surface-canvas dark:bg-surface-canvas px-10 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-text-inverted hover:bg-primary/90 transition disabled:opacity-60"
             >
               {loading ? (
                 <>
@@ -137,13 +137,13 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
           </div>
         </form>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-500">
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-text-muted">
           <span>试试：</span>
           {SUGGESTIONS.map((item) => (
             <button
               key={item}
               onClick={() => runSearch(item)}
-              className="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs hover:border-primary hover:text-primary transition"
+              className="rounded-full border border-surface-outline/40 dark:border-surface-outline/70 px-3 py-1 text-xs hover:border-primary hover:text-primary transition"
               type="button"
             >
               {item}
@@ -158,17 +158,17 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
         )}
 
         {tookMs !== null && !error && (
-          <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="mt-4 text-xs text-text-muted dark:text-text-muted">
             共找到 <span className="font-semibold">{results.length}</span> 张 · 用时 {tookMs.toFixed(0)} ms
           </div>
         )}
       </div>
 
-      <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/40 p-6">
+      <div className="border-t border-surface-outline/40 dark:border-surface-outline/70 bg-surface-canvas/80 dark:bg-surface-canvas/40 p-6">
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, idx) => (
-              <div key={idx} className="aspect-square rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div key={idx} className="aspect-square rounded-xl bg-surface-panel dark:bg-surface-panel animate-pulse" />
             ))}
           </div>
         ) : results.length > 0 ? (
@@ -176,8 +176,8 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
             {results.map((item) => {
               const percent = Math.max(0, Math.min(100, Math.round(((item.similarity + 1) / 2) * 100)))
               return (
-                <div key={item.photoId} className="group relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition">
-                  <div className="relative aspect-square bg-gray-100 dark:bg-gray-800">
+                <div key={item.photoId} className="group relative overflow-hidden rounded-xl border border-surface-outline/40 dark:border-surface-outline/70 bg-surface-panel dark:bg-surface-canvas shadow-subtle hover:shadow-surface transition">
+                  <div className="relative aspect-square bg-surface-panel dark:bg-surface-panel">
                     <Image
                       src={item.imageUrl}
                       alt={`Photo ${item.photoId}`}
@@ -186,7 +186,7 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <div className="flex items-center justify-between px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center justify-between px-3 py-2 text-xs text-text-muted dark:text-text-muted">
                     <span>#{item.photoId.slice(0, 6)}</span>
                     <span className="font-medium text-primary">{percent}%</span>
                   </div>
@@ -195,7 +195,7 @@ export function SemanticSearchPanel({ enabled, mode }: SemanticSearchPanelProps)
             })}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-text-muted dark:text-text-muted">
             输入描述开始搜索，结果会显示在这里。
           </div>
         )}

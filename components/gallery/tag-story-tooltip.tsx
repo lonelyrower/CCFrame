@@ -201,8 +201,8 @@ export function TagStoryTooltip({
       <button
         type="button"
         className={cn(
-          'rounded-full border border-white/30 bg-black/40 px-3 py-1 text-xs font-medium text-white/70 transition',
-          'hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+          'rounded-full border border-contrast-outline/30 bg-contrast-surface/40 px-3 py-1 text-xs font-medium text-text-inverted/70 transition',
+          'hover:bg-surface-panel/10 hover:text-text-inverted focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
         )}
         style={badgeStyle}
         aria-haspopup="dialog"
@@ -218,25 +218,25 @@ export function TagStoryTooltip({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.12 }}
-            className="absolute left-0 top-full z-50 mt-3 w-72 max-w-xs rounded-2xl border border-white/10 bg-black/80 p-4 shadow-2xl backdrop-blur-xl"
+            className="absolute left-0 top-full z-50 mt-3 w-72 max-w-xs rounded-2xl border border-contrast-outline/10 bg-contrast-surface/80 p-4 shadow-floating backdrop-blur-xl"
           >
             {loading ? (
-              <div className="flex items-center gap-3 text-xs text-white/70">
+              <div className="flex items-center gap-3 text-xs text-text-inverted/70">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 加载标签故事…
               </div>
             ) : error ? (
               <p className="text-xs text-red-300">{error}</p>
             ) : story ? (
-              <div className="space-y-3 text-white">
-                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-white/50">
+              <div className="space-y-3 text-text-inverted">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-text-inverted/50">
                   <Sparkles className="h-4 w-4" aria-hidden />
                   标签故事
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-white">#{story.tagName}</p>
-                  <p className="text-xs leading-relaxed text-white/70">{story.summary}</p>
-                  <p className="text-[11px] text-white/50">
+                  <p className="text-sm font-semibold text-text-inverted">#{story.tagName}</p>
+                  <p className="text-xs leading-relaxed text-text-inverted/70">{story.summary}</p>
+                  <p className="text-[11px] text-text-inverted/50">
                     {story.photoCount > 0
                       ? `收录 ${catalogNumberFormatter.format(story.photoCount)} 张作品`
                       : '尚无公开作品'}
@@ -245,7 +245,7 @@ export function TagStoryTooltip({
 
                 <button
                   type="button"
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-panel/90 px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-panel"
                   onClick={handlePrimaryAction}
                 >
                   <span>前往推荐</span>
@@ -254,20 +254,20 @@ export function TagStoryTooltip({
 
                 {recommendations.length > 1 ? (
                   <div className="space-y-2">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/50">相关标签</p>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-inverted/50">相关标签</p>
                     <div className="flex flex-wrap gap-2">
                       {recommendations.slice(1).map((item) => (
                         <button
                           key={item.id}
                           type="button"
-                          className="group inline-flex items-center gap-1 rounded-full border border-white/20 px-3 py-1 text-[11px] text-white/70 transition hover:border-white hover:bg-white/10 hover:text-white"
+                          className="group inline-flex items-center gap-1 rounded-full border border-contrast-outline/20 px-3 py-1 text-[11px] text-text-inverted/70 transition hover:border-contrast-outline hover:bg-surface-panel/10 hover:text-text-inverted"
                           onClick={() => handleRecommendationClick(item)}
                           aria-label={`查看 ${item.title}`}
                         >
                           <LinkIcon className="h-3 w-3" aria-hidden />
                           <span>{item.title}</span>
                           {item.stats ? (
-                            <span className="text-[10px] text-white/40 group-hover:text-white/60">{item.stats}</span>
+                            <span className="text-[10px] text-text-inverted/40 group-hover:text-text-inverted/60">{item.stats}</span>
                           ) : null}
                         </button>
                       ))}
@@ -276,7 +276,7 @@ export function TagStoryTooltip({
                 ) : null}
               </div>
             ) : (
-              <p className="text-xs text-white/60">暂无该标签的额外故事信息。</p>
+              <p className="text-xs text-text-inverted/60">暂无该标签的额外故事信息。</p>
             )}
           </motion.div>
         ) : null}

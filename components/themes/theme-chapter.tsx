@@ -11,14 +11,14 @@ interface ThemeChapterSectionProps {
 }
 
 export function ThemeChapterSection({ chapter, index }: ThemeChapterSectionProps) {
-  const tone = chapter.surfaceTone === 'light' ? 'text-neutral-900' : 'text-white'
-  const backgroundClass = chapter.surfaceTone === 'light' ? 'bg-white/80 text-neutral-900' : 'bg-black/50 text-white'
+  const tone = chapter.surfaceTone === 'light' ? 'text-neutral-900' : 'text-text-inverted'
+  const backgroundClass = chapter.surfaceTone === 'light' ? 'bg-surface-panel/80 text-neutral-900' : 'bg-contrast-surface/50 text-text-inverted'
 
   return (
     <section
       id={chapter.id}
       className={cn(
-        'relative scroll-mt-24 rounded-[40px] border border-white/10 p-6 shadow-2xl md:p-12',
+        'relative scroll-mt-24 rounded-[40px] border border-contrast-outline/10 p-6 shadow-floating md:p-12',
         backgroundClass,
       )}
     >
@@ -39,7 +39,7 @@ export function ThemeChapterSection({ chapter, index }: ThemeChapterSectionProps
               {chapter.metrics.map((metric) => (
                 <span
                   key={metric.label}
-                  className="flex min-w-[120px] flex-col rounded-full border border-current/10 bg-black/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-current/80"
+                  className="flex min-w-[120px] flex-col rounded-full border border-current/10 bg-contrast-surface/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-current/80"
                 >
                   <span className="text-[10px] text-current/60">{metric.label}</span>
                   <span className="text-sm font-semibold tracking-normal text-current">{metric.value}</span>
@@ -53,7 +53,7 @@ export function ThemeChapterSection({ chapter, index }: ThemeChapterSectionProps
           <div className="space-y-6 text-base leading-relaxed">
             {chapter.body?.map((paragraph, paragraphIndex) => (
               <AnimateOnScroll key={paragraphIndex}>
-                <p className={cn('text-base leading-relaxed', tone === 'text-white' ? 'text-white/80' : 'text-neutral-800/80')}>
+                <p className={cn('text-base leading-relaxed', tone === 'text-text-inverted' ? 'text-text-inverted/80' : 'text-neutral-800/80')}>
                   {paragraph}
                 </p>
               </AnimateOnScroll>
@@ -74,11 +74,11 @@ export function ThemeChapterSection({ chapter, index }: ThemeChapterSectionProps
 }
 
 function MediaCard({ asset, tone }: { asset: ThemeChapter['media'][number]; tone: string }) {
-  const borderClass = tone === 'text-white' ? 'border-white/20' : 'border-neutral-200'
+  const borderClass = tone === 'text-text-inverted' ? 'border-contrast-outline/20' : 'border-neutral-200'
 
   if (asset.type === 'image') {
     return (
-      <div className={cn('relative overflow-hidden rounded-3xl border shadow-xl', borderClass)}>
+      <div className={cn('relative overflow-hidden rounded-3xl border shadow-floating', borderClass)}>
         <Image src={asset.src} alt={asset.alt ?? ''} width={asset.width ?? 1200} height={asset.height ?? 1600} className="h-full w-full object-cover" />
       </div>
     )
@@ -86,7 +86,7 @@ function MediaCard({ asset, tone }: { asset: ThemeChapter['media'][number]; tone
 
   if (asset.type === 'video') {
     return (
-      <div className={cn('relative overflow-hidden rounded-3xl border shadow-xl', borderClass)}>
+      <div className={cn('relative overflow-hidden rounded-3xl border shadow-floating', borderClass)}>
         <video
           className="h-full w-full object-cover"
           loop={asset.loop ?? true}
@@ -102,7 +102,7 @@ function MediaCard({ asset, tone }: { asset: ThemeChapter['media'][number]; tone
   }
 
   return (
-    <div className={cn('rounded-3xl border p-6 shadow-xl', borderClass)}>
+    <div className={cn('rounded-3xl border p-6 shadow-floating', borderClass)}>
       <audio className="w-full" controls src={asset.src} />
       <p className="mt-3 text-xs text-current/60">{asset.alt ?? 'Ambient'}</p>
     </div>
@@ -114,7 +114,7 @@ function QuoteBlock({ quote, tone }: { quote: NonNullable<ThemeChapter['quote']>
     <blockquote
       className={cn(
         'rounded-3xl border-l-4 pl-6 text-lg italic',
-        tone === 'text-white' ? 'border-white/40 text-white/80' : 'border-neutral-400 text-neutral-700',
+        tone === 'text-text-inverted' ? 'border-contrast-outline/40 text-text-inverted/80' : 'border-neutral-400 text-neutral-700',
       )}
     >
       “{quote.text}”
@@ -128,7 +128,7 @@ function QuoteBlock({ quote, tone }: { quote: NonNullable<ThemeChapter['quote']>
 
 function TimelineSnippet({ timeline }: { timeline: NonNullable<ThemeChapter['timeline']> }) {
   return (
-    <div className="rounded-3xl border border-current/15 bg-black/5 p-6 text-sm text-current/70">
+    <div className="rounded-3xl border border-current/15 bg-contrast-surface/5 p-6 text-sm text-current/70">
       <p className="text-xs uppercase tracking-[0.4em] text-current/50">Timeline</p>
       <p className="mt-2 text-base font-semibold text-current">{timeline.year}</p>
       <p className="mt-1 leading-relaxed">{timeline.description}</p>

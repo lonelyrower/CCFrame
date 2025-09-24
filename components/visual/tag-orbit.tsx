@@ -62,7 +62,7 @@ export function TagOrbit({ nodes, edges, className }: TagOrbitProps) {
   }
 
   return (
-    <div ref={containerRef} className={cn('relative isolate min-h-[520px] w-full overflow-hidden rounded-[40px] border border-white/10 bg-black/20 p-6 sm:p-10', className)}>
+    <div ref={containerRef} className={cn('relative isolate min-h-[520px] w-full overflow-hidden rounded-[40px] border border-contrast-outline/10 bg-contrast-surface/20 p-6 sm:p-10', className)}>
       <BackgroundGlimmer />
       <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         {edges.map((edge) => {
@@ -98,7 +98,7 @@ export function TagOrbit({ nodes, edges, className }: TagOrbitProps) {
           <button
             key={node.id}
             type="button"
-            className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/15 bg-white/10 p-3 text-white shadow-lg backdrop-blur-xl transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-contrast-outline/15 bg-surface-panel/10 p-3 text-text-inverted shadow-surface backdrop-blur-xl transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             style={{ left: `${node.left}%`, top: `${node.top}%`, width: size, height: size }}
             onMouseEnter={(event) => handleNodeEnter(node.id, event)}
             onFocus={(event) => handleNodeEnter(node.id, event)}
@@ -114,7 +114,7 @@ export function TagOrbit({ nodes, edges, className }: TagOrbitProps) {
             }}
           >
             <span
-              className="pointer-events-none block h-full w-full rounded-full border border-white/20 bg-black/40 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 transition group-hover:scale-105"
+              className="pointer-events-none block h-full w-full rounded-full border border-contrast-outline/20 bg-contrast-surface/40 text-xs font-semibold uppercase tracking-[0.3em] text-text-inverted/80 transition group-hover:scale-105"
               style={node.color ? { borderColor: node.color, color: node.color } : undefined}
             >
               <span className="flex h-full w-full items-center justify-center px-3 text-center leading-tight">

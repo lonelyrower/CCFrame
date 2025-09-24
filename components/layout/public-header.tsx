@@ -57,7 +57,7 @@ export function PublicHeader() {
           )}
           aria-label="Go to home"
         >
-          <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/90 to-accent/90 text-primary-foreground shadow-floating group-hover:shadow-lg">
+          <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/90 to-accent/90 text-primary-foreground shadow-floating group-hover:shadow-surface">
             <span className="text-base font-bold">CC</span>
           </span>
           <span className="leading-tight">

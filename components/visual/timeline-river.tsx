@@ -13,9 +13,9 @@ interface TimelineRiverProps {
 export function TimelineRiver({ events }: TimelineRiverProps) {
   if (events.length === 0) {
     return (
-      <div className="rounded-[32px] border border-white/10 bg-black/40 p-16 text-center text-white/70">
+      <div className="rounded-[32px] border border-contrast-outline/10 bg-contrast-surface/40 p-16 text-center text-text-inverted/70">
         <p className="text-sm uppercase tracking-[0.4em]">暂无可显示的时间线事件</p>
-        <p className="mt-3 text-base text-white/60">调整筛选条件或稍后再试。</p>
+        <p className="mt-3 text-base text-text-inverted/60">调整筛选条件或稍后再试。</p>
       </div>
     )
   }
@@ -58,7 +58,7 @@ function AxisColumn({ event, align }: { event: TimelineEvent; align: 'left' | 'r
       <div className="relative hidden h-full w-px md:flex md:justify-center" aria-hidden="true">
         <div className="absolute top-0 h-full w-px bg-gradient-to-b from-white/40 via-white/15 to-transparent" />
         <span
-          className="relative z-10 mt-6 flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/90 text-xs font-semibold tracking-[0.2em] text-black shadow-lg"
+          className="relative z-10 mt-6 flex h-8 w-8 items-center justify-center rounded-full border border-contrast-outline/20 bg-surface-panel/90 text-xs font-semibold tracking-[0.2em] text-text-primary shadow-surface"
         >
           {new Date(event.timestamp).getDate()}
         </span>
@@ -77,19 +77,19 @@ function EventCard({ event, align }: { event: TimelineEvent; align: 'left' | 'ri
 
   return (
     <article
-      className="relative overflow-hidden rounded-[32px] border border-white/10 bg-black/50 p-6 text-white shadow-2xl backdrop-blur-xl transition-transform duration-500 md:p-8"
+      className="relative overflow-hidden rounded-[32px] border border-contrast-outline/10 bg-contrast-surface/50 p-6 text-text-inverted shadow-floating backdrop-blur-xl transition-transform duration-500 md:p-8"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/40" aria-hidden="true" />
       <div className="relative space-y-6">
         <header className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-white/15 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-white/60">
+            <span className="rounded-full border border-contrast-outline/15 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-text-inverted/60">
               {formattedDate}
             </span>
             {personas.map((persona) => (
               <span
                 key={persona.id}
-                className="rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-white/70"
+                className="rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-text-inverted/70"
                 style={persona.accentColor ? { borderColor: persona.accentColor, color: persona.accentColor } : undefined}
               >
                 {persona.name}
@@ -98,12 +98,12 @@ function EventCard({ event, align }: { event: TimelineEvent; align: 'left' | 'ri
           </div>
           <div className="space-y-2">
             <h3 className="font-serif text-2xl leading-tight md:text-3xl">{event.title}</h3>
-            {event.subtitle ? <p className="text-sm text-white/60">{event.subtitle}</p> : null}
+            {event.subtitle ? <p className="text-sm text-text-inverted/60">{event.subtitle}</p> : null}
           </div>
         </header>
 
         {event.primaryPhoto ? (
-          <div className="relative overflow-hidden rounded-3xl border border-white/10">
+          <div className="relative overflow-hidden rounded-3xl border border-contrast-outline/10">
             <Image
               src={event.primaryPhoto.src}
               alt={event.primaryPhoto.alt ?? event.title}
@@ -116,13 +116,13 @@ function EventCard({ event, align }: { event: TimelineEvent; align: 'left' | 'ri
         ) : null}
 
         {event.description ? (
-          <p className="text-sm leading-relaxed text-white/75">{event.description}</p>
+          <p className="text-sm leading-relaxed text-text-inverted/75">{event.description}</p>
         ) : null}
 
         {secondaryPhotos.length ? (
           <div className="grid grid-cols-3 gap-3">
             {secondaryPhotos.map((photo) => (
-              <div key={photo.id} className="relative overflow-hidden rounded-2xl border border-white/10">
+              <div key={photo.id} className="relative overflow-hidden rounded-2xl border border-contrast-outline/10">
                 <Image
                   src={photo.src}
                   alt={photo.alt ?? event.title}
@@ -139,9 +139,9 @@ function EventCard({ event, align }: { event: TimelineEvent; align: 'left' | 'ri
         {event.metrics?.length ? (
           <div className="flex flex-wrap gap-3">
             {event.metrics.map((metric) => (
-              <div key={metric.label} className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/60">
-                <span className="text-white/40">{metric.label}</span>
-                <span className="ml-2 text-white">{metric.value}</span>
+              <div key={metric.label} className="rounded-full border border-contrast-outline/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-text-inverted/60">
+                <span className="text-text-inverted/40">{metric.label}</span>
+                <span className="ml-2 text-text-inverted">{metric.value}</span>
               </div>
             ))}
           </div>
@@ -152,7 +152,7 @@ function EventCard({ event, align }: { event: TimelineEvent; align: 'left' | 'ri
             {event.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-white/60"
+                className="rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-text-inverted/60"
                 style={tag.color ? { borderColor: tag.color, color: tag.color } : undefined}
               >
                 #{tag.name}
@@ -168,7 +168,7 @@ function EventCard({ event, align }: { event: TimelineEvent; align: 'left' | 'ri
                 key={`${link.href}-${link.label}`}
                 href={link.href}
                 target={link.target ?? '_self'}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                className="inline-flex items-center gap-2 rounded-full border border-contrast-outline/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-inverted/70 transition hover:text-text-inverted focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
                 {link.label}
               </Link>

@@ -8,7 +8,7 @@ export default async function PublicSmartAlbumPage({ params }: { params: { id: s
   const album = await db.smartAlbum.findUnique({ where: { id: params.id } })
   if (!album || album.visibility !== 'PUBLIC') {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
+      <div className="min-h-screen flex items-center justify-center text-text-secondary">
         未找到该智能相册或未公开
       </div>
     )
@@ -22,11 +22,11 @@ export default async function PublicSmartAlbumPage({ params }: { params: { id: s
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{album.title}</h1>
-        {album.description && <p className="text-gray-600 mt-1">{album.description}</p>}
+        <h1 className="text-2xl font-bold text-text-primary">{album.title}</h1>
+        {album.description && <p className="text-text-secondary mt-1">{album.description}</p>}
       </div>
       {photos.length === 0 ? (
-        <div className="text-gray-500">暂无公开照片</div>
+        <div className="text-text-muted">暂无公开照片</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {photos.map((p) => (

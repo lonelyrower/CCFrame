@@ -107,16 +107,16 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
   return (
     <>
       {/* 选择状态栏 */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6 shadow-sm">
+      <div className="bg-surface-panel dark:bg-surface-panel rounded-lg border border-surface-outline/40 dark:border-surface-outline/70 p-4 mb-6 shadow-subtle">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               {selectedIds.length > 0 ? (
                 <CheckSquare className="w-5 h-5 text-blue-600" />
               ) : (
-                <Square className="w-5 h-5 text-gray-400" />
+                <Square className="w-5 h-5 text-text-muted" />
               )}
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-text-primary dark:text-text-inverted">
                 已选择 <span className="text-blue-600 font-bold">{selectedIds.length}</span> 张照片
               </span>
             </div>
@@ -132,7 +132,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
           </div>
           
           {selectedIds.length > 0 && (
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-text-muted dark:text-text-muted">
               批量操作已激活
             </div>
           )}
@@ -140,10 +140,10 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
 
         {/* 批量操作区域 */}
         {selectedIds.length > 0 && (
-          <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+          <div className="space-y-4 border-t border-surface-outline/40 dark:border-surface-outline/70 pt-4">
             {/* 第一行：可见性操作 */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-0">
+              <div className="flex items-center gap-1 text-sm font-medium text-text-secondary dark:text-text-muted min-w-0">
                 <Eye className="w-4 h-4 shrink-0" />
                 <span className="shrink-0">可见性</span>
               </div>
@@ -161,7 +161,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
 
             {/* 第二行：标签操作 */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-0">
+              <div className="flex items-center gap-1 text-sm font-medium text-text-secondary dark:text-text-muted min-w-0">
                 <Tag className="w-4 h-4 shrink-0" />
                 <span className="shrink-0">标签管理</span>
               </div>
@@ -171,7 +171,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
                     value={addingTag}
                     onChange={(e) => setAddingTag(e.target.value)}
                     placeholder="添加标签"
-                    className="w-32 h-8 text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+                    className="w-32 h-8 text-sm px-3 py-1.5 border border-surface-outline/60 dark:border-surface-outline/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted transition-all"
                   />
                   <Button size="sm" onClick={batchAddTag} className="flex items-center gap-1">
                     <Plus className="w-3 h-3" />
@@ -183,7 +183,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
                     value={removingTag}
                     onChange={(e) => setRemovingTag(e.target.value)}
                     placeholder="移除标签"
-                    className="w-32 h-8 text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+                    className="w-32 h-8 text-sm px-3 py-1.5 border border-surface-outline/60 dark:border-surface-outline/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted transition-all"
                   />
                   <Button size="sm" variant="outline" onClick={batchRemoveTag} className="flex items-center gap-1">
                     <Minus className="w-3 h-3" />
@@ -195,7 +195,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
 
             {/* 第三行：相册操作 */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-0">
+              <div className="flex items-center gap-1 text-sm font-medium text-text-secondary dark:text-text-muted min-w-0">
                 <FolderOpen className="w-4 h-4 shrink-0" />
                 <span className="shrink-0">相册管理</span>
               </div>
@@ -203,7 +203,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
                 <select 
                   value={targetAlbum} 
                   onChange={(e) => setTargetAlbum(e.target.value)} 
-                  className="w-40 h-8 text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none transition-all"
+                  className="w-40 h-8 text-sm px-3 py-1.5 border border-surface-outline/60 dark:border-surface-outline/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted appearance-none transition-all"
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                     backgroundPosition: 'right 0.5rem center',
@@ -224,7 +224,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
                   <input
                     id="newAlbumTitle"
                     placeholder="新建相册"
-                    className="w-32 h-8 text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+                    className="w-32 h-8 text-sm px-3 py-1.5 border border-surface-outline/60 dark:border-surface-outline/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted transition-all"
                   />
                   <Button size="sm" variant="outline" onClick={async () => {
                     const input = document.getElementById('newAlbumTitle') as HTMLInputElement | null
@@ -248,7 +248,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
 
             {/* 第四行：其他操作 */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-0">
+              <div className="flex items-center gap-1 text-sm font-medium text-text-secondary dark:text-text-muted min-w-0">
                 <span className="shrink-0">其他操作</span>
               </div>
               <div className="flex items-center gap-2">
@@ -284,7 +284,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
       {/* 照片网格 */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3 md:gap-4">
         {items.map(photo => (
-          <div key={photo.id} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/50 dark:border-gray-600/50">
+          <div key={photo.id} className="group relative aspect-square rounded-xl overflow-hidden bg-surface-panel dark:bg-surface-panel shadow-subtle hover:shadow-surface transition-all duration-300 border border-surface-outline/50 dark:border-surface-outline/50">
             <GalleryPicture
               photo={{ id: photo.id, albumTitle: photo.albumTitle ?? undefined, tags: photo.tags }}
               sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, 50vw"
@@ -306,11 +306,11 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
                 />
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                   sel[photo.id]
-                    ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-600/50'
-                    : 'bg-white/80 border-white/80 hover:bg-white hover:border-white backdrop-blur-sm'
+                    ? 'bg-blue-600 border-blue-600 shadow-surface shadow-blue-600/50'
+                    : 'bg-surface-panel/80 border-contrast-outline/80 hover:bg-surface-panel hover:border-contrast-outline backdrop-blur-sm'
                 }`}>
                   {sel[photo.id] && (
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3 h-3 text-text-inverted" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -329,7 +329,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
 
             {/* 信息栏 - 始终显示，但优化样式 */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 backdrop-blur-sm">
-              <div className="text-white text-sm space-y-2">
+              <div className="text-text-inverted text-sm space-y-2">
                 {/* 相册标题 */}
                 {photo.albumTitle && (
                   <div className="flex items-center gap-1 text-xs">
@@ -359,7 +359,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
                       )}
                     </div>
                   </div>
-                  <div className="text-xs text-gray-300 font-mono bg-black/30 px-2 py-1 rounded backdrop-blur-sm">
+                  <div className="text-xs text-text-muted font-mono bg-contrast-surface/30 px-2 py-1 rounded backdrop-blur-sm">
                     {photo.width} × {photo.height}
                   </div>
                 </div>
@@ -373,7 +373,7 @@ export function LibraryBatchGrid({ initial }: { initial: PhotoItem[] }) {
 
             {/* 选中状态的视觉反馈 */}
             {sel[photo.id] && (
-              <div className="absolute inset-0 border-3 border-blue-500 rounded-xl pointer-events-none shadow-lg shadow-blue-500/50" />
+              <div className="absolute inset-0 border-3 border-blue-500 rounded-xl pointer-events-none shadow-surface shadow-blue-500/50" />
             )}
           </div>
         ))}

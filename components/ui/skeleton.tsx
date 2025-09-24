@@ -23,7 +23,7 @@ export function Skeleton({
   return (
     <div
       className={cn(
-        "bg-gray-200 dark:bg-gray-800",
+        "bg-surface-panel dark:bg-surface-panel",
         animate && "animate-pulse",
         variants[variant],
         className
@@ -54,7 +54,7 @@ export function PhotoSkeleton({ aspectRatio = "square" }: { aspectRatio?: "squar
 
 export function StatCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="bg-surface-panel dark:bg-surface-panel p-6 rounded-xl shadow-subtle border border-surface-outline/40 dark:border-surface-outline/70">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-4 w-16" variant="text" />
@@ -88,7 +88,7 @@ export function GalleryGridSkeleton({
 
 export function FilterSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
+    <div className="bg-surface-panel dark:bg-surface-panel rounded-lg p-6 mb-6 border border-surface-outline/40 dark:border-surface-outline/70">
       <div className="flex flex-wrap gap-4">
         <Skeleton className="flex-1 min-w-60 h-10" variant="rounded" />
         <Skeleton className="w-32 h-10" variant="rounded" />
@@ -101,7 +101,7 @@ export function FilterSkeleton() {
 
 export function NavigationSkeleton() {
   return (
-    <nav className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+    <nav className="sticky top-0 z-40 bg-surface-panel/80 dark:bg-surface-canvas/80 backdrop-blur-lg border-b border-surface-outline/40 dark:border-surface-outline/70">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Skeleton className="h-8 w-32" variant="rounded" />

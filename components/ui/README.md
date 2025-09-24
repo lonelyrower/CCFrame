@@ -167,7 +167,7 @@ import { Button } from '@/components/ui/button'
 ### 1. 组件选择
 ```tsx
 // ❌ 不推荐：直接使用原生元素
-<div className="bg-gray-200 animate-pulse h-4 w-20" />
+<div className="bg-surface-panel animate-pulse h-4 w-20" />
 
 // ✅ 推荐：使用统一的骨架屏组件
 <Skeleton className="h-4 w-20" variant="text" />

@@ -281,7 +281,7 @@ export function PhotoZoomCanvas({ photo, resolveSource }: PhotoZoomCanvasProps) 
             src={blurDataUrl || getImageUrl(photo.id, 'thumb', 'webp')}
             aria-hidden
             alt=""
-            className="max-h-[80vh] max-w-full select-none rounded-lg object-contain shadow-2xl blur-md lg:max-h-[90vh]"
+            className="max-h-[80vh] max-w-full select-none rounded-lg object-contain shadow-floating blur-md lg:max-h-[90vh]"
             style={placeholderStyle}
           />
         ) : null}
@@ -291,7 +291,7 @@ export function PhotoZoomCanvas({ photo, resolveSource }: PhotoZoomCanvasProps) 
           alt={photo.album?.title || 'Photo'}
           width={imageSource.width ?? photo.width ?? 2048}
           height={imageSource.height ?? photo.height ?? 1365}
-          className="max-h-[80vh] max-w-full select-none rounded-lg object-contain shadow-2xl transition-opacity duration-300 lg:max-h-[90vh]"
+          className="max-h-[80vh] max-w-full select-none rounded-lg object-contain shadow-floating transition-opacity duration-300 lg:max-h-[90vh]"
           priority
           onLoad={() => setLoaded(true)}
           onError={(event) => {
@@ -305,7 +305,7 @@ export function PhotoZoomCanvas({ photo, resolveSource }: PhotoZoomCanvasProps) 
       </div>
 
       {scale !== 1 ? (
-        <div className="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-1 text-xs text-white shadow">
+        <div className="absolute bottom-2 right-2 rounded bg-contrast-surface/60 px-2 py-1 text-xs text-text-inverted shadow">
           {Math.round(scale * 100)}%
         </div>
       ) : null}

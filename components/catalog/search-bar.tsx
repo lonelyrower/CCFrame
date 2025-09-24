@@ -210,7 +210,7 @@ export function CatalogSearchBar({
                     <div className="flex items-center gap-2 text-xs text-text-muted">
                       {suggestion.type === 'color' && colorValue ? (
                         <span
-                          className="h-3 w-3 rounded-full border border-white/60"
+                          className="h-3 w-3 rounded-full border border-contrast-outline/60"
                           style={{ backgroundColor: colorValue }}
                           aria-hidden
                         />

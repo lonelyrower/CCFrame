@@ -228,11 +228,11 @@ export function DeepZoomCanvas({ photo, enabled = true }: DeepZoomCanvasProps) {
     <div className="relative">
       <PhotoZoomCanvas photo={photo} resolveSource={shouldEnable ? resolveSource : undefined} />
       {showCapabilityBanner ? (
-        <div className="pointer-events-auto absolute bottom-4 right-4 z-[5] max-w-xs rounded-2xl border border-white/10 bg-black/75 p-4 text-sm text-white shadow-lg backdrop-blur">
-          <p className="mb-3 leading-relaxed text-white/80">
+        <div className="pointer-events-auto absolute bottom-4 right-4 z-[5] max-w-xs rounded-2xl border border-contrast-outline/10 bg-contrast-surface/75 p-4 text-sm text-text-inverted shadow-surface backdrop-blur">
+          <p className="mb-3 leading-relaxed text-text-inverted/80">
             当前设备性能较弱，为保障体验，深度放大已自动关闭。可下载原图查看完整细节。
           </p>
-          <Button asChild size="sm" variant="secondary" className="rounded-full bg-white/20 text-white hover:bg-white/30">
+          <Button asChild size="sm" variant="secondary" className="rounded-full bg-surface-panel/20 text-text-inverted hover:bg-surface-panel/30">
             <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
               下载原图
             </a>

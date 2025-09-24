@@ -67,7 +67,7 @@ export function ThemeToggle() {
   const currentMode = MODES.find(mode => mode.value === theme) || MODES[2]
 
   return (
-    <div className="glass-enhanced flex items-center gap-2 rounded-full px-3 py-2 text-sm shadow-soft group hover:shadow-lg theme-transition hover:scale-[1.02] will-change-transform">
+    <div className="glass-enhanced flex items-center gap-2 rounded-full px-3 py-2 text-sm shadow-soft group hover:shadow-surface theme-transition hover:scale-[1.02] will-change-transform">
       {/* 桌面端文字提示 */}
       <span
         className="hidden sm:inline-flex text-xs font-medium text-muted-foreground transition-colors duration-200 group-hover:text-foreground"
@@ -98,12 +98,12 @@ export function ThemeToggle() {
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
                 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50
                 ${isActive
-                  ? "bg-primary text-primary-foreground shadow-md transform scale-105 ring-2 ring-primary/20"
+                  ? "bg-primary text-primary-foreground shadow-surface transform scale-105 ring-2 ring-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:scale-105"
                 }
                 ${isChanging ? "animate-pulse" : ""}
                 touch-manipulation select-none
-                before:absolute before:inset-0 before:rounded-full before:bg-white/20 before:opacity-0 before:transition-opacity before:duration-200
+                before:absolute before:inset-0 before:rounded-full before:bg-surface-panel/20 before:opacity-0 before:transition-opacity before:duration-200
                 hover:before:opacity-100
               `}
               aria-pressed={isActive}

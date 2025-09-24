@@ -231,15 +231,15 @@ export default function RuntimeConfigPanel() {
     <div className="space-y-8">
       <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
         <header>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">存储提供方设置</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">选择文件实际存储位置并填写访问凭据。</p>
+          <h2 className="text-lg font-semibold text-text-primary dark:text-text-inverted">存储提供方设置</h2>
+          <p className="text-sm text-text-muted dark:text-text-muted mt-1">选择文件实际存储位置并填写访问凭据。</p>
         </header>
         {loading ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">正在加载运行时配置...</p>
+          <p className="text-sm text-text-muted dark:text-text-muted">正在加载运行时配置...</p>
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">存储模式</label>
+              <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">存储模式</label>
               <select
                 value={config.storage.provider}
                 onChange={(e) => handleStorageChange((prev) => ({
@@ -247,7 +247,7 @@ export default function RuntimeConfigPanel() {
                   provider: e.target.value as StorageProviderOption
                 }))}
                 disabled={saving.storage}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
               >
                 {STORAGE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -257,7 +257,7 @@ export default function RuntimeConfigPanel() {
 
             {config.storage.provider === 'local' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">本地文件目录</label>
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">本地文件目录</label>
                 <input
                   type="text"
                   value={config.storage.local.basePath}
@@ -267,7 +267,7 @@ export default function RuntimeConfigPanel() {
                   }))}
                   disabled={saving.storage}
                   placeholder="例如：/var/www/ccframe/uploads"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />
               </div>
             )}
@@ -283,7 +283,7 @@ export default function RuntimeConfigPanel() {
                   { key: 'cdnUrl', label: 'CDN 地址（可选）', placeholder: 'https://cdn.example.com' },
                 ].map((field) => (
                   <div key={field.key} className={field.key === 'cdnUrl' ? 'md:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{field.label}</label>
+                    <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">{field.label}</label>
                     <input
                       type={field.key === 'secretAccessKey' ? 'password' : 'text'}
                       value={(config.storage.minio as any)[field.key] as string}
@@ -293,7 +293,7 @@ export default function RuntimeConfigPanel() {
                       }))}
                       disabled={saving.storage}
                       placeholder={field.placeholder}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                     />
                   </div>
                 ))}
@@ -306,9 +306,9 @@ export default function RuntimeConfigPanel() {
                       minio: { ...prev.minio, forcePathStyle: e.target.checked }
                     }))}
                     disabled={saving.storage}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-surface-outline/60 rounded"
                   />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">强制使用 Path Style</span>
+                  <span className="text-sm text-text-secondary dark:text-text-muted">强制使用 Path Style</span>
                 </div>
               </div>
             )}
@@ -323,7 +323,7 @@ export default function RuntimeConfigPanel() {
                   { key: 'cdnUrl', label: 'CDN 地址（可选）' },
                 ].map((field) => (
                   <div key={field.key}>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{field.label}</label>
+                    <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">{field.label}</label>
                     <input
                       type={field.key === 'secretAccessKey' ? 'password' : 'text'}
                       value={(config.storage.aws as any)[field.key] as string}
@@ -332,7 +332,7 @@ export default function RuntimeConfigPanel() {
                         aws: { ...prev.aws, [field.key]: e.target.value }
                       }))}
                       disabled={saving.storage}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                     />
                   </div>
                 ))}
@@ -350,13 +350,13 @@ export default function RuntimeConfigPanel() {
 
       <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
         <header>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">语义搜索</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h2 className="text-lg font-semibold text-text-primary dark:text-text-inverted">语义搜索</h2>
+          <p className="text-sm text-text-muted dark:text-text-muted mt-1">
             启用AI语义搜索，让用户可以用自然语言搜索照片内容。推荐使用OpenAI获得最佳搜索体验。
           </p>
         </header>
         {loading ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">正在加载运行时配置...</p>
+          <p className="text-sm text-text-muted dark:text-text-muted">正在加载运行时配置...</p>
         ) : (
           <div className="space-y-4">
             <label className="flex items-center space-x-2">
@@ -368,14 +368,14 @@ export default function RuntimeConfigPanel() {
                   enabled: e.target.checked
                 }))}
                 disabled={saving.semantic}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-surface-outline/60 rounded"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">启用语义搜索面板</span>
+              <span className="text-sm text-text-secondary dark:text-text-muted">启用语义搜索面板</span>
             </label>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">运行模式</label>
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">运行模式</label>
                 <select
                   value={config.semantic.mode}
                   onChange={(e) => handleSemanticChange((prev) => ({
@@ -383,7 +383,7 @@ export default function RuntimeConfigPanel() {
                     mode: e.target.value as SemanticModeOption
                   }))}
                   disabled={saving.semantic || !config.semantic.enabled}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 >
                   <option value="off">关闭</option>
                   <option value="shadow">影子模式（仅生成嵌入）</option>
@@ -391,7 +391,7 @@ export default function RuntimeConfigPanel() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">嵌入提供方</label>
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">嵌入提供方</label>
                 <select
                   value={config.semantic.provider}
                   onChange={(e) => handleSemanticChange((prev) => ({
@@ -399,13 +399,13 @@ export default function RuntimeConfigPanel() {
                     provider: e.target.value
                   }))}
                   disabled={saving.semantic}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 >
                   {SEMANTIC_PROVIDER_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="mt-2 text-xs text-text-muted dark:text-text-muted">
                   {config.semantic.provider === 'openai' && (
                     <span className="text-blue-600 dark:text-blue-400">🚀 推荐：AI理解自然语言，搜索质量最佳</span>
                   )}
@@ -418,7 +418,7 @@ export default function RuntimeConfigPanel() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">模型名称</label>
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">模型名称</label>
                 <input
                   type="text"
                   value={config.semantic.model}
@@ -427,11 +427,11 @@ export default function RuntimeConfigPanel() {
                     model: e.target.value
                   }))}
                   disabled={saving.semantic}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">向量维度</label>
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">向量维度</label>
                 <input
                   type="number"
                   value={config.semantic.dim}
@@ -441,14 +441,14 @@ export default function RuntimeConfigPanel() {
                   }))}
                   disabled={saving.semantic}
                   min={32}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
                   OpenAI API Key
                   {config.semantic.provider === 'openai' && (
                     <span className="text-red-500 ml-1">*</span>
@@ -463,7 +463,7 @@ export default function RuntimeConfigPanel() {
                   }))}
                   disabled={saving.semantic || config.semantic.provider !== 'openai'}
                   placeholder={config.semantic.provider === 'openai' ? 'sk-...' : '仅在使用OpenAI时需要'}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />
                 {config.semantic.provider === 'openai' && !config.semantic.openaiApiKey && (
                   <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
@@ -493,7 +493,7 @@ export default function RuntimeConfigPanel() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">OpenAI Base URL</label>
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">OpenAI Base URL</label>
                 <input
                   type="text"
                   value={config.semantic.openaiBaseUrl}
@@ -503,7 +503,7 @@ export default function RuntimeConfigPanel() {
                   }))}
                   disabled={saving.semantic || config.semantic.provider !== 'openai'}
                   placeholder="https://api.openai.com/v1"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />
               </div>
             </div>

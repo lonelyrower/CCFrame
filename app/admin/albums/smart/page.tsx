@@ -114,14 +114,14 @@ export default function SmartAlbumsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-surface-canvas dark:bg-surface-canvas">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">智能相册</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">根据标签/时间/可见性自动聚合照片</p>
+          <h1 className="text-2xl font-bold text-text-primary dark:text-text-inverted">智能相册</h1>
+          <p className="text-sm text-text-secondary dark:text-text-muted">根据标签/时间/可见性自动聚合照片</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+        <div className="bg-surface-panel dark:bg-surface-panel border border-surface-outline/40 dark:border-surface-outline/70 rounded-lg p-4 mb-6">
           <h2 className="font-semibold mb-3">创建智能相册</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <input placeholder="标题" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} className="px-3 py-2 border rounded" />
@@ -146,24 +146,24 @@ export default function SmartAlbumsPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div className="bg-surface-panel dark:bg-surface-panel border border-surface-outline/40 dark:border-surface-outline/70 rounded-lg p-4">
           <h2 className="font-semibold mb-3">我的智能相册</h2>
           {albums.length === 0 ? (
-            <div className="text-gray-500">暂无智能相册</div>
+            <div className="text-text-muted">暂无智能相册</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {albums.map(a => (
                 <div key={a.id} className="border rounded p-3 flex items-center justify-between gap-3">
-                  <div className="relative w-20 h-14 rounded overflow-hidden bg-gray-100 hidden sm:block">
+                  <div className="relative w-20 h-14 rounded overflow-hidden bg-surface-panel hidden sm:block">
                     {a.coverPhotoId ? (
                       <Image src={`/api/image/${a.coverPhotoId}/thumb?format=webp`} alt={`Cover photo for smart album ${a.title}`} fill sizes="120px" className="object-cover" />
                     ) : null}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium">{a.title}</div>
-                    <div className="text-xs text-gray-500">{a.description || '—'}</div>
+                    <div className="text-xs text-text-muted">{a.description || '—'}</div>
                     {'_count' in a && (a as any)._count?.photos !== undefined && (
-                      <div className="text-xs text-gray-400">匹配照片：{(a as any)._count.photos}</div>
+                      <div className="text-xs text-text-muted">匹配照片：{(a as any)._count.photos}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -186,14 +186,14 @@ export default function SmartAlbumsPage() {
         </div>
 
         {modal && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setModal(null)}>
-            <div className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-contrast-surface/50 z-50 flex items-center justify-center p-4" onClick={() => setModal(null)}>
+            <div className="bg-surface-panel dark:bg-surface-canvas w-full max-w-5xl rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold">{modal.title} - 预览</h3>
                 <Button variant="ghost" onClick={() => setModal(null)}>关闭</Button>
               </div>
               {photos.length === 0 ? (
-                <div className="text-gray-500">暂无匹配照片</div>
+                <div className="text-text-muted">暂无匹配照片</div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[70vh] overflow-auto">
                   {photos.map((p: any) => (
@@ -211,8 +211,8 @@ export default function SmartAlbumsPage() {
         )}
 
         {edit && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setEdit(null)}>
-            <div className="bg-white dark:bg-gray-900 w-full max-w-3xl rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-contrast-surface/50 z-50 flex items-center justify-center p-4" onClick={() => setEdit(null)}>
+            <div className="bg-surface-panel dark:bg-surface-canvas w-full max-w-3xl rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold">编辑智能相册</h3>
                 <Button variant="ghost" onClick={() => setEdit(null)}>关闭</Button>

@@ -64,32 +64,32 @@ export default function NewAlbumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-surface-canvas dark:bg-surface-canvas">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-3xl font-bold text-text-primary dark:text-text-inverted">
                 新建相册
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-text-secondary dark:text-text-muted mt-1">
                 创建一个新的照片相册
               </p>
             </div>
             
             <button
               onClick={() => router.back()}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="p-2 text-text-muted hover:text-text-secondary hover:bg-surface-panel dark:hover:bg-surface-panel rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-surface-panel dark:bg-surface-panel rounded-xl border border-surface-outline/40 dark:border-surface-outline/70 overflow-hidden">
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* 相册标题 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
                   相册标题 *
                 </label>
                 <input
@@ -98,17 +98,17 @@ export default function NewAlbumPage() {
                   onChange={(e) => setAlbumData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="为你的相册起个名字..."
                   maxLength={100}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted placeholder:text-text-muted dark:placeholder:text-text-muted"
                   required
                 />
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="text-xs text-text-muted dark:text-text-muted mt-1">
                   {albumData.title.length}/100
                 </div>
               </div>
 
               {/* 相册描述 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
                   相册描述
                 </label>
                 <textarea
@@ -117,16 +117,16 @@ export default function NewAlbumPage() {
                   placeholder="描述一下这个相册的内容..."
                   maxLength={500}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                  className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted placeholder:text-text-muted dark:placeholder:text-text-muted resize-none"
                 />
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="text-xs text-text-muted dark:text-text-muted mt-1">
                   {albumData.description.length}/500
                 </div>
               </div>
 
               {/* 可见性设置 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-3">
                   可见性设置
                 </label>
                 <div className="space-y-3">
@@ -134,7 +134,7 @@ export default function NewAlbumPage() {
                     className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
                       albumData.visibility === 'PUBLIC'
                         ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
-                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                        : 'border-surface-outline/40 hover:border-surface-outline/60 dark:border-surface-outline/70 dark:hover:border-surface-outline/70'
                     }`}
                     onClick={() => setAlbumData(prev => ({ ...prev, visibility: 'PUBLIC' }))}
                   >
@@ -144,17 +144,17 @@ export default function NewAlbumPage() {
                           type="radio"
                           checked={albumData.visibility === 'PUBLIC'}
                           onChange={() => setAlbumData(prev => ({ ...prev, visibility: 'PUBLIC' }))}
-                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          className="h-4 w-4 text-blue-600 border-surface-outline/60 focus:ring-blue-500"
                         />
                       </div>
                       <div className="ml-3">
                         <div className="flex items-center">
                           <Eye className="w-4 h-4 text-green-600 mr-2" />
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-text-primary dark:text-text-inverted">
                             公开相册
                           </div>
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <div className="text-sm text-text-secondary dark:text-text-muted mt-1">
                           所有人都可以查看这个相册中的照片
                         </div>
                       </div>
@@ -165,7 +165,7 @@ export default function NewAlbumPage() {
                     className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
                       albumData.visibility === 'PRIVATE'
                         ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
-                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                        : 'border-surface-outline/40 hover:border-surface-outline/60 dark:border-surface-outline/70 dark:hover:border-surface-outline/70'
                     }`}
                     onClick={() => setAlbumData(prev => ({ ...prev, visibility: 'PRIVATE' }))}
                   >
@@ -175,17 +175,17 @@ export default function NewAlbumPage() {
                           type="radio"
                           checked={albumData.visibility === 'PRIVATE'}
                           onChange={() => setAlbumData(prev => ({ ...prev, visibility: 'PRIVATE' }))}
-                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          className="h-4 w-4 text-blue-600 border-surface-outline/60 focus:ring-blue-500"
                         />
                       </div>
                       <div className="ml-3">
                         <div className="flex items-center">
                           <EyeOff className="w-4 h-4 text-orange-600 mr-2" />
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-text-primary dark:text-text-inverted">
                             私密相册
                           </div>
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <div className="text-sm text-text-secondary dark:text-text-muted mt-1">
                           只有你可以查看这个相册中的照片
                         </div>
                       </div>
@@ -196,26 +196,26 @@ export default function NewAlbumPage() {
 
               {/* 封面预览 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-3">
                   相册封面
                 </label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                  <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <div className="border-2 border-dashed border-surface-outline/60 dark:border-surface-outline/70 rounded-lg p-8 text-center">
+                  <FolderOpen className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                  <div className="text-sm text-text-secondary dark:text-text-muted mb-2">
                     创建相册后，你可以设置封面照片
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500">
+                  <div className="text-xs text-text-muted dark:text-text-muted">
                     支持从相册中的照片选择封面
                   </div>
                 </div>
               </div>
 
               {/* 操作按钮 */}
-              <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-end space-x-4 pt-6 border-t border-surface-outline/40 dark:border-surface-outline/70">
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-text-secondary dark:text-text-muted hover:text-text-primary dark:hover:text-text-inverted transition-colors"
                 >
                   取消
                 </button>
@@ -227,7 +227,7 @@ export default function NewAlbumPage() {
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="w-4 h-4 border-2 border-contrast-outline border-t-transparent rounded-full animate-spin mr-2" />
                       创建中...
                     </>
                   ) : (

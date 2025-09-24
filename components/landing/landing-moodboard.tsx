@@ -16,7 +16,7 @@ export function LandingMoodboard({ tags }: LandingMoodboardProps) {
           <Surface tone="glass" padding="lg" className="overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/10 via-surface-panel/60 to-surface-canvas">
             <div className="space-y-6">
               <div className="max-w-2xl space-y-3">
-                <Heading size="lg" className="text-balance text-white">
+                <Heading size="lg" className="text-balance text-text-inverted">
                   Moodboard 色彩情绪板
                 </Heading>
                 <Text tone="inverted" size="sm">
@@ -32,14 +32,14 @@ export function LandingMoodboard({ tags }: LandingMoodboardProps) {
                   {tags.map((tag, index) => (
                     <div
                       key={tag.id}
-                      className="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-5 text-white shadow-subtle backdrop-blur transition hover:-translate-y-1 hover:shadow-floating"
+                      className="group relative overflow-hidden rounded-2xl border border-contrast-outline/20 bg-surface-panel/10 p-5 text-text-inverted shadow-subtle backdrop-blur transition hover:-translate-y-1 hover:shadow-floating"
                       style={{ background: `linear-gradient(135deg, ${tag.color}33 0%, ${tag.color}66 100%)` }}
                     >
-                      <div className="absolute right-4 top-4 text-xs uppercase tracking-wide text-white/70">#{index + 1}</div>
-                      <Heading size="sm" className="text-white">
+                      <div className="absolute right-4 top-4 text-xs uppercase tracking-wide text-text-inverted/70">#{index + 1}</div>
+                      <Heading size="sm" className="text-text-inverted">
                         {tag.name}
                       </Heading>
-                      <Text tone="inverted" size="sm" className="mt-2 text-white/80">
+                      <Text tone="inverted" size="sm" className="mt-2 text-text-inverted/80">
                         {tag.photoCount} 张作品
                       </Text>
                     </div>

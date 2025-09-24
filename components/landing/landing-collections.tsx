@@ -69,10 +69,10 @@ export function LandingCollections({ albums }: LandingCollectionsProps) {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
-                        <div className="absolute left-6 bottom-6 flex items-center gap-3 text-sm text-white/80">
-                          <span className="rounded-full bg-white/10 px-3 py-1 backdrop-blur">{album.photoCount} 张作品</span>
+                        <div className="absolute left-6 bottom-6 flex items-center gap-3 text-sm text-text-inverted/80">
+                          <span className="rounded-full bg-surface-panel/10 px-3 py-1 backdrop-blur">{album.photoCount} 张作品</span>
                           {album.coverPhoto?.tags.slice(0, 2).map(({ tag }) => (
-                            <span key={tag.id} className="rounded-full bg-white/10 px-3 py-1 backdrop-blur">
+                            <span key={tag.id} className="rounded-full bg-surface-panel/10 px-3 py-1 backdrop-blur">
                               #{tag.name}
                             </span>
                           ))}

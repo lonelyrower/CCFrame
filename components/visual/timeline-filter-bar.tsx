@@ -70,16 +70,16 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
   return (
     <section
       className={cn(
-        'rounded-[32px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl md:p-8',
+        'rounded-[32px] border border-contrast-outline/10 bg-contrast-surface/40 p-6 backdrop-blur-xl md:p-8',
         className,
       )}
     >
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-1 text-white">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/50">Timeline Filters</p>
+        <div className="space-y-1 text-text-inverted">
+          <p className="text-xs uppercase tracking-[0.4em] text-text-inverted/50">Timeline Filters</p>
           <h2 className="text-xl font-semibold">筛选你的故事轨迹</h2>
           {availableYears.min && availableYears.max ? (
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-text-inverted/50">
               时间范围 {availableYears.min} - {availableYears.max}
             </p>
           ) : null}
@@ -89,7 +89,7 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
           type="button"
           onClick={handleClear}
           disabled={isPending}
-          className="self-start rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/60 transition hover:text-white disabled:opacity-50"
+          className="self-start rounded-full border border-contrast-outline/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-text-inverted/60 transition hover:text-text-inverted disabled:opacity-50"
         >
           清除筛选
         </button>
@@ -97,10 +97,10 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
 
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="space-y-4">
-          <label className="flex flex-col gap-2 text-sm font-medium text-white/70">
+          <label className="flex flex-col gap-2 text-sm font-medium text-text-inverted/70">
             起始年份
             <select
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="w-full rounded-2xl border border-contrast-outline/10 bg-contrast-surface/30 px-4 py-3 text-sm text-text-inverted/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               value={active.startYear ?? ''}
               onChange={(event) => handleYearChange('startYear', event.target.value)}
               disabled={isPending}
@@ -114,10 +114,10 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-white/70">
+          <label className="flex flex-col gap-2 text-sm font-medium text-text-inverted/70">
             结束年份
             <select
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="w-full rounded-2xl border border-contrast-outline/10 bg-contrast-surface/30 px-4 py-3 text-sm text-text-inverted/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               value={active.endYear ?? ''}
               onChange={(event) => handleYearChange('endYear', event.target.value)}
               disabled={isPending}
@@ -134,7 +134,7 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
 
         <div className="space-y-5">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-white/50">人物/系列</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-text-inverted/50">人物/系列</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {options.personas.map((persona) => {
                 const isActive = active.personas.includes(persona.id)
@@ -146,7 +146,7 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
                     disabled={isPending}
                     className={cn(
                       'rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
-                      isActive ? 'border-white bg-white/10 text-white' : 'border-white/15 text-white/60 hover:text-white',
+                      isActive ? 'border-contrast-outline bg-surface-panel/10 text-text-inverted' : 'border-contrast-outline/15 text-text-inverted/60 hover:text-text-inverted',
                     )}
                     style={isActive && persona.accentColor ? { borderColor: persona.accentColor, color: persona.accentColor } : undefined}
                   >
@@ -159,7 +159,7 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
           </div>
 
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-white/50">标签</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-text-inverted/50">标签</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {options.tags.map((tag) => {
                 const isActive = active.tags.includes(tag.id)
@@ -171,7 +171,7 @@ export function TimelineFilterBar({ options, active, availableYears, className, 
                     disabled={isPending}
                     className={cn(
                       'rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
-                      isActive ? 'border-white bg-white/10 text-white' : 'border-white/15 text-white/60 hover:text-white',
+                      isActive ? 'border-contrast-outline bg-surface-panel/10 text-text-inverted' : 'border-contrast-outline/15 text-text-inverted/60 hover:text-text-inverted',
                     )}
                     style={tag.color ? { borderColor: tag.color, color: tag.color } : undefined}
                   >

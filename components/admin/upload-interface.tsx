@@ -372,7 +372,7 @@ export function UploadInterface() {
                         <img src={file.preview} alt={file.name} className="h-full w-full object-cover" />
                       ) : null}
                       {file.hashing ? (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-[11px] font-medium text-white">
+                        <div className="absolute inset-0 flex items-center justify-center bg-contrast-surface/40 text-[11px] font-medium text-text-inverted">
                           Hash {file.hashProgress || 0}%
                         </div>
                       ) : null}

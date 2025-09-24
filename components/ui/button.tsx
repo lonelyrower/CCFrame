@@ -20,7 +20,7 @@ const buttonVariants = cva(
         ghost: "text-text-primary hover:bg-surface-glass/60",
         link: "text-primary underline-offset-4 hover:underline",
         glass:
-          "bg-surface-glass text-text-primary border border-white/10 shadow-floating backdrop-blur-lg hover:bg-surface-glass/80",
+          "bg-surface-glass text-text-primary border border-contrast-outline/10 shadow-floating backdrop-blur-lg hover:bg-surface-glass/80",
       },
       size: {
         default: "h-10 px-4 py-2",

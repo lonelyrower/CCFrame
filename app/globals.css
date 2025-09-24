@@ -143,7 +143,7 @@
   }
 
   .photo-skeleton {
-    @apply bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg;
+    @apply bg-surface-panel dark:bg-surface-panel animate-pulse rounded-lg;
     aspect-ratio: var(--aspect-ratio, 1);
   }
 
@@ -162,7 +162,7 @@
   }
 
   .glass-card {
-    @apply bg-white/65 dark:bg-white/5 border border-white/60 dark:border-white/10 backdrop-blur-md;
+    @apply bg-surface-panel/65 dark:bg-surface-panel/5 border border-contrast-outline/60 dark:border-contrast-outline/10 backdrop-blur-md;
     box-shadow: var(--shadow-soft);
   }
 
@@ -388,15 +388,15 @@
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply transition-all duration-300 hover:shadow-surface hover:-translate-y-1;
   }
 
   .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    @apply bg-glow-primary;
   }
 
   .gradient-bg-light {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    @apply bg-glow-secondary;
   }
 
   .bg-app-surface {
@@ -405,11 +405,11 @@
   }
 
   .bg-app-glow {
-    background: radial-gradient(45% 45% at 50% 50%, rgba(129, 140, 248, 0.38) 0%, rgba(129, 140, 248, 0) 100%);
+    background: var(--token-gradient-glow-primary);
   }
 
   .bg-app-glow-secondary {
-    background: radial-gradient(45% 45% at 50% 50%, rgba(56, 189, 248, 0.32) 0%, rgba(56, 189, 248, 0) 100%);
+    background: var(--token-gradient-glow-secondary);
   }
 
   /* 主题切换组件动画 */

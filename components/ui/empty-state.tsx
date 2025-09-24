@@ -64,11 +64,11 @@ export function EmptyState({
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-sm" />
 
             {/* 主背景 */}
-            <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center h-full w-full">
+            <div className="relative bg-gradient-to-br from-surface-canvas/90 to-surface-panel/80 dark:from-surface-panel/80 dark:to-surface-canvas/90 rounded-full border border-surface-outline/40 dark:border-surface-outline/70 flex items-center justify-center h-full w-full">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-[1px] opacity-20" />
                 <Icon className={cn(
-                  "relative text-gray-400 dark:text-gray-500",
+                  "relative text-text-muted dark:text-text-muted",
                   sizeConfig.icon
                 )} />
               </div>
@@ -78,14 +78,14 @@ export function EmptyState({
 
         {/* 文案 */}
         <h3 className={cn(
-          "font-semibold mb-2 text-gray-900 dark:text-white",
+          "font-semibold mb-2 text-text-primary dark:text-text-inverted",
           sizeConfig.title
         )}>
           {title}
         </h3>
 
         <p className={cn(
-          "text-gray-600 dark:text-gray-400 mb-6",
+          "text-text-secondary dark:text-text-muted mb-6",
           sizeConfig.description
         )}>
           {description}

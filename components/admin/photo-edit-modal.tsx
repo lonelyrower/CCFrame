@@ -48,15 +48,15 @@ export function PhotoEditModal({ photo, isOpen, onClose, onUpdated }: PhotoEditM
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-contrast-surface/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-surface-panel dark:bg-surface-panel rounded-lg p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-text-primary dark:text-text-inverted">
             编辑照片
           </h2>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            className="p-1 hover:bg-surface-panel dark:hover:bg-surface-panel rounded"
           >
             <X className="w-5 h-5" />
           </button>
@@ -64,13 +64,13 @@ export function PhotoEditModal({ photo, isOpen, onClose, onUpdated }: PhotoEditM
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
               可见性
             </label>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value as 'PUBLIC' | 'PRIVATE')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
             >
               <option value="PUBLIC">公开</option>
               <option value="PRIVATE">私有</option>
@@ -78,7 +78,7 @@ export function PhotoEditModal({ photo, isOpen, onClose, onUpdated }: PhotoEditM
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
               相册ID（可选）
             </label>
             <input
@@ -86,9 +86,9 @@ export function PhotoEditModal({ photo, isOpen, onClose, onUpdated }: PhotoEditM
               value={albumId}
               onChange={(e) => setAlbumId(e.target.value)}
               placeholder="输入相册ID..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-text-muted dark:text-text-muted mt-1">
               留空则不分配到任何相册
             </p>
           </div>
@@ -98,14 +98,14 @@ export function PhotoEditModal({ photo, isOpen, onClose, onUpdated }: PhotoEditM
           <button
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-50"
+            className="px-4 py-2 text-text-secondary dark:text-text-muted hover:text-text-primary dark:hover:text-text-muted disabled:opacity-50"
           >
             取消
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-text-inverted rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             {saving ? '保存中...' : '保存'}
           </button>

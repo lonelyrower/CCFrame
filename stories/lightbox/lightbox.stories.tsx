@@ -53,7 +53,7 @@ const meta: Meta = {
   decorators: [
     (Story) => (
       <PreferenceProvider>
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-contrast-surface text-text-inverted">
           <Story />
         </div>
       </PreferenceProvider>
@@ -73,7 +73,7 @@ function LightboxPlayground() {
       <Surface tone="transparent" className="flex min-h-screen flex-col items-center justify-center gap-6">
         <div className="space-y-3 text-center">
           <h1 className="text-2xl font-semibold">Lightbox Stage 5 Playground</h1>
-          <p className="max-w-xl text-sm text-white/70">
+          <p className="max-w-xl text-sm text-text-inverted/70">
             点击下方按钮打开光箱，体验分镜视图、标签故事 Tooltip、深度放大与偏好设置联动。
           </p>
         </div>

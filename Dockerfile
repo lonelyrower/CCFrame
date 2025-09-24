@@ -1,5 +1,5 @@
 # Multi-stage build for Next.js app with sharp support
-FROM node:18-bullseye AS base
+FROM node:20-bookworm AS base
 
 WORKDIR /app
 

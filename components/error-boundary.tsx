@@ -58,10 +58,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return (
         <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          <h2 className="text-lg font-semibold text-text-primary dark:text-text-muted mb-2">
             Something went wrong
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+          <p className="text-sm text-text-secondary dark:text-text-muted mb-4 max-w-md">
             {this.state.error.message || 'An unexpected error occurred while loading this content.'}
           </p>
           <div className="flex gap-2">
@@ -79,10 +79,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           </div>
           {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
             <details className="mt-4 text-left max-w-full overflow-auto">
-              <summary className="cursor-pointer text-sm text-gray-500 mb-2">
+              <summary className="cursor-pointer text-sm text-text-muted mb-2">
                 Error Details (Development)
               </summary>
-              <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded border overflow-auto max-h-40">
+              <pre className="text-xs bg-surface-panel dark:bg-surface-panel p-3 rounded border overflow-auto max-h-40">
                 {this.state.error.stack}
                 {this.state.errorInfo.componentStack}
               </pre>

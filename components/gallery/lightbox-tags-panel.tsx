@@ -80,22 +80,22 @@ export function LightboxTagsPanel({
   const countText = `${tags.length} 个`
 
   return (
-    <article className="w-full max-w-3xl rounded-2xl border border-white/10 bg-white/5 p-5 text-white shadow-soft backdrop-blur-xl">
+    <article className="w-full max-w-3xl rounded-2xl border border-contrast-outline/10 bg-surface-panel/5 p-5 text-text-inverted shadow-soft backdrop-blur-xl">
       <header className="flex items-center justify-between gap-4">
         <button
           type="button"
           onClick={onToggle}
-          className="flex items-center gap-2 text-left text-sm font-semibold text-white transition hover:text-white/70"
+          className="flex items-center gap-2 text-left text-sm font-semibold text-text-inverted transition hover:text-text-inverted/70"
           aria-expanded={!collapsed}
         >
           <TagIcon className="h-4 w-4" />
           <span>{titleText}</span>
-          <span className="text-xs text-white/60">{countText}</span>
+          <span className="text-xs text-text-inverted/60">{countText}</span>
         </button>
         <button
           type="button"
           onClick={toggleEditing}
-          className="rounded-full border border-white/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/70 transition hover:text-white"
+          className="rounded-full border border-contrast-outline/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-text-inverted/70 transition hover:text-text-inverted"
         >
           {editing ? '完成' : '编辑'}
         </button>
@@ -103,13 +103,13 @@ export function LightboxTagsPanel({
 
       {!collapsed && (
         <div className="mt-4 space-y-4 text-sm">
-          <p className="text-xs text-white/60">
+          <p className="text-xs text-text-inverted/60">
             为照片添加标签，方便检索。待保存：{pendingCount}
           </p>
 
           <div className="flex flex-wrap gap-2">
             {tags.length === 0 && (
-              <span className="rounded-full border border-dashed border-white/30 px-3 py-1 text-xs text-white/60">
+              <span className="rounded-full border border-dashed border-contrast-outline/30 px-3 py-1 text-xs text-text-inverted/60">
                 暂无标签
               </span>
             )}
@@ -122,8 +122,8 @@ export function LightboxTagsPanel({
                   key={tag.id}
                   className={`group relative flex items-center gap-2 rounded-full px-3 py-1 text-xs ${
                     pending
-                      ? 'bg-white/20 text-white/70'
-                      : 'bg-white/10 text-white'
+                      ? 'bg-surface-panel/20 text-text-inverted/70'
+                      : 'bg-surface-panel/10 text-text-inverted'
                   }`}
                 >
                   <span>{tag.name}</span>
@@ -151,13 +151,13 @@ export function LightboxTagsPanel({
 
           {suggestions.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs text-white/60">推荐标签</p>
+              <p className="text-xs text-text-inverted/60">推荐标签</p>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map(tag => (
                   <button
                     key={`${tag.id || tag.name}-suggestion`}
                     type="button"
-                    className="rounded-full border border-white/30 px-3 py-1 text-xs text-white/80 transition hover:border-white hover:text-white disabled:opacity-50"
+                    className="rounded-full border border-contrast-outline/30 px-3 py-1 text-xs text-text-inverted/80 transition hover:border-contrast-outline hover:text-text-inverted disabled:opacity-50"
                     onClick={() => handleQuickAdd(tag.name)}
                     disabled={submitting}
                     aria-label={`添加标签 ${tag.name}`}
@@ -177,19 +177,19 @@ export function LightboxTagsPanel({
                 handleSubmit()
               }}
             >
-              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1">
-                <Plus className="h-4 w-4 text-white/60" />
+              <div className="flex items-center gap-2 rounded-full border border-contrast-outline/20 bg-contrast-surface/20 px-3 py-1">
+                <Plus className="h-4 w-4 text-text-inverted/60" />
                 <input
                   value={draft}
                   onChange={event => setDraft(event.target.value)}
                   placeholder="添加标签"
-                  className="bg-transparent text-xs text-white placeholder:text-white/40 focus:outline-none"
+                  className="bg-transparent text-xs text-text-inverted placeholder:text-text-inverted/40 focus:outline-none"
                   disabled={submitting}
                 />
               </div>
               <button
                 type="submit"
-                className="rounded-full bg-white/20 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full bg-surface-panel/20 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-text-inverted transition hover:bg-surface-panel/30 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={submitting || !draft.trim()}
               >
                 {submitting ? '正在添加…' : '添加'}
@@ -198,7 +198,7 @@ export function LightboxTagsPanel({
           )}
 
           {activeTags.length > 0 && !editing && (
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-text-inverted/60">
               提示：点击“编辑”可以重命名或移除标签。
             </p>
           )}

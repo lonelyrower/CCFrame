@@ -29,10 +29,10 @@ export function LightboxMetadata({ photo, collapsed, onToggle, tags }: LightboxM
   const capturedOn = photo.takenAt ? formatDate(photo.takenAt) : formatDate(photo.createdAt)
 
   return (
-    <aside className="flex w-full max-w-xs flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white shadow-soft backdrop-blur-xl">
+    <aside className="flex w-full max-w-xs flex-col gap-4 rounded-2xl border border-contrast-outline/10 bg-surface-panel/5 p-5 text-sm text-text-inverted shadow-soft backdrop-blur-xl">
       <header className="space-y-1">
         <h3 className="text-base font-semibold">Photo Details</h3>
-        <p className="text-xs text-white/60">Captured on {capturedOn}</p>
+        <p className="text-xs text-text-inverted/60">Captured on {capturedOn}</p>
       </header>
 
       <Section
@@ -42,12 +42,12 @@ export function LightboxMetadata({ photo, collapsed, onToggle, tags }: LightboxM
         onToggle={() => onToggle('meta')}
       >
         <dl className="space-y-2 text-xs">
-          <div className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2">
-            <span className="text-white/70">Dimensions</span>
+          <div className="flex items-center justify-between rounded-lg bg-surface-panel/10 px-3 py-2">
+            <span className="text-text-inverted/70">Dimensions</span>
             <span>{photo.width} x {photo.height}</span>
           </div>
-          <div className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2">
-            <span className="text-white/70">File name</span>
+          <div className="flex items-center justify-between rounded-lg bg-surface-panel/10 px-3 py-2">
+            <span className="text-text-inverted/70">File name</span>
             <span>{photo.fileKey?.split('/').pop() || 'Unknown'}</span>
           </div>
         </dl>
@@ -60,16 +60,16 @@ export function LightboxMetadata({ photo, collapsed, onToggle, tags }: LightboxM
         onToggle={() => onToggle('camera')}
       >
         <ul className="space-y-2 text-xs">
-          {camera && <li className="rounded-lg bg-white/10 px-3 py-2">Camera: {camera}</li>}
-          {lens && <li className="rounded-lg bg-white/10 px-3 py-2">Lens: {lens}</li>}
+          {camera && <li className="rounded-lg bg-surface-panel/10 px-3 py-2">Camera: {camera}</li>}
+          {lens && <li className="rounded-lg bg-surface-panel/10 px-3 py-2">Lens: {lens}</li>}
           {exifData?.aperture && (
-            <li className="rounded-lg bg-white/10 px-3 py-2">Aperture: f/{exifData.aperture}</li>
+            <li className="rounded-lg bg-surface-panel/10 px-3 py-2">Aperture: f/{exifData.aperture}</li>
           )}
           {exifData?.shutterSpeed && (
-            <li className="rounded-lg bg-white/10 px-3 py-2">Shutter: {exifData.shutterSpeed}s</li>
+            <li className="rounded-lg bg-surface-panel/10 px-3 py-2">Shutter: {exifData.shutterSpeed}s</li>
           )}
           {exifData?.iso && (
-            <li className="rounded-lg bg-white/10 px-3 py-2">ISO: {exifData.iso}</li>
+            <li className="rounded-lg bg-surface-panel/10 px-3 py-2">ISO: {exifData.iso}</li>
           )}
         </ul>
       </Section>
@@ -82,12 +82,12 @@ export function LightboxMetadata({ photo, collapsed, onToggle, tags }: LightboxM
       >
         <div className="flex flex-wrap gap-2">
           {resolvedTags.length === 0 && (
-            <span className="text-xs text-white/60">No tags</span>
+            <span className="text-xs text-text-inverted/60">No tags</span>
           )}
           {resolvedTags.map(tag => (
             <span
               key={tag.id || tag.name}
-              className="rounded-full bg-white/10 px-2 py-1 text-xs"
+              className="rounded-full bg-surface-panel/10 px-2 py-1 text-xs"
             >
               {tag.name}
             </span>
@@ -103,10 +103,10 @@ export function LightboxMetadata({ photo, collapsed, onToggle, tags }: LightboxM
           onToggle={() => onToggle('location')}
         >
           <div className="space-y-2 text-xs">
-            <div className="rounded-lg bg-white/10 px-3 py-2 text-white/80">
+            <div className="rounded-lg bg-surface-panel/10 px-3 py-2 text-text-inverted/80">
               {location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
             </div>
-            <div className="overflow-hidden rounded-xl bg-white/5">
+            <div className="overflow-hidden rounded-xl bg-surface-panel/5">
               <canvas
                 className="h-28 w-full"
                 ref={el => {
@@ -151,16 +151,16 @@ function Section({
     <div className="space-y-2">
       <button
         onClick={onToggle}
-        className="flex w-full items-center justify-between rounded-xl bg-white/10 px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/80 transition hover:bg-white/15"
+        className="flex w-full items-center justify-between rounded-xl bg-surface-panel/10 px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.2em] text-text-inverted/80 transition hover:bg-surface-panel/15"
         aria-expanded={!collapsed}
       >
-        <span className="flex items-center gap-2 text-white">
+        <span className="flex items-center gap-2 text-text-inverted">
           {icon}
           {title}
         </span>
         <span>{collapsed ? 'Show' : 'Hide'}</span>
       </button>
-      {!collapsed && <div className="space-y-2 text-sm text-white/80">{children}</div>}
+      {!collapsed && <div className="space-y-2 text-sm text-text-inverted/80">{children}</div>}
     </div>
   )
 }

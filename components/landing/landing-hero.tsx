@@ -38,10 +38,10 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
               <AnimateOnScroll delay={0.05}>
                 <div className="space-y-4 text-balance">
                   <Overline className="text-text-muted">Creative Camera Frame</Overline>
-                  <Heading as="h1" size="xl" className="text-balance text-white">
+                  <Heading as="h1" size="xl" className="text-balance text-text-inverted">
                     \u6355\u6349\u5149\u5f71\uff0c\u8bb2\u8ff0\u5c5e\u4e8e\u4f60\u7684\u6444\u5f71\u6545\u4e8b
                   </Heading>
-                  <Text size="lg" tone="secondary" className="max-w-xl text-white/80">
+                  <Text size="lg" tone="secondary" className="max-w-xl text-text-inverted/80">
                     \u81ea\u52a8\u6574\u7406\u3001\u8bed\u4e49\u641c\u7d22\u3001\u65f6\u5e8f\u53d9\u4e8b\uff0c\u4ee5\u6781\u81f4\u6027\u80fd\u5448\u73b0\u4f60\u7684\u4f5c\u54c1\u96c6\u3002\u65e0\u8bba\u662f\u54c1\u724c\u6d3b\u52a8\u8fd8\u662f\u79c1\u4eab\u77ac\u95f4\uff0cCC Frame \u90fd\u80fd\u8ba9\u7075\u611f\u88ab\u770b\u89c1\u3002
                   </Text>
                 </div>
@@ -74,7 +74,7 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
                   {heroPhotos.slice(1).map((photo) => (
                     <div
                       key={photo.id}
-                      className="group relative h-28 w-28 overflow-hidden rounded-2xl border border-white/10 bg-white/10 shadow-floating backdrop-blur"
+                      className="group relative h-28 w-28 overflow-hidden rounded-2xl border border-contrast-outline/10 bg-surface-panel/10 shadow-floating backdrop-blur"
                     >
                       <Image
                         src={getImageUrl(photo.id, 'medium', 'webp')}
@@ -98,11 +98,11 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
 
 function MetricItem({ label, value, suffix }: { label: string; value: number; suffix?: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-left text-white shadow-subtle backdrop-blur">
-      <dt className="text-xs font-medium uppercase tracking-wide text-white/70">{label}</dt>
+    <div className="rounded-2xl border border-contrast-outline/10 bg-surface-panel/10 px-4 py-3 text-left text-text-inverted shadow-subtle backdrop-blur">
+      <dt className="text-xs font-medium uppercase tracking-wide text-text-inverted/70">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold">
         {numberFormatter.format(value)}
-        {suffix ? <span className="text-lg font-normal text-white/60">{suffix}</span> : null}
+        {suffix ? <span className="text-lg font-normal text-text-inverted/60">{suffix}</span> : null}
       </dd>
     </div>
   )

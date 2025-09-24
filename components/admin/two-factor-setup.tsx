@@ -173,7 +173,7 @@ export function TwoFactorSetup() {
               {status.enabled ? (
                 <ShieldCheck className="h-5 w-5 text-green-600" />
               ) : (
-                <ShieldX className="h-5 w-5 text-gray-400" />
+                <ShieldX className="h-5 w-5 text-text-muted" />
               )}
               <span>{status.message}</span>
             </div>
@@ -230,7 +230,7 @@ export function TwoFactorSetup() {
           <CardContent className="space-y-6">
             {/* 二维码 */}
             <div className="flex flex-col items-center space-y-4">
-              <div className="bg-white p-4 rounded-lg border">
+              <div className="bg-surface-panel p-4 rounded-lg border">
                 <Image
                   src={setup.qrCodeUrl}
                   alt="2FA QR Code"
@@ -239,7 +239,7 @@ export function TwoFactorSetup() {
                   className="block"
                 />
               </div>
-              <p className="text-sm text-gray-600 text-center">
+              <p className="text-sm text-text-secondary text-center">
                 使用 Google Authenticator、Authy 或其他TOTP应用扫描此二维码
               </p>
             </div>
@@ -262,7 +262,7 @@ export function TwoFactorSetup() {
               </div>
 
               {showManualKey && (
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-surface-canvas rounded-lg">
                   <code className="flex-1 text-sm font-mono break-all">
                     {setup.manualEntryKey}
                   </code>

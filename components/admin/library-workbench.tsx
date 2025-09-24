@@ -321,7 +321,7 @@ function ToggleButton({ icon: Icon, active, label, onClick }: ToggleButtonProps)
       onClick={onClick}
       className={cn(
         'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition',
-        active ? 'bg-primary text-white shadow-subtle' : 'text-text-secondary hover:bg-surface-canvas/60',
+        active ? 'bg-primary text-text-inverted shadow-subtle' : 'text-text-secondary hover:bg-surface-canvas/60',
       )}
     >
       <Icon className="h-3.5 w-3.5" />

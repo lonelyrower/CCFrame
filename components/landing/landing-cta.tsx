@@ -21,7 +21,7 @@ export function LandingCTA({ metrics }: LandingCTAProps) {
         <AnimateOnScroll>
           <Surface tone="glass" padding="lg" className="flex flex-col items-start gap-6 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/20 via-surface-panel to-surface-canvas shadow-floating sm:flex-row sm:items-center sm:justify-between sm:gap-12">
             <div className="space-y-3 text-balance">
-              <Heading size="lg" className="text-white">
+              <Heading size="lg" className="text-text-inverted">
                 准备好构建你的下一场视觉叙事了吗？
               </Heading>
               <Text tone="inverted">

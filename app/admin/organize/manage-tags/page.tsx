@@ -245,8 +245,8 @@ export default function ManageTagsPage() {
       </Container>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md space-y-3 rounded-xl bg-white p-4 shadow-lg dark:bg-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-contrast-surface/50 p-4">
+          <div className="w-full max-w-md space-y-3 rounded-xl bg-surface-panel p-4 shadow-surface dark:bg-surface-canvas">
             <Heading size="sm">�༭��ǩ</Heading>
             <div>
               <label className="mb-1 block text-sm">����</label>

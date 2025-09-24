@@ -22,8 +22,8 @@ export function CompareButton({ photo, size = 'sm', tone = 'default', className 
   const variant = tone === 'default' ? (isComparing ? 'secondary' : 'ghost') : 'ghost'
   const classes = tone === 'inverted'
     ? cn(
-        'text-white hover:bg-white/20',
-        isComparing ? 'bg-white/20 text-white' : '',
+        'text-text-inverted hover:bg-surface-panel/20',
+        isComparing ? 'bg-surface-panel/20 text-text-inverted' : '',
         className,
       )
     : className

@@ -22,8 +22,8 @@ export function FavoriteButton({ photo, size = 'sm', tone = 'default', className
   const variant = tone === 'default' ? (isFavorite ? 'secondary' : 'ghost') : 'ghost'
   const classes = tone === 'inverted'
     ? cn(
-        'text-white hover:bg-white/20',
-        isFavorite ? 'bg-white/20 text-white' : '',
+        'text-text-inverted hover:bg-surface-panel/20',
+        isFavorite ? 'bg-surface-panel/20 text-text-inverted' : '',
         className,
       )
     : className

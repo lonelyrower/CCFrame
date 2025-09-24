@@ -51,7 +51,7 @@ const FilmstripView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-16 flex items-center justify-center text-xs text-gray-400">
+      <div className="h-16 flex items-center justify-center text-xs text-text-muted">
         {LABELS.filmstripLoading}
       </div>
     ),
@@ -194,7 +194,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm"
+        className="fixed inset-0 z-50 bg-contrast-surface/90 backdrop-blur-sm"
         onClick={onClose}
       >
   <div ref={dialogRef} className="absolute inset-0 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby={dialogTitleId} aria-describedby={dialogDescriptionId}>
@@ -211,7 +211,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                 variant="ghost"
                 size="icon"
                 aria-label={LABELS.prev}
-                className="absolute left-4 z-10 bg-black/20 hover:bg-black/40 text-white"
+                className="absolute left-4 z-10 bg-contrast-surface/20 hover:bg-contrast-surface/40 text-text-inverted"
                 onClick={(e) => {
                   e.stopPropagation()
                   onPrevious()
@@ -224,7 +224,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                 variant="ghost"
                 size="icon"
                 aria-label={LABELS.next}
-                className="absolute right-4 z-10 bg-black/20 hover:bg-black/40 text-white"
+                className="absolute right-4 z-10 bg-contrast-surface/20 hover:bg-contrast-surface/40 text-text-inverted"
                 onClick={(e) => {
                   e.stopPropagation()
                   onNext()
@@ -239,7 +239,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-10 bg-black/20 hover:bg-black/40 text-white"
+            className="absolute top-4 right-4 z-10 bg-contrast-surface/20 hover:bg-contrast-surface/40 text-text-inverted"
             onClick={(e) => { e.stopPropagation(); onClose() }}
             aria-label={LABELS.close}
           >
@@ -249,7 +249,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-28 z-10 bg-black/20 hover:bg-black/40 text-white"
+              className="absolute top-4 right-28 z-10 bg-contrast-surface/20 hover:bg-contrast-surface/40 text-text-inverted"
               onClick={(e) => {
                 e.stopPropagation()
                 setMode?.(mode === 'story' ? 'lightbox' : 'story')
@@ -262,7 +262,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-16 z-10 bg-black/20 hover:bg-black/40 text-white"
+            className="absolute top-4 right-16 z-10 bg-contrast-surface/20 hover:bg-contrast-surface/40 text-text-inverted"
             onClick={(e) => { e.stopPropagation(); toggleHelp() }}
             aria-label={LABELS.help}
           >
@@ -271,7 +271,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
 
           {/* Photo Counter */}
           {photos.length > 1 && (
-            <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-sm" role="status" aria-live="polite" aria-atomic="true">
+            <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-contrast-surface/20 backdrop-blur-sm rounded-full text-text-inverted text-sm" role="status" aria-live="polite" aria-atomic="true">
               {`${LABELS.counterPrefix}${currentIndex + 1}${LABELS.counterSuffix} / ${LABELS.counterTotal}${photos.length}${LABELS.counterSuffix}`}
             </div>
           )}
@@ -328,13 +328,13 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                   />
                 </div>
               ) : (
-                <div className="w-full lg:w-80 bg-white dark:bg-gray-900 rounded-lg p-6 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]" tabIndex={0}>
+                <div className="w-full lg:w-80 bg-surface-panel dark:bg-surface-canvas rounded-lg p-6 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]" tabIndex={0}>
                   <div className="space-y-6">
                     {/* Basic Info */}
                   <div>
                     <h2 className="text-2xl font-bold mb-2">{metadata.headline}</h2>
                     {metadata.summary ? (
-                      <p className="text-gray-600 dark:text-gray-400">{metadata.summary}</p>
+                      <p className="text-text-secondary dark:text-text-muted">{metadata.summary}</p>
                     ) : null}
                   </div>
 
@@ -362,7 +362,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                         <span className="text-xs opacity-60">{collapse.exif ? '展开' : '收起'}</span>
                       </button>
                       {!collapse.exif && (
-                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 pl-6" id={exifPanelId} role="region" aria-labelledby={exifPanelId + '-heading'}>
+                        <div className="space-y-2 text-sm text-text-secondary dark:text-text-muted pl-6" id={exifPanelId} role="region" aria-labelledby={exifPanelId + '-heading'}>
                           {metadata.exif.map((field) => (
                             <div key={field.label}>{field.label}： {field.value}</div>
                           ))}
@@ -389,11 +389,11 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                               <span
                                 key={tag.id}
                                 data-pending={pending || undefined}
-                                className={`group relative px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${pending ? 'bg-gray-400/30 text-gray-300 animate-pulse' : 'bg-primary/10 text-primary'}`}
+                                className={`group relative px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${pending ? 'bg-surface-panel/30 text-text-muted animate-pulse' : 'bg-primary/10 text-primary'}`}
                               >
                                 {tag.name}
                                 {pending && (
-                                  <svg className="h-3 w-3 animate-spin text-gray-300" viewBox="0 0 24 24" aria-hidden>
+                                  <svg className="h-3 w-3 animate-spin text-text-muted" viewBox="0 0 24 24" aria-hidden>
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" />
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
                                   </svg>
@@ -410,8 +410,8 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                           })}
                           {editingTags && (
                             <form onSubmit={(e) => { e.preventDefault(); addTag() }} className="flex items-center gap-1">
-                              <input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="添加标签" className="h-6 px-2 text-xs rounded border border-gray-300 dark:border-gray-600 bg-transparent" />
-                              <button type="submit" className="text-xs px-2 h-6 rounded bg-primary text-white">+</button>
+                              <input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="添加标签" className="h-6 px-2 text-xs rounded border border-surface-outline/60 dark:border-surface-outline/70 bg-transparent" />
+                              <button type="submit" className="text-xs px-2 h-6 rounded bg-primary text-text-inverted">+</button>
                             </form>
                           )}
                         </div>
@@ -426,7 +426,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                       <span className="text-xs opacity-60">{collapse.tech ? 'Show' : 'Hide'}</span>
                     </button>
                     {!collapse.tech && (
-                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400" id={techPanelId} role="region" aria-labelledby={techPanelId + '-heading'}>
+                        <div className="space-y-2 text-sm text-text-secondary dark:text-text-muted" id={techPanelId} role="region" aria-labelledby={techPanelId + '-heading'}>
                         <div>Dimensions: {metadata.dimensions}</div>
                         <div>File: {photo.fileKey?.split('/').pop() || 'Unknown'}</div>
                         {photo.location && (photo.location as any).lat && (photo.location as any).lng && (
@@ -434,7 +434,7 @@ export const PhotoModal = memo<PhotoModalProps>(function PhotoModal({ photo, pho
                             <span className="block text-xs mb-1 opacity-70">Map Preview</span>
                             <canvas
                               data-map-preview
-                              className="w-full h-24 rounded bg-gray-200 dark:bg-gray-800"
+                              className="w-full h-24 rounded bg-surface-panel dark:bg-surface-panel"
                               ref={el => {
                                 if (!el) return
                                 const ctx = el.getContext('2d')

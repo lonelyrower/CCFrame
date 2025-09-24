@@ -16,13 +16,13 @@ export function TimelineTooltip({ label, description, align = 'left', accentColo
       )}
     >
       <div
-        className="rounded-full border border-white/10 bg-black/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/70 shadow-lg"
+        className="rounded-full border border-contrast-outline/10 bg-contrast-surface/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-text-inverted/70 shadow-surface"
         style={accentColor ? { borderColor: accentColor, color: accentColor } : undefined}
       >
         {label}
       </div>
       {description ? (
-        <p className="mt-2 max-w-[220px] text-[11px] leading-relaxed text-white/60">{description}</p>
+        <p className="mt-2 max-w-[220px] text-[11px] leading-relaxed text-text-inverted/60">{description}</p>
       ) : null}
     </div>
   )

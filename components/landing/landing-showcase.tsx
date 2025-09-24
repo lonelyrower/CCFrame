@@ -51,10 +51,10 @@ export function LandingShowcase({ photos }: LandingShowcaseProps) {
                     blurDataURL={fallbackBlur}
                     className="object-cover transition-transform duration-500 ease-[var(--ease-out)] hover:scale-105"
                   />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-3 text-xs text-white">
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-3 text-xs text-text-inverted">
                     <div className="font-medium">{photo.album?.title || '独立照片'}</div>
                     {photo.tags.length > 0 ? (
-                      <div className="mt-1 flex flex-wrap gap-1 text-[10px] uppercase tracking-wide text-white/70">
+                      <div className="mt-1 flex flex-wrap gap-1 text-[10px] uppercase tracking-wide text-text-inverted/70">
                         {photo.tags.slice(0, 2).map(({ tag }) => (
                           <span key={tag.id}>#{tag.name}</span>
                         ))}

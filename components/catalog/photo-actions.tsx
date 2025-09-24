@@ -19,14 +19,14 @@ export function CatalogPhotoActions({ photo }: { photo: PhotoWithDetails }) {
 
   return (
     <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1">
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-1 shadow">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-contrast-surface/60 px-1.5 py-1 shadow">
         <FavoriteButton photo={photo} tone="inverted" />
         <CompareButton photo={photo} tone="inverted" />
         <Button
           type="button"
           size="icon-sm"
           variant="ghost"
-          className="text-white hover:bg-white/20"
+          className="text-text-inverted hover:bg-surface-panel/20"
           title="联系顾问"
           onClick={handleContact}
         >

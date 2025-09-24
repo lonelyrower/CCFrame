@@ -102,7 +102,7 @@ export const PhotosClientGallery = memo<PhotosClientGalleryProps>(function Photo
         <MasonryGallery photos={photos} loading={loading && photos.length === 0} />
         <div ref={sentinelRef} className="h-10 w-full" aria-hidden="true" />
         {loading && photos.length > 0 && (
-          <div className="py-4 text-center text-sm text-gray-500">Loading more photos...</div>
+          <div className="py-4 text-center text-sm text-text-muted">Loading more photos...</div>
         )}
         {error && (
           <div className="py-2 text-center text-sm text-red-500">
@@ -119,7 +119,7 @@ export const PhotosClientGallery = memo<PhotosClientGalleryProps>(function Photo
           </div>
         )}
         {completed && (
-          <div className="py-4 text-center text-xs text-gray-400">All photos loaded ({total})</div>
+          <div className="py-4 text-center text-xs text-text-muted">All photos loaded ({total})</div>
         )}
       </LightboxProvider>
     </ErrorBoundary>

@@ -252,7 +252,7 @@ export function CatalogFilterPanel({ albums, tags, colors, active }: CatalogFilt
                 aria-pressed={isActive}
               >
                 <span
-                  className="h-4 w-4 rounded-full border border-white/60 shadow-soft"
+                  className="h-4 w-4 rounded-full border border-contrast-outline/60 shadow-soft"
                   style={{ backgroundColor: color.value }}
                   aria-hidden
                 />

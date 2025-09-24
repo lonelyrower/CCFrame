@@ -274,7 +274,7 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
               }}
             >
               <div
-                className="relative h-full w-full overflow-hidden rounded-xl bg-surface-panel/60 shadow-sm transition-all duration-500 ease-[var(--ease-soft)] hover:-translate-y-1 hover:shadow-lg dark:bg-surface-panel/40"
+                className="relative h-full w-full overflow-hidden rounded-xl bg-surface-panel/60 shadow-subtle transition-all duration-500 ease-[var(--ease-soft)] hover:-translate-y-1 hover:shadow-surface dark:bg-surface-panel/40"
                 style={{
                   aspectRatio: photo.width && photo.height
                     ? `${photo.width} / ${photo.height}`
@@ -291,14 +291,14 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
 
                 {photo.tags.length > 0 && ( 
                   <div className="pointer-events-none absolute inset-x-3 top-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="flex flex-wrap gap-2 text-xs text-white">
+                    <div className="flex flex-wrap gap-2 text-xs text-text-inverted">
                       {photo.tags.slice(0, 2).map(({ tag }) => (
-                        <span key={tag.id} className="rounded-full bg-black/60 px-2 py-0.5 shadow">
+                        <span key={tag.id} className="rounded-full bg-contrast-surface/60 px-2 py-0.5 shadow">
                           {tag.name}
                         </span>
                       ))}
                       {photo.tags.length > 2 && (
-                        <span className="rounded-full bg-black/60 px-2 py-0.5 shadow">
+                        <span className="rounded-full bg-contrast-surface/60 px-2 py-0.5 shadow">
                           +{photo.tags.length - 2}
                         </span>
                       )}

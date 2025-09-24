@@ -10,7 +10,7 @@ const surfaceVariants = cva(
       tone: {
         canvas: 'bg-surface-canvas',
         panel: 'bg-surface-panel backdrop-blur-sm',
-        glass: 'bg-surface-glass backdrop-blur-xl border-white/10 shadow-floating',
+        glass: 'bg-surface-glass backdrop-blur-xl border-contrast-outline/10 shadow-floating',
         transparent: 'bg-transparent border-transparent shadow-none backdrop-blur-none',
       },
       padding: {

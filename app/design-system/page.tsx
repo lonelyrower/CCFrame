@@ -31,7 +31,7 @@ const swatches = [
   { name: 'Accent', className: 'bg-accent text-accent-foreground border border-surface-outline/30' },
   { name: 'Surface Canvas', className: 'bg-surface-canvas text-text-primary border border-surface-outline/30' },
   { name: 'Surface Panel', className: 'bg-surface-panel text-text-primary border border-surface-outline/30' },
-  { name: 'Surface Glass', className: 'bg-surface-glass text-text-primary border border-white/20 backdrop-blur' },
+  { name: 'Surface Glass', className: 'bg-surface-glass text-text-primary border border-contrast-outline/20 backdrop-blur' },
 ]
 
 function SectionTitle({ title, description }: { title: string; description?: string }) {
