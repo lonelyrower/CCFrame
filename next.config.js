@@ -114,7 +114,7 @@ const baseConfig = {
           headers: [
             {
               key: 'X-Frame-Options',
-              value: 'DENY',
+              value: 'SAMEORIGIN',
             },
             {
               key: 'X-Content-Type-Options',
@@ -123,14 +123,6 @@ const baseConfig = {
             {
               key: 'Referrer-Policy',
               value: 'strict-origin-when-cross-origin',
-            },
-            {
-              key: 'Cross-Origin-Opener-Policy',
-              value: 'same-origin',
-            },
-            {
-              key: 'Cross-Origin-Embedder-Policy',
-              value: 'require-corp',
             },
           ],
         },

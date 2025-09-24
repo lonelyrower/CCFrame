@@ -62,7 +62,7 @@ export function PublicHeader() {
           </span>
           <span className="leading-tight">
             CC Frame
-            <span className="block text-xs font-normal text-text-secondary">Creative Camera</span>
+            <span className="block text-xs font-normal text-text-secondary">我的摄影时光</span>
           </span>
         </Link>
 

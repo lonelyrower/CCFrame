@@ -18,7 +18,7 @@ import { getImageUrl } from '@/lib/utils'
 
 const landingTitle = 'CC Frame · 我的摄影时光'
 const landingDescription = '记录生活中的美好瞬间，分享摄影路上的点点滴滴。一个简洁优雅的个人相册，让每一张照片都有它的故事。'
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://2.135.147.52'
 const ogImage = '/icons/icon-512.png'
 
 export const metadata: Metadata = {

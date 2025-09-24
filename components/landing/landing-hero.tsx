@@ -37,7 +37,7 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
 
               <AnimateOnScroll delay={0.05}>
                 <div className="space-y-4 text-balance">
-                  <Overline className="text-text-muted">Creative Camera Frame</Overline>
+                  <Overline className="text-text-muted">我的摄影时光</Overline>
                   <Heading as="h1" size="xl" className="text-balance text-text-inverted">
                     \u6355\u6349\u5149\u5f71\uff0c\u8bb2\u8ff0\u5c5e\u4e8e\u4f60\u7684\u6444\u5f71\u6545\u4e8b
                   </Heading>
