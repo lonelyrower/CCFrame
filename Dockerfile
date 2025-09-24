@@ -4,6 +4,7 @@ FROM node:20-bookworm AS base
 WORKDIR /app
 
 # Install OS deps for sharp/libvips (with HEIF support where available)
+# Note: Debian bookworm ships libwebp7/libtiff6
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       ca-certificates \
@@ -14,8 +15,8 @@ RUN apt-get update && \
       libheif1 \
       libjpeg62-turbo \
       libpng16-16 \
-      libwebp6 \
-      libtiff5 \
+      libwebp7 \
+      libtiff6 \
       curl && \
     rm -rf /var/lib/apt/lists/*
 
