@@ -43,24 +43,107 @@ export function AppOverlays() {
 
 function ThemeQuickPanel() {
   const { contrast, toggleContrast, motionPreference, setMotionPreference, resolvedMotion } = useThemeSettings()
+  const [isVisible, setIsVisible] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
+  // 键盘快捷键支持
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + Shift + P 切换面板
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'P') {
+        event.preventDefault()
+        setIsVisible(prev => !prev)
+      }
+      // ESC 关闭面板
+      if (event.key === 'Escape' && isVisible) {
+        setIsVisible(false)
+        setExpanded(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isVisible])
+
+  // 自动隐藏逻辑：8秒后隐藏，但如果展开了就不自动隐藏
+  useEffect(() => {
+    if (isVisible && !expanded) {
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+      }, 8000)
+      return () => clearTimeout(timer)
+    }
+  }, [isVisible, expanded])
+
+  // 如果面板不可见，显示悬浮触发按钮
+  if (!isVisible) {
+    return (
+      <div className="pointer-events-auto fixed bottom-6 right-6 z-50 group">
+        <motion.button
+          type="button"
+          onClick={() => setIsVisible(true)}
+          className="rounded-full bg-gradient-to-r from-primary/90 to-accent/90 p-3 shadow-floating backdrop-blur-sm transition-all hover:shadow-surface active:scale-95"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 2, duration: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Sparkles className="h-5 w-5 text-primary-foreground" />
+          <span className="sr-only">显示偏好设置 (Ctrl+Shift+P)</span>
+        </motion.button>
+
+        {/* 提示文字 */}
+        <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <div className="bg-surface-panel/95 text-text-primary text-xs px-3 py-2 rounded-lg shadow-subtle backdrop-blur-sm whitespace-nowrap">
+            显示偏好
+            <div className="text-text-muted text-xs mt-0.5">Ctrl+Shift+P</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="pointer-events-auto w-full max-w-xs">
-      <Surface tone="panel" padding="md" className="shadow-subtle flex flex-col gap-3">
+    <motion.div
+      className="pointer-events-auto w-full max-w-xs fixed right-6 top-20 md:relative md:right-auto md:top-auto"
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 50 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Surface tone="panel" padding="md" className="shadow-subtle flex flex-col gap-3 relative border border-surface-outline/20">
+        {/* 关闭按钮 */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsVisible(false)
+            setExpanded(false)
+          }}
+          className="absolute top-2 right-2 rounded-full p-1.5 text-text-muted hover:bg-surface-outline/20 hover:text-text-primary transition-colors"
+        >
+          <Command className="h-3.5 w-3.5 rotate-45" />
+          <span className="sr-only">关闭 (ESC)</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setExpanded((open) => !open)}
-          className="flex items-center justify-between gap-3 text-left"
+          className="flex items-center justify-between gap-3 text-left pr-8"
         >
           <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
             <Sparkles className="h-4 w-4 text-primary" />
-            Display preferences
+            显示偏好
           </div>
-          <Command className={cn('h-4 w-4 text-text-muted transition-transform duration-200', expanded && 'rotate-45')} />
+          <Command className={cn('h-4 w-4 text-text-muted transition-transform duration-200', expanded && 'rotate-90')} />
         </button>
 
-        <ThemeToggle />
+        {/* 折叠状态的简化控制 */}
+        {!expanded && (
+          <Text size="xs" tone="muted" className="text-center -mt-1">
+            点击展开更多选项
+          </Text>
+        )}
 
         <AnimatePresence initial={false}>
           {expanded ? (
@@ -71,52 +154,66 @@ function ThemeQuickPanel() {
               transition={{ duration: 0.24, ease: [0.33, 1, 0.68, 1] }}
               className="overflow-hidden"
             >
-              <div className="mt-3 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Text size="xs" tone="secondary">
-                    High contrast
-                  </Text>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={contrast === 'high' ? 'default' : 'outline'}
-                    onClick={toggleContrast}
-                  >
-                    {contrast === 'high' ? 'Enabled' : 'Enable'}
-                  </Button>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Text size="xs" tone="secondary">主题偏好</Text>
+                  <div className="flex justify-center">
+                    <ThemeToggle />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                  <Text size="xs" tone="secondary">
-                    Motion preference
-                  </Text>
-                  <div className="flex items-center gap-2">
+
+                <div className="border-t border-surface-outline/20 pt-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Text size="xs" tone="secondary">
+                      高对比度
+                    </Text>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={contrast === 'high' ? 'default' : 'outline'}
+                      onClick={toggleContrast}
+                    >
+                      {contrast === 'high' ? '已开启' : '开启'}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-t border-surface-outline/20 pt-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Text size="xs" tone="secondary">
+                      动效偏好
+                    </Text>
+                  </div>
+                  <div className="flex gap-2">
                     <Button
                       type="button"
                       size="sm"
                       variant={motionPreference === 'system' ? 'default' : 'outline'}
                       onClick={() => setMotionPreference('system')}
+                      className="flex-1"
                     >
-                      Follow system
+                      跟随系统
                     </Button>
                     <Button
                       type="button"
                       size="sm"
                       variant={motionPreference === 'reduce' ? 'default' : 'outline'}
                       onClick={() => setMotionPreference('reduce')}
+                      className="flex-1"
                     >
-                      Reduce motion
+                      减少动效
                     </Button>
                   </div>
+                  <Text size="xs" tone="muted">
+                    当前: {resolvedMotion === 'reduce' ? '最少动效' : '完整动效'}
+                  </Text>
                 </div>
-                <Text size="xs" tone="muted">
-                  Current mode: {resolvedMotion === 'reduce' ? 'animations minimised' : 'full animations'}
-                </Text>
               </div>
             </motion.div>
           ) : null}
         </AnimatePresence>
       </Surface>
-    </div>
+    </motion.div>
   )
 }
 
