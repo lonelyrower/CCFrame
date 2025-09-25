@@ -7,6 +7,7 @@ import { StorageManager } from '@/lib/storage-manager'
 import type { StorageProvider } from '@/lib/storage-manager'
 import type {
   AdminSettingsOverviewDto,
+  AnalyticsSettingsDto,
   IntegrationSettingsDto,
   SettingsValidationResultDto,
   SettingsValidationTarget,
@@ -19,11 +20,21 @@ const SITE_SETTINGS_PATH = process.env.SITE_SETTINGS_PATH
   ? path.resolve(process.env.SITE_SETTINGS_PATH)
   : path.resolve(process.cwd(), 'config', 'site-settings.json')
 
+const ANALYTICS_SETTINGS_PATH = process.env.ANALYTICS_SETTINGS_PATH
+  ? path.resolve(process.env.ANALYTICS_SETTINGS_PATH)
+  : path.resolve(process.cwd(), 'config', 'analytics-settings.json')
+
 const defaultSiteSettings: SiteSettingsDto = {
   title: 'CC Frame',
   description: '记录影像与造型的私人云相册。',
   defaultVisibility: 'PUBLIC',
   allowPublicAccess: true,
+}
+
+const defaultAnalyticsSettings: AnalyticsSettingsDto = {
+  enabled: false,
+  googleAnalyticsId: '',
+  microsoftClarityId: '',
 }
 
 function ensureDirectory(filePath: string) {
@@ -58,8 +69,37 @@ function writeSiteSettingsFile(settings: SiteSettingsDto) {
   fs.writeFileSync(SITE_SETTINGS_PATH, JSON.stringify(settings, null, 2), 'utf8')
 }
 
+function readAnalyticsSettingsFile(): AnalyticsSettingsDto {
+  try {
+    if (!fs.existsSync(ANALYTICS_SETTINGS_PATH)) {
+      return defaultAnalyticsSettings
+    }
+    const raw = fs.readFileSync(ANALYTICS_SETTINGS_PATH, 'utf8')
+    if (!raw.trim()) {
+      return defaultAnalyticsSettings
+    }
+    const parsed = JSON.parse(raw) as Partial<AnalyticsSettingsDto>
+    return {
+      ...defaultAnalyticsSettings,
+      ...parsed,
+    }
+  } catch (error) {
+    console.error('[settings] Failed to read analytics settings:', error)
+    return defaultAnalyticsSettings
+  }
+}
+
+function writeAnalyticsSettingsFile(settings: AnalyticsSettingsDto) {
+  ensureDirectory(ANALYTICS_SETTINGS_PATH)
+  fs.writeFileSync(ANALYTICS_SETTINGS_PATH, JSON.stringify(settings, null, 2), 'utf8')
+}
+
 export async function getSiteSettings(): Promise<SiteSettingsDto> {
   return readSiteSettingsFile()
+}
+
+export async function getAnalyticsSettings(): Promise<AnalyticsSettingsDto> {
+  return readAnalyticsSettingsFile()
 }
 
 export async function updateSiteSettings(patch: Partial<SiteSettingsDto>): Promise<SiteSettingsDto> {
@@ -77,6 +117,29 @@ export async function updateSiteSettings(patch: Partial<SiteSettingsDto>): Promi
     return next
   } catch (error) {
     recordAdminOperation('settings.site.update', Date.now() - start, 'error', {
+      message: error instanceof Error ? error.message : String(error),
+    })
+    throw error
+  }
+}
+
+export async function updateAnalyticsSettings(patch: Partial<AnalyticsSettingsDto>): Promise<AnalyticsSettingsDto> {
+  const start = Date.now()
+  try {
+    const current = readAnalyticsSettingsFile()
+    const next: AnalyticsSettingsDto = {
+      ...current,
+      ...patch,
+    }
+    writeAnalyticsSettingsFile(next)
+    recordAdminOperation('settings.analytics.update', Date.now() - start, 'success', {
+      enabled: next.enabled,
+      hasGoogleAnalytics: Boolean(next.googleAnalyticsId),
+      hasMicrosoftClarity: Boolean(next.microsoftClarityId),
+    })
+    return next
+  } catch (error) {
+    recordAdminOperation('settings.analytics.update', Date.now() - start, 'error', {
       message: error instanceof Error ? error.message : String(error),
     })
     throw error
@@ -110,8 +173,11 @@ export async function updateIntegrationSettings(
 }
 
 export async function getAdminSettingsOverview(userId: string): Promise<AdminSettingsOverviewDto> {
-  const site = await getSiteSettings()
-  const runtime = getRuntimeConfig()
+  const [site, analytics, runtime] = await Promise.all([
+    getSiteSettings(),
+    getAnalyticsSettings(),
+    Promise.resolve(getRuntimeConfig())
+  ])
 
   const user = await db.user.findUnique({
     where: { id: userId },
@@ -129,6 +195,7 @@ export async function getAdminSettingsOverview(userId: string): Promise<AdminSet
       email: user?.email ?? '',
     },
     site,
+    analytics,
     storage: storageOverview,
     integrations: {
       pixabayApiKey: user?.pixabayApiKey ?? '',
@@ -167,6 +234,8 @@ async function performValidation(
       return validateIntegrations(userId)
     case 'semantic':
       return validateSemantic()
+    case 'analytics':
+      return validateAnalytics()
     default:
       return {
         target,
@@ -296,6 +365,42 @@ async function validateSemantic(): Promise<SettingsValidationResultDto> {
     target: 'semantic',
     success: true,
     message: '语义检索配置通过基础校验。',
+    timestamp: new Date().toISOString(),
+  }
+}
+
+async function validateAnalytics(): Promise<SettingsValidationResultDto> {
+  const analytics = await getAnalyticsSettings()
+
+  if (!analytics.enabled) {
+    return {
+      target: 'analytics',
+      success: true,
+      message: '访问跟踪处于关闭状态。',
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  const hasGoogleAnalytics = Boolean(analytics.googleAnalyticsId?.trim())
+  const hasMicrosoftClarity = Boolean(analytics.microsoftClarityId?.trim())
+
+  if (!hasGoogleAnalytics && !hasMicrosoftClarity) {
+    return {
+      target: 'analytics',
+      success: false,
+      message: '访问跟踪已启用但未配置任何跟踪服务。',
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  const services = []
+  if (hasGoogleAnalytics) services.push('Google Analytics')
+  if (hasMicrosoftClarity) services.push('Microsoft Clarity')
+
+  return {
+    target: 'analytics',
+    success: true,
+    message: `访问跟踪配置正常，已启用 ${services.join(' 和 ')}。`,
     timestamp: new Date().toISOString(),
   }
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import toast from 'react-hot-toast'
-import { CheckCircle2, Database, FileWarning, Lock, Server, Sparkles, Users } from 'lucide-react'
+import { BarChart3, CheckCircle2, Database, FileWarning, Lock, Server, Sparkles, Users } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Surface } from '@/components/ui/surface'
@@ -11,6 +11,7 @@ import { SettingsStatusCard } from '@/components/admin/settings-status-card'
 import { DangerConfirmModal } from '@/components/admin/danger-confirm-modal'
 import type {
   AdminSettingsOverviewDto,
+  AnalyticsSettingsDto,
   SettingsValidationResultDto,
   SettingsValidationTarget,
   SiteSettingsDto,
@@ -20,7 +21,7 @@ interface SettingsWizardProps {
   initialData: AdminSettingsOverviewDto
 }
 
-type StepId = 'site' | 'storage' | 'integrations' | 'semantic' | 'danger'
+type StepId = 'site' | 'storage' | 'integrations' | 'analytics' | 'semantic' | 'danger'
 
 type WizardStep = {
   id: StepId
@@ -36,6 +37,7 @@ export function SettingsWizard({ initialData }: SettingsWizardProps) {
   const [runtimeStorage, setRuntimeStorage] = useState<Record<string, unknown> | undefined>(initialData.runtime.storage)
   const [runtimeSemantic, setRuntimeSemantic] = useState<Record<string, unknown> | undefined>(initialData.runtime.semantic)
   const [integrations, setIntegrations] = useState(initialData.integrations)
+  const [analytics, setAnalytics] = useState(initialData.analytics)
   const [validationResults, setValidationResults] = useState<SettingsValidationResultDto[]>([])
   const [validatingTarget, setValidatingTarget] = useState<SettingsValidationTarget | null>(null)
   const [dangerTarget, setDangerTarget] = useState<null | 'reset-library'> (null)
@@ -87,6 +89,21 @@ export function SettingsWizard({ initialData }: SettingsWizardProps) {
       ),
     },
     {
+      id: 'analytics',
+      title: '访问跟踪',
+      description: '配置 Google Analytics 和 Microsoft Clarity 等统计服务。',
+      icon: BarChart3,
+      render: () => (
+        <AnalyticsSettingsStep
+          value={analytics}
+          onSaved={(next) => {
+            setAnalytics(next)
+            toast.success('访问跟踪配置已更新')
+          }}
+        />
+      ),
+    },
+    {
       id: 'semantic',
       title: '语义检索',
       description: '调整嵌入模型、维度等参数。',
@@ -112,7 +129,7 @@ export function SettingsWizard({ initialData }: SettingsWizardProps) {
         />
       ),
     },
-  ], [siteSettings, runtimeStorage, integrations, runtimeSemantic])
+  ], [siteSettings, runtimeStorage, integrations, analytics, runtimeSemantic])
 
   const handleValidate = async (target: SettingsValidationTarget) => {
     setValidatingTarget(target)
@@ -599,6 +616,107 @@ function SemanticSettingsStep({ value, onSaved }: SemanticSettingsStepProps) {
       </div>
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
+          {isPending ? '保存中…' : '保存配置'}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+interface AnalyticsSettingsStepProps {
+  value: AnalyticsSettingsDto
+  onSaved: (value: AnalyticsSettingsDto) => void
+}
+
+function AnalyticsSettingsStep({ value, onSaved }: AnalyticsSettingsStepProps) {
+  const [form, setForm] = useState<AnalyticsSettingsDto>(value)
+  const [isPending, startTransition] = useTransition()
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    startTransition(async () => {
+      try {
+        const res = await fetch('/api/admin/settings/analytics', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        })
+        if (!res.ok) {
+          const payload = await res.json().catch(() => null)
+          throw new Error(payload?.error || '更新失败')
+        }
+        const payload = (await res.json()) as AnalyticsSettingsDto
+        onSaved(payload)
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : '更新失败')
+      }
+    })
+  }
+
+  return (
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <label className="flex items-center gap-3 text-sm text-white">
+        <input
+          type="checkbox"
+          checked={form.enabled}
+          onChange={(event) => setForm((prev) => ({ ...prev, enabled: event.target.checked }))}
+          className="h-4 w-4 rounded border-white/20 bg-white/10 text-amber-200 focus:ring-amber-200/50"
+        />
+        <span className="font-medium">启用访问跟踪</span>
+      </label>
+
+      {form.enabled && (
+        <div className="space-y-4">
+          <div className="rounded-[16px] border border-white/10 bg-white/5 p-4 space-y-4">
+            <h3 className="text-sm font-medium text-white flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-amber-200" />
+              Google Analytics
+            </h3>
+            <Field label="Google Analytics ID">
+              <input
+                value={form.googleAnalyticsId || ''}
+                onChange={(event) => setForm((prev) => ({ ...prev, googleAnalyticsId: event.target.value }))}
+                className="w-full rounded-[12px] border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/50 backdrop-blur-sm"
+                placeholder="G-XXXXXXXXXX"
+              />
+            </Field>
+          </div>
+
+          <div className="rounded-[16px] border border-white/10 bg-white/5 p-4 space-y-4">
+            <h3 className="text-sm font-medium text-white flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-blue-200" />
+              Microsoft Clarity
+            </h3>
+            <Field label="Microsoft Clarity Project ID">
+              <input
+                value={form.microsoftClarityId || ''}
+                onChange={(event) => setForm((prev) => ({ ...prev, microsoftClarityId: event.target.value }))}
+                className="w-full rounded-[12px] border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/50 backdrop-blur-sm"
+                placeholder="abcdefghij"
+              />
+            </Field>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <div className="rounded-[16px] border border-amber-200/30 bg-amber-100/10 p-4">
+          <h3 className="text-sm font-medium text-amber-200 mb-2">使用说明</h3>
+          <ul className="text-xs text-white/70 space-y-1">
+            <li>• Google Analytics: 在 GA4 中获取以 "G-" 开头的测量 ID</li>
+            <li>• Microsoft Clarity: 在 Clarity 项目中获取项目 ID</li>
+            <li>• 配置后将在前台页面自动加载跟踪代码</li>
+            <li>• 可以同时启用多个跟踪服务</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="rounded-[12px] border border-amber-200/30 bg-amber-100/10 text-amber-100 hover:bg-amber-100/20 hover:border-amber-200/50"
+        >
           {isPending ? '保存中…' : '保存配置'}
         </Button>
       </div>

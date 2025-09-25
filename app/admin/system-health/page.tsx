@@ -1,258 +1,244 @@
-import { Container } from '@/components/layout/container'
-import { Heading, Text } from '@/components/ui/typography'
-import { Surface } from '@/components/ui/surface'
-import { Button } from '@/components/ui/button'
-import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
-import { fadeInScale, listItemRise, createStaggerPreset } from '@/lib/motion/presets'
+import { Suspense } from 'react'
+import { motion } from 'framer-motion'
 import {
-  Activity, AlertTriangle, CheckCircle2, Clock,
-  Server, Database, HardDrive, Zap, FileText, Bug
+  Activity, Settings, AlertTriangle, CheckCircle2, Clock,
+  Server, Database, HardDrive, Zap, FileText, Construction
 } from 'lucide-react'
+import { db } from '@/lib/db'
+import { getRuntimeConfig } from '@/lib/runtime-config'
+import { getSiteSettings } from '@/lib/admin/settings-service'
 
-const metricsStagger = createStaggerPreset({ amount: 0.06, delayChildren: 0.04 })
+async function getSystemHealthData() {
+  const [siteSettings, runtime] = await Promise.all([
+    getSiteSettings(),
+    Promise.resolve(getRuntimeConfig())
+  ])
 
-const healthMetrics = [
-  {
-    id: 'server',
-    title: '服务器状态',
-    icon: Server,
-    status: 'healthy',
-    value: '运行正常',
-    details: 'CPU: 15% | 内存: 2.1GB/8GB | 负载: 0.8'
-  },
-  {
-    id: 'database',
-    title: '数据库',
-    icon: Database,
-    status: 'healthy',
-    value: '连接正常',
-    details: '查询响应时间: 12ms | 活跃连接: 8/100'
-  },
-  {
-    id: 'storage',
-    title: '存储空间',
-    icon: HardDrive,
-    status: 'warning',
-    value: '78% 已使用',
-    details: '已用: 156GB / 总计: 200GB | 剩余: 44GB'
-  },
-  {
-    id: 'performance',
-    title: '系统性能',
-    icon: Zap,
-    status: 'healthy',
-    value: '良好',
-    details: '平均响应时间: 150ms | 吞吐量: 85 req/s'
+  // 检查数据库连接状态
+  let dbStatus = 'unknown'
+  let dbError = null
+  try {
+    await db.$queryRaw`SELECT 1`
+    dbStatus = 'healthy'
+  } catch (error) {
+    dbStatus = 'error'
+    dbError = error instanceof Error ? error.message : String(error)
   }
-]
 
-const recentAlerts = [
-  {
-    id: 1,
-    type: 'warning',
-    title: '存储空间告警',
-    message: '系统存储空间使用率超过 75%，建议清理或扩容',
-    timestamp: '2小时前',
-    resolved: false
-  },
-  {
-    id: 2,
-    type: 'info',
-    title: '计划维护提醒',
-    message: '系统将于本周日凌晨 2:00 进行例行维护，预计耗时 30 分钟',
-    timestamp: '6小时前',
-    resolved: false
-  },
-  {
-    id: 3,
-    type: 'error',
-    title: '上传队列异常',
-    message: '检测到上传队列处理异常，已自动恢复',
-    timestamp: '1天前',
-    resolved: true
-  }
-]
+  // 获取基本配置状态
+  const storageProvider = runtime.storage?.provider || process.env.STORAGE_PROVIDER || 'local'
+  const semanticEnabled = runtime.semantic?.enabled || false
 
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'healthy':
-      return 'text-green-600 dark:text-green-400'
-    case 'warning':
-      return 'text-amber-600 dark:text-amber-400'
-    case 'error':
-      return 'text-red-600 dark:text-red-400'
-    default:
-      return 'text-gray-600 dark:text-gray-400'
-  }
-}
-
-function getStatusIcon(status: string) {
-  switch (status) {
-    case 'healthy':
-      return CheckCircle2
-    case 'warning':
-      return AlertTriangle
-    case 'error':
-      return AlertTriangle
-    default:
-      return Clock
-  }
-}
-
-function getAlertTypeColor(type: string) {
-  switch (type) {
-    case 'error':
-      return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'
-    case 'warning':
-      return 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-300'
-    case 'info':
-      return 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30 text-blue-700 dark:text-blue-300'
-    default:
-      return 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800/30 text-gray-700 dark:text-gray-300'
+  return {
+    database: {
+      status: dbStatus,
+      error: dbError
+    },
+    configuration: {
+      siteTitle: siteSettings.title,
+      storageProvider,
+      semanticEnabled,
+      defaultVisibility: siteSettings.defaultVisibility
+    }
   }
 }
 
 export const dynamic = 'force-dynamic'
 
+function HealthLoading() {
+  return (
+    <div className="relative space-y-8 pb-20 pt-6">
+      <div className="animate-pulse space-y-6">
+        <div className="h-20 rounded-[24px] bg-white/10"></div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-32 rounded-[16px] bg-white/10"></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+async function HealthContent() {
+  const healthData = await getSystemHealthData()
+
+  return (
+    <div className="relative space-y-8 pb-20 pt-6">
+      {/* Film grain background */}
+      <div
+        className="fixed inset-0 opacity-5 mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
+          backgroundSize: '200px 200px'
+        }}
+      />
+
+      <header className="relative space-y-3">
+        <h1
+          className="text-3xl font-light text-white tracking-tight"
+          style={{ fontFamily: 'var(--token-typography-display-font-family)' }}
+        >
+          系统健康
+        </h1>
+        <p className="text-white/70 font-light leading-relaxed">
+          查看系统基本状态与配置信息。详细监控功能正在开发中。
+        </p>
+      </header>
+
+      {/* Status Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: [0.25, 0.25, 0.25, 1] }}
+        className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl shadow-xl"
+      >
+        <div
+          className="absolute inset-0 opacity-5 mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
+            backgroundSize: '100px 100px'
+          }}
+        />
+
+        <div className="relative flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <div className="rounded-[12px] bg-emerald-400/20 p-3">
+              <Activity className="h-6 w-6 text-emerald-200" />
+            </div>
+            <div>
+              <h2 className="text-lg font-medium text-white mb-2">
+                系统状态概览
+              </h2>
+              <p className="text-sm font-light text-white/70">
+                基础系统运行正常，配置检查通过
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-[8px] border border-emerald-400/30 bg-emerald-400/20 px-2 py-1 text-xs font-medium text-emerald-200">
+              <CheckCircle2 className="h-3 w-3" />
+              运行中
+            </span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* System Metrics */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Database Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.25, 0.25, 1] }}
+          className="relative overflow-hidden rounded-[20px] border border-white/10 bg-black/40 p-5 backdrop-blur-xl shadow-lg"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="rounded-[10px] bg-blue-400/20 p-2">
+              <Database className="h-5 w-5 text-blue-200" />
+            </div>
+            <div className="flex items-center gap-1">
+              {healthData.database.status === 'healthy' ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-200" />
+              ) : (
+                <AlertTriangle className="h-4 w-4 text-red-200" />
+              )}
+            </div>
+          </div>
+          <h3 className="text-sm font-medium text-white mb-1">数据库</h3>
+          <p className={`text-sm font-light mb-2 ${
+            healthData.database.status === 'healthy' ? 'text-emerald-200' : 'text-red-200'
+          }`}>
+            {healthData.database.status === 'healthy' ? '连接正常' : '连接异常'}
+          </p>
+          {healthData.database.error && (
+            <p className="text-xs text-white/60 break-words">{healthData.database.error}</p>
+          )}
+        </motion.div>
+
+        {/* Configuration Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.25, 0.25, 1] }}
+          className="relative overflow-hidden rounded-[20px] border border-white/10 bg-black/40 p-5 backdrop-blur-xl shadow-lg"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="rounded-[10px] bg-amber-100/20 p-2">
+              <Settings className="h-5 w-5 text-amber-200" />
+            </div>
+            <CheckCircle2 className="h-4 w-4 text-emerald-200" />
+          </div>
+          <h3 className="text-sm font-medium text-white mb-1">系统配置</h3>
+          <p className="text-sm font-light text-emerald-200 mb-2">配置已加载</p>
+          <div className="space-y-1 text-xs text-white/60">
+            <p>站点: {healthData.configuration.siteTitle}</p>
+            <p>存储: {healthData.configuration.storageProvider}</p>
+            <p>语义检索: {healthData.configuration.semanticEnabled ? '已启用' : '已关闭'}</p>
+          </div>
+        </motion.div>
+
+        {/* Development Notice */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.25, 0.25, 1] }}
+          className="relative overflow-hidden rounded-[20px] border border-amber-200/30 bg-amber-100/10 p-5 backdrop-blur-xl shadow-lg"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="rounded-[10px] bg-amber-100/20 p-2">
+              <Construction className="h-5 w-5 text-amber-200" />
+            </div>
+            <Clock className="h-4 w-4 text-amber-200" />
+          </div>
+          <h3 className="text-sm font-medium text-white mb-1">监控功能</h3>
+          <p className="text-sm font-light text-amber-200 mb-2">开发中</p>
+          <p className="text-xs text-white/60">
+            详细的系统监控、性能指标和告警功能正在开发中
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Future Features Notice */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.25, 0.25, 1] }}
+        className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-8 text-center backdrop-blur-xl shadow-xl"
+      >
+        <div className="relative space-y-4">
+          <div className="rounded-[16px] bg-blue-400/20 p-4 inline-block">
+            <Zap className="h-8 w-8 text-blue-200" />
+          </div>
+          <div>
+            <h2 className="text-lg font-medium text-white mb-2">
+              高级监控功能开发中
+            </h2>
+            <p className="text-white/70 font-light mb-4 max-w-2xl mx-auto">
+              未来版本将提供服务器性能监控、存储使用统计、用户活动分析、错误日志追踪等功能。
+              敬请期待更完整的系统健康监控体验。
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 text-xs">
+              {['性能监控', 'API 状态', '存储分析', '用户统计', '错误追踪'].map((feature) => (
+                <span
+                  key={feature}
+                  className="inline-flex items-center rounded-[6px] border border-white/20 bg-white/10 px-3 py-1 text-white/70"
+                >
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
 export default function SystemHealthPage() {
   return (
-    <div className="pb-20 pt-6">
-      <Container size="xl" bleed="none" className="flex flex-col gap-8">
-        <AnimateOnScroll variants={fadeInScale}>
-          <div className="space-y-2">
-            <Heading size="lg">系统健康</Heading>
-            <Text tone="secondary">
-              监控系统状态、性能指标和错误日志。及时发现并解决潜在问题。
-            </Text>
-          </div>
-        </AnimateOnScroll>
-
-        <AnimateOnScroll variants={fadeInScale} delay={0.08}>
-          <Surface tone="panel" padding="lg" className="shadow-subtle">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4">
-                <div className="rounded-lg bg-green-50 dark:bg-green-950/30 p-3">
-                  <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <Heading size="sm" className="mb-2">系统状态总览</Heading>
-                  <Text tone="secondary" size="sm">
-                    系统运行正常，1 个警告需要关注
-                  </Text>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <FileText className="h-4 w-4 mr-2" />
-                  导出报告
-                </Button>
-                <Button size="sm">
-                  <Bug className="h-4 w-4 mr-2" />
-                  上报异常
-                </Button>
-              </div>
-            </div>
-          </Surface>
-        </AnimateOnScroll>
-
-        <div className="space-y-6">
-          <AnimateOnScroll variants={fadeInScale} delay={0.12}>
-            <Heading size="md">系统指标</Heading>
-          </AnimateOnScroll>
-
-          <AnimateOnScroll variants={metricsStagger} className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {healthMetrics.map((metric) => {
-              const IconComponent = metric.icon
-              const StatusIcon = getStatusIcon(metric.status)
-              return (
-                <AnimateOnScroll key={metric.id} variants={listItemRise}>
-                  <Surface tone="canvas" padding="lg" className="border border-surface-outline/20">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="rounded-lg bg-primary/10 p-2">
-                        <IconComponent className="h-5 w-5 text-primary" />
-                      </div>
-                      <StatusIcon className={`h-5 w-5 ${getStatusColor(metric.status)}`} />
-                    </div>
-
-                    <Heading size="sm" className="mb-1">{metric.title}</Heading>
-                    <Text weight="medium" className={`mb-2 ${getStatusColor(metric.status)}`}>
-                      {metric.value}
-                    </Text>
-                    <Text size="xs" tone="muted">
-                      {metric.details}
-                    </Text>
-                  </Surface>
-                </AnimateOnScroll>
-              )
-            })}
-          </AnimateOnScroll>
-        </div>
-
-        <div className="space-y-6">
-          <AnimateOnScroll variants={fadeInScale} delay={0.16}>
-            <div className="flex items-center justify-between">
-              <Heading size="md">系统告警</Heading>
-              <Button variant="ghost" size="sm">查看全部</Button>
-            </div>
-          </AnimateOnScroll>
-
-          <AnimateOnScroll variants={metricsStagger} className="space-y-4">
-            {recentAlerts.map((alert) => (
-              <AnimateOnScroll key={alert.id} variants={listItemRise}>
-                <Surface
-                  tone="canvas"
-                  padding="lg"
-                  className={`border ${getAlertTypeColor(alert.type)} ${alert.resolved ? 'opacity-60' : ''}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Heading size="sm">{alert.title}</Heading>
-                        {alert.resolved && (
-                          <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-400">
-                            已解决
-                          </span>
-                        )}
-                      </div>
-                      <Text tone="secondary" size="sm" className="mb-2">
-                        {alert.message}
-                      </Text>
-                      <div className="flex items-center gap-2 text-xs text-text-muted">
-                        <Clock className="h-3 w-3" />
-                        {alert.timestamp}
-                      </div>
-                    </div>
-                    {!alert.resolved && (
-                      <Button variant="outline" size="sm">
-                        处理
-                      </Button>
-                    )}
-                  </div>
-                </Surface>
-              </AnimateOnScroll>
-            ))}
-          </AnimateOnScroll>
-        </div>
-
-        <AnimateOnScroll variants={fadeInScale} delay={0.2}>
-          <Surface tone="canvas" padding="lg" className="border border-surface-outline/20 text-center">
-            <div className="space-y-3">
-              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-3 inline-block">
-                <Activity className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <Heading size="sm" className="mb-2">系统监控功能</Heading>
-                <Text tone="secondary" size="sm" className="mb-4">
-                  实时监控功能正在开发中，将提供更详细的性能指标和自动化告警。
-                </Text>
-                <Text size="xs" tone="muted">
-                  当前显示的是模拟数据，实际部署时将连接真实监控系统
-                </Text>
-              </div>
-            </div>
-          </Surface>
-        </AnimateOnScroll>
-      </Container>
-    </div>
+    <Suspense fallback={<HealthLoading />}>
+      <HealthContent />
+    </Suspense>
   )
 }

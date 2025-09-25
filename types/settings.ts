@@ -18,6 +18,12 @@ export type IntegrationSettingsDto = {
   defaultSeedCount: number
 }
 
+export type AnalyticsSettingsDto = {
+  googleAnalyticsId?: string
+  microsoftClarityId?: string
+  enabled: boolean
+}
+
 export type SemanticSettingsOverviewDto = {
   enabled: boolean
   mode: 'off' | 'shadow' | 'on'
@@ -33,13 +39,14 @@ export type AdminSettingsOverviewDto = {
   site: SiteSettingsDto
   storage: StorageSettingsOverviewDto
   integrations: IntegrationSettingsDto
+  analytics: AnalyticsSettingsDto
   runtime: {
     storage?: Record<string, unknown>
     semantic?: Record<string, unknown>
   }
 }
 
-export type SettingsValidationTarget = 'storage' | 'integrations' | 'semantic'
+export type SettingsValidationTarget = 'storage' | 'integrations' | 'semantic' | 'analytics'
 
 export type SettingsValidationResultDto = {
   target: SettingsValidationTarget
