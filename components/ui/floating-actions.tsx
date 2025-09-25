@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Share, Plus, X } from 'lucide-react'
+import { Heart, Share, Search, Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SemanticSearch } from './semantic-search'
 import { ShareMenu } from './share-menu'
 import { FavoritesPanel } from './favorites-panel'
 import { useFavorites } from '@/hooks/use-favorites'
@@ -36,12 +37,24 @@ export function FloatingActions({
 }: FloatingActionsProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [hoveredAction, setHoveredAction] = useState<string | null>(null)
+  const [showSearch, setShowSearch] = useState(false)
   const [showFavorites, setShowFavorites] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const { count: favoritesCount } = useFavorites()
 
   const actions: FloatingAction[] = [
+    {
+      id: 'search',
+      icon: Search,
+      label: '语义搜索',
+      shortcut: '⌘K',
+      onClick: () => {
+        setShowSearch(true)
+        setIsOpen(false)
+      },
+      accent: 'text-blue-300'
+    },
     {
       id: 'favorites',
       icon: Heart,
@@ -84,6 +97,7 @@ export function FloatingActions({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsOpen(false)
+        setShowSearch(false)
         setShowFavorites(false)
         setShowShare(false)
         return
@@ -92,6 +106,11 @@ export function FloatingActions({
       // Handle shortcuts (Cmd on Mac, Ctrl on others)
       if (event.metaKey || event.ctrlKey) {
         switch (event.key.toLowerCase()) {
+          case 'k':
+            event.preventDefault()
+            setShowSearch(true)
+            setIsOpen(false)
+            break
           case 'f':
             event.preventDefault()
             setShowFavorites(true)
@@ -257,6 +276,11 @@ export function FloatingActions({
       </div>
 
       {/* Modals */}
+      <SemanticSearch
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+      />
+
       <FavoritesPanel
         isOpen={showFavorites}
         onClose={() => setShowFavorites(false)}
