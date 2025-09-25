@@ -14,11 +14,33 @@ export default function AdminDashboardPage() {
       totalTags: 0,
       totalViews: 0,
       storageUsed: 0,
-      todaysUploads: 0
+      todaysUploads: 0,
+      publicPhotos: 0,
+      privatePhotos: 0,
+      processing: 0,
+      failedUploads: 0,
+      storageTotal: 0,
+      storagePercent: 0,
+      recentUploads: 0,
+      storageUsedBytes: 0,
     },
     recentUploads: [],
     activities: [],
-    tasks: []
+    tasks: [],
+    taskCenter: {
+      summary: {
+        total: 0,
+        queued: 0,
+        processing: 0,
+        completed: 0,
+        failed: 0,
+        totalPending: 0,
+        critical: 0,
+        warning: 0,
+      },
+      groups: [],
+    },
+    activity: [],
   }
 
   return (
