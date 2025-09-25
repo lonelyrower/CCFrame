@@ -23,8 +23,10 @@ RUN apt-get update && \
 # Build stage
 FROM base AS build
 
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+COPY package.json .npmrc ./
+# Copy package-lock.json only if it exists
+COPY package-lock.json* ./
+RUN npm ci --silent --no-audit --no-fund --no-optional
 
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma
