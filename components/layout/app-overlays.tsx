@@ -65,31 +65,31 @@ function ThemeQuickPanel() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isVisible])
 
-  // 自动隐藏逻辑：8秒后隐藏，但如果展开了就不自动隐藏
+  // 自动隐藏逻辑：5秒后隐藏，更快隐藏减少干扰
   useEffect(() => {
     if (isVisible && !expanded) {
       const timer = setTimeout(() => {
         setIsVisible(false)
-      }, 8000)
+      }, 5000)
       return () => clearTimeout(timer)
     }
   }, [isVisible, expanded])
 
-  // 如果面板不可见，显示悬浮触发按钮
+  // 如果面板不可见，显示更隐蔽的触发按钮
   if (!isVisible) {
     return (
-      <div className="pointer-events-auto fixed bottom-6 right-6 z-50 group">
+      <div className="pointer-events-auto fixed bottom-6 right-20 z-40 group">
         <motion.button
           type="button"
           onClick={() => setIsVisible(true)}
-          className="rounded-full bg-gradient-to-r from-primary/90 to-accent/90 p-3 shadow-floating backdrop-blur-sm transition-all hover:shadow-surface active:scale-95"
+          className="rounded-full bg-surface-panel/60 hover:bg-surface-panel/80 border border-surface-outline/30 p-2 shadow-subtle backdrop-blur-sm transition-all hover:shadow-surface active:scale-95 opacity-60 hover:opacity-100"
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 2, duration: 0.3 }}
-          whileHover={{ scale: 1.05 }}
+          animate={{ scale: 1, opacity: 0.6 }}
+          transition={{ delay: 5, duration: 0.3 }}
+          whileHover={{ scale: 1.05, opacity: 1 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Sparkles className="h-5 w-5 text-primary-foreground" />
+          <Sparkles className="h-4 w-4 text-text-muted" />
           <span className="sr-only">显示偏好设置 (Ctrl+Shift+P)</span>
         </motion.button>
 

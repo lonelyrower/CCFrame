@@ -8,6 +8,7 @@ import { Menu, Moon, Sun, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import { Button } from '@/components/ui/button'
+import { DynamicLogo } from '@/components/ui/dynamic-logo'
 import {
   isNavigationActive,
   publicHighlightActions,
@@ -55,18 +56,7 @@ export function PublicHeader() {
           className="flex items-center gap-3 font-bold text-xl text-text-primary group"
           aria-label="Go to home"
         >
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-lg blur-sm opacity-20 group-hover:opacity-40 transition-opacity" />
-            <div className="relative bg-gradient-to-r from-primary to-accent p-2 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M12 3v18"/>
-                <path d="m16.24 7.76-8.48 8.48"/>
-                <path d="m7.76 7.76 8.48 8.48"/>
-                <path d="M3 12h18"/>
-              </svg>
-            </div>
-          </div>
+          <DynamicLogo size={20} />
           <div className="flex flex-col">
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               CC Frame
@@ -113,7 +103,7 @@ export function PublicHeader() {
           ) : (
             <Link href="/admin/login">
               <Button variant="ghost" size="sm">
-                Log in
+                登录
               </Button>
             </Link>
           )}

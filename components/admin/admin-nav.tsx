@@ -17,12 +17,14 @@ import {
   Menu,
   X,
   BarChart3,
+  Image,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 const adminNavItems = [
   { href: '/admin', label: '控制台', icon: BarChart3 },
+  { href: '/admin/hero-image', label: '首页大图', icon: Image },
   { href: '/admin/upload', label: '上传', icon: Upload },
   { href: '/admin/library', label: '照片库', icon: Grid3X3 },
   { href: '/admin/albums', label: '相册', icon: FolderOpen },

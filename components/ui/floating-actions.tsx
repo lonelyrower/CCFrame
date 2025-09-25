@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Share, Search, Plus, X } from 'lucide-react'
+import { Heart, Search, Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SemanticSearch } from './semantic-search'
-import { ShareMenu } from './share-menu'
 import { FavoritesPanel } from './favorites-panel'
 import { useFavorites } from '@/hooks/use-favorites'
 
@@ -23,38 +22,20 @@ interface FloatingActionsProps {
   actions?: FloatingAction[]
   className?: string
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
-  shareUrl?: string
-  shareTitle?: string
-  shareDescription?: string
 }
 
 export function FloatingActions({
   className,
-  position = 'bottom-right',
-  shareUrl,
-  shareTitle,
-  shareDescription
+  position = 'bottom-right'
 }: FloatingActionsProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [hoveredAction, setHoveredAction] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
   const [showFavorites, setShowFavorites] = useState(false)
-  const [showShare, setShowShare] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const { count: favoritesCount } = useFavorites()
 
   const actions: FloatingAction[] = [
-    {
-      id: 'search',
-      icon: Search,
-      label: '语义搜索',
-      shortcut: '⌘K',
-      onClick: () => {
-        setShowSearch(true)
-        setIsOpen(false)
-      },
-      accent: 'text-blue-300'
-    },
     {
       id: 'favorites',
       icon: Heart,
@@ -68,15 +49,15 @@ export function FloatingActions({
       badge: favoritesCount
     },
     {
-      id: 'share',
-      icon: Share,
-      label: '分享展览',
-      shortcut: '⌘S',
+      id: 'search',
+      icon: Search,
+      label: '搜索作品',
+      shortcut: '⌘K',
       onClick: () => {
-        setShowShare(true)
+        setShowSearch(true)
         setIsOpen(false)
       },
-      accent: 'text-amber-300'
+      accent: 'text-blue-300'
     }
   ]
 
@@ -99,7 +80,6 @@ export function FloatingActions({
         setIsOpen(false)
         setShowSearch(false)
         setShowFavorites(false)
-        setShowShare(false)
         return
       }
 
@@ -115,14 +95,6 @@ export function FloatingActions({
             event.preventDefault()
             setShowFavorites(true)
             setIsOpen(false)
-            break
-          case 's':
-            // Only handle if not in an input field
-            if (!(event.target as Element)?.matches('input, textarea')) {
-              event.preventDefault()
-              setShowShare(true)
-              setIsOpen(false)
-            }
             break
         }
       }
@@ -286,13 +258,6 @@ export function FloatingActions({
         onClose={() => setShowFavorites(false)}
       />
 
-      <ShareMenu
-        isOpen={showShare}
-        onClose={() => setShowShare(false)}
-        shareUrl={shareUrl}
-        shareTitle={shareTitle}
-        shareDescription={shareDescription}
-      />
     </div>
   )
 }
