@@ -116,6 +116,34 @@
   }
 
 @layer components {
+  .admin-surface-card {
+    @apply relative overflow-hidden rounded-[24px] border border-surface-outline/40 bg-surface-panel/90 backdrop-blur-xl shadow-xl transition-all duration-300;
+  }
+
+  .admin-panel {
+    @apply rounded-[16px] border border-surface-outline/40 bg-surface-panel/80 backdrop-blur-md transition-all duration-200;
+  }
+
+  .admin-panel-soft {
+    @apply rounded-[16px] border border-surface-outline/30 bg-surface-panel/70 backdrop-blur-sm;
+  }
+
+  .admin-heading {
+    @apply text-lg font-medium text-text-primary;
+  }
+
+  .admin-body {
+    @apply text-sm font-light leading-relaxed text-text-secondary;
+  }
+
+  .admin-muted {
+    @apply text-xs font-medium text-text-muted;
+  }
+
+  .admin-chip {
+    @apply inline-flex items-center rounded-[8px] border border-surface-outline/40 bg-surface-panel/80 px-2 py-1 text-[11px] font-medium text-text-secondary backdrop-blur-sm;
+  }
+
   .masonry-container {
     column-count: 1;
     column-gap: 1rem;

@@ -23,17 +23,17 @@ export function RecentUploadsPanel({ items }: RecentUploadsPanelProps) {
     >
       <div className="flex items-center justify-between">
         <h2
-          className="text-lg font-medium text-white"
+          className="admin-heading"
           style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
         >
           最近上传
         </h2>
-        <span className="text-xs text-white/60">
+        <span className="text-xs text-text-muted">
           最新 {items.length} 条记录
         </span>
       </div>
 
-      <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl shadow-xl">
+      <div className="admin-surface-card">
         {/* Film grain background */}
         <div
           className="absolute inset-0 opacity-5 mix-blend-overlay pointer-events-none"
@@ -44,8 +44,8 @@ export function RecentUploadsPanel({ items }: RecentUploadsPanelProps) {
         />
 
         {items.length === 0 ? (
-          <div className="relative flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm font-light text-white/70">
+          <div className="relative flex flex-col items-center gap-3 py-12 text-center text-text-secondary">
+            <p className="text-sm font-light text-text-secondary">
               暂无上传记录。
             </p>
           </div>
@@ -74,12 +74,12 @@ export function RecentUploadsPanel({ items }: RecentUploadsPanelProps) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 </div>
-                <figcaption className="flex items-center justify-between gap-3 p-4">
+                <figcaption className="flex items-center justify-between gap-3 p-4 text-text-primary">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">
+                    <p className="truncate text-sm font-medium text-text-primary">
                       {item.title ?? '未命名文件'}
                     </p>
-                    <p className="truncate text-xs font-light text-white/60">
+                    <p className="truncate text-xs font-light text-text-secondary">
                       {item.albumTitle ?? '未归档'}
                     </p>
                   </div>
@@ -105,8 +105,8 @@ function VisibilityBadge({ visibility }: VisibilityBadgeProps) {
     <span className={cn(
       'inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-[11px] font-medium',
       isPublic
-        ? 'border border-emerald-400/30 bg-emerald-400/20 text-emerald-200'
-        : 'border border-white/20 bg-white/10 text-white/70',
+        ? 'border border-emerald-400/40 bg-emerald-400/15 text-emerald-600 dark:text-emerald-200'
+        : 'border border-surface-outline/40 bg-surface-panel/70 text-text-secondary',
     )}>
       <Icon className="h-3 w-3" />
       {isPublic ? '公开' : '私密'}

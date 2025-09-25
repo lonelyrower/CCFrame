@@ -703,7 +703,7 @@ function AnalyticsSettingsStep({ value, onSaved }: AnalyticsSettingsStepProps) {
         <div className="rounded-[16px] border border-amber-200/30 bg-amber-100/10 p-4">
           <h3 className="text-sm font-medium text-amber-200 mb-2">使用说明</h3>
           <ul className="text-xs text-white/70 space-y-1">
-            <li>• Google Analytics: 在 GA4 中获取以 "G-" 开头的测量 ID</li>
+            <li>• Google Analytics: 在 GA4 中获取以 &quot;G-&quot; 开头的测量 ID</li>
             <li>• Microsoft Clarity: 在 Clarity 项目中获取项目 ID</li>
             <li>• 配置后将在前台页面自动加载跟踪代码</li>
             <li>• 可以同时启用多个跟踪服务</li>

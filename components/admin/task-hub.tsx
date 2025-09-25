@@ -52,7 +52,7 @@ export function TaskHub({ groups }: TaskHubProps) {
             delay: groupIndex * 0.1 + 0.3,
             ease: [0.25, 0.25, 0.25, 1]
           }}
-          className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl shadow-xl"
+          className="admin-surface-card"
         >
           {/* Film grain background */}
           <div
@@ -67,18 +67,18 @@ export function TaskHub({ groups }: TaskHubProps) {
             <header className="flex items-start justify-between gap-3">
               <div>
                 <h2
-                  className="text-lg font-medium text-white"
+                  className="admin-heading"
                   style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
                 >
                   {group.title}
                 </h2>
-                <p className="mt-1 max-w-xl text-sm font-light text-white/70">
+                <p className="admin-body mt-1 max-w-xl">
                   {group.description}
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/60">
+              <div className="flex items-center gap-2 text-xs text-text-muted">
                 <span>总计</span>
-                <span className="rounded-[8px] border border-white/20 bg-white/10 px-2 py-0.5 text-white/90 backdrop-blur-sm">
+                <span className="admin-chip px-2 py-0.5">
                   {group.total}
                 </span>
               </div>
@@ -124,7 +124,7 @@ function TaskRow({ task, index }: TaskRowProps) {
         ease: [0.25, 0.25, 0.25, 1]
       }}
       whileHover={{ scale: 1.01, borderColor: 'rgba(251, 191, 36, 0.4)' }}
-      className="rounded-[16px] border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-lg"
+      className="admin-panel-soft p-4 transition-all duration-200 hover:shadow-lg hover:border-primary/40"
     >
       <div className="flex items-start gap-3">
         <span className={cn('rounded-[10px] p-2', severity.badge)}>
@@ -132,24 +132,24 @@ function TaskRow({ task, index }: TaskRowProps) {
         </span>
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="truncate text-sm font-medium text-white">
+            <h3 className="truncate text-sm font-medium text-text-primary">
               {task.title}
             </h3>
-            <span className="text-xs text-white/60">
+            <span className="text-xs text-text-muted">
               {dateFormatter.format(task.createdAt)}
             </span>
           </div>
           {task.description ? (
-            <p className="break-words text-sm font-light text-white/70">
+            <p className="break-words text-sm font-light text-text-secondary">
               {task.description}
             </p>
           ) : null}
           {task.meta && task.meta.length > 0 ? (
-            <div className="flex flex-wrap gap-2 text-[11px] text-white/60">
+            <div className="flex flex-wrap gap-2 text-[11px] text-text-muted">
               {task.meta.map((item, index) => (
                 <span
                   key={`${task.id}-meta-${index}`}
-                  className="rounded-[6px] border border-white/20 bg-white/10 px-2 py-0.5"
+                  className="admin-chip"
                 >
                   {item.label}: {item.value}
                 </span>
@@ -159,7 +159,7 @@ function TaskRow({ task, index }: TaskRowProps) {
           {task.href ? (
             <a
               href={task.href}
-              className="inline-flex items-center gap-1 text-xs font-medium text-amber-200 transition-colors hover:text-amber-100 hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
             >
               {task.actionLabel ?? '查看'}
             </a>
@@ -180,18 +180,18 @@ interface EmptyStateProps {
 function EmptyState({ title, description, actionHref, actionLabel }: EmptyStateProps) {
   const Icon = CheckCircle2
   return (
-    <div className="flex flex-col items-center gap-4 rounded-[16px] border border-white/10 bg-white/5 px-6 py-10 text-center backdrop-blur-sm">
+    <div className="admin-panel-soft flex flex-col items-center gap-4 px-6 py-10 text-center">
       <Icon className="h-6 w-6 text-emerald-200" />
       <div>
-        <h3 className="text-sm font-medium text-white">{title}</h3>
-        <p className="mt-1 text-sm font-light text-white/70">
+        <h3 className="text-sm font-medium text-text-primary">{title}</h3>
+        <p className="mt-1 text-sm font-light text-text-secondary">
           {description}
         </p>
       </div>
       {actionHref && actionLabel ? (
         <a
           href={actionHref}
-          className="text-xs font-medium text-amber-200 transition-colors hover:text-amber-100 hover:underline"
+          className="text-xs font-medium text-amber-600 transition-colors hover:text-amber-500 hover:underline dark:text-amber-200 dark:hover:text-amber-100"
         >
           {actionLabel}
         </a>

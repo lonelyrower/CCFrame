@@ -25,7 +25,7 @@ function getSystemHealthData() {
 
 function HealthLoading() {
   return (
-    <div className="relative space-y-8 pb-20 pt-6">
+    <div className="relative space-y-8 pb-20 pt-6 text-text-primary">
       <div className="animate-pulse space-y-6">
         <div className="h-20 rounded-[24px] bg-white/10"></div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -42,7 +42,7 @@ function HealthContent() {
   const healthData = getSystemHealthData()
 
   return (
-    <div className="relative space-y-8 pb-20 pt-6">
+    <div className="relative space-y-8 pb-20 pt-6 text-text-primary">
       {/* Film grain background */}
       <div
         className="fixed inset-0 opacity-5 mix-blend-overlay pointer-events-none"
@@ -54,12 +54,12 @@ function HealthContent() {
 
       <header className="relative space-y-3">
         <h1
-          className="text-3xl font-light text-white tracking-tight"
+          className="text-3xl font-light tracking-tight text-text-primary"
           style={{ fontFamily: 'var(--token-typography-display-font-family)' }}
         >
           系统健康
         </h1>
-        <p className="text-white/70 font-light leading-relaxed">
+        <p className="font-light leading-relaxed text-text-secondary">
           查看系统基本状态与配置信息。详细监控功能正在开发中。
         </p>
       </header>
@@ -69,7 +69,7 @@ function HealthContent() {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.4, ease: [0.25, 0.25, 0.25, 1] }}
-        className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl shadow-xl"
+        className="relative overflow-hidden rounded-[24px] border border-surface-outline/40 bg-surface-panel/85 dark:border-white/10 dark:bg-black/40 p-6 backdrop-blur-xl shadow-xl"
       >
         <div
           className="absolute inset-0 opacity-5 mix-blend-overlay pointer-events-none"
@@ -85,10 +85,10 @@ function HealthContent() {
               <Activity className="h-6 w-6 text-emerald-200" />
             </div>
             <div>
-              <h2 className="text-lg font-medium text-white mb-2">
+              <h2 className="text-lg font-medium text-text-primary mb-2">
                 系统状态概览
               </h2>
-              <p className="text-sm font-light text-white/70">
+              <p className="text-sm font-light text-text-secondary">
                 基础系统运行正常，配置检查通过
               </p>
             </div>
@@ -109,7 +109,7 @@ function HealthContent() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.25, 0.25, 1] }}
-          className="relative overflow-hidden rounded-[20px] border border-white/10 bg-black/40 p-5 backdrop-blur-xl shadow-lg"
+          className="relative overflow-hidden rounded-[20px] border border-surface-outline/40 bg-surface-panel/80 dark:border-white/10 dark:bg-black/40 p-5 backdrop-blur-xl shadow-lg"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="rounded-[10px] bg-blue-400/20 p-2">
@@ -123,14 +123,14 @@ function HealthContent() {
               )}
             </div>
           </div>
-          <h3 className="text-sm font-medium text-white mb-1">数据库</h3>
+          <h3 className="text-sm font-medium text-text-primary mb-1">数据库</h3>
           <p className={`text-sm font-light mb-2 ${
             healthData.database.status === 'healthy' ? 'text-emerald-200' : 'text-red-200'
           }`}>
             {healthData.database.status === 'healthy' ? '连接正常' : '连接异常'}
           </p>
           {healthData.database.error && (
-            <p className="text-xs text-white/60 break-words">{healthData.database.error}</p>
+            <p className="text-xs text-text-muted break-words">{healthData.database.error}</p>
           )}
         </motion.div>
 
@@ -139,7 +139,7 @@ function HealthContent() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.25, 0.25, 1] }}
-          className="relative overflow-hidden rounded-[20px] border border-white/10 bg-black/40 p-5 backdrop-blur-xl shadow-lg"
+          className="relative overflow-hidden rounded-[20px] border border-surface-outline/40 bg-surface-panel/80 dark:border-white/10 dark:bg-black/40 p-5 backdrop-blur-xl shadow-lg"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="rounded-[10px] bg-amber-100/20 p-2">
@@ -147,9 +147,9 @@ function HealthContent() {
             </div>
             <CheckCircle2 className="h-4 w-4 text-emerald-200" />
           </div>
-          <h3 className="text-sm font-medium text-white mb-1">系统配置</h3>
+          <h3 className="text-sm font-medium text-text-primary mb-1">系统配置</h3>
           <p className="text-sm font-light text-emerald-200 mb-2">配置已加载</p>
-          <div className="space-y-1 text-xs text-white/60">
+          <div className="space-y-1 text-xs text-text-muted">
             <p>站点: {healthData.configuration.siteTitle}</p>
             <p>存储: {healthData.configuration.storageProvider}</p>
             <p>语义检索: {healthData.configuration.semanticEnabled ? '已启用' : '已关闭'}</p>
@@ -169,9 +169,9 @@ function HealthContent() {
             </div>
             <Clock className="h-4 w-4 text-amber-200" />
           </div>
-          <h3 className="text-sm font-medium text-white mb-1">监控功能</h3>
+          <h3 className="text-sm font-medium text-text-primary mb-1">监控功能</h3>
           <p className="text-sm font-light text-amber-200 mb-2">开发中</p>
-          <p className="text-xs text-white/60">
+          <p className="text-xs text-text-muted">
             详细的系统监控、性能指标和告警功能正在开发中
           </p>
         </motion.div>
@@ -182,17 +182,17 @@ function HealthContent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.25, 0.25, 1] }}
-        className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-8 text-center backdrop-blur-xl shadow-xl"
+        className="relative overflow-hidden rounded-[24px] border border-surface-outline/40 bg-surface-panel/85 dark:border-white/10 dark:bg-black/40 p-8 text-center backdrop-blur-xl shadow-xl"
       >
         <div className="relative space-y-4">
           <div className="rounded-[16px] bg-blue-400/20 p-4 inline-block">
             <Zap className="h-8 w-8 text-blue-200" />
           </div>
           <div>
-            <h2 className="text-lg font-medium text-white mb-2">
+            <h2 className="text-lg font-medium text-text-primary mb-2">
               高级监控功能开发中
             </h2>
-            <p className="text-white/70 font-light mb-4 max-w-2xl mx-auto">
+            <p className="font-light text-text-secondary mb-4 max-w-2xl mx-auto">
               未来版本将提供服务器性能监控、存储使用统计、用户活动分析、错误日志追踪等功能。
               敬请期待更完整的系统健康监控体验。
             </p>
@@ -200,7 +200,7 @@ function HealthContent() {
               {['性能监控', 'API 状态', '存储分析', '用户统计', '错误追踪'].map((feature) => (
                 <span
                   key={feature}
-                  className="inline-flex items-center rounded-[6px] border border-white/20 bg-white/10 px-3 py-1 text-white/70"
+                  className="inline-flex items-center rounded-[6px] border border-surface-outline/40 bg-surface-panel/70 px-3 py-1 text-text-secondary dark:border-white/20 dark:bg-white/10 dark:text-white/70"
                 >
                   {feature}
                 </span>

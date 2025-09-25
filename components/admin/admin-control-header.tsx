@@ -48,7 +48,7 @@ export function AdminControlHeader() {
   const themeIcon = resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
 
   return (
-    <div className="flex h-20 items-center border-b border-white/10 bg-black/40 px-6 backdrop-blur-xl md:px-8">
+    <div className="flex h-20 items-center border-b border-surface-outline/40 bg-surface-panel/80 px-6 backdrop-blur-xl md:px-8 dark:border-white/10 dark:bg-black/40">
       {/* Film grain background */}
       <div
         className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
@@ -63,7 +63,7 @@ export function AdminControlHeader() {
 
         <Link
           href="/admin"
-          className="hidden items-center gap-3 rounded-[20px] border border-amber-200/20 bg-amber-100/5 px-4 py-2.5 text-sm font-light text-white shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:scale-105 lg:flex"
+          className="hidden items-center gap-3 rounded-[20px] border border-amber-200/20 bg-amber-100/5 px-4 py-2.5 text-sm font-light text-text-primary dark:text-white shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:scale-105 lg:flex"
           style={{ fontFamily: 'var(--token-typography-display-font-family)' }}
         >
           <span className="rounded-[12px] bg-amber-200/20 px-3 py-1 text-xs font-medium uppercase tracking-wider text-amber-100/90">
@@ -103,7 +103,7 @@ export function AdminControlHeader() {
         <button
           type="button"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/15 bg-white/5 text-white/80 backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:text-amber-100 hover:scale-105"
+          className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-surface-outline/50 bg-surface-panel/80 text-text-primary backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-surface-panel/90 hover:text-primary dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:border-amber-200/40 dark:hover:bg-amber-100/10 dark:hover:text-amber-100"
           aria-label="切换主题"
         >
           {themeIcon}
@@ -111,7 +111,7 @@ export function AdminControlHeader() {
 
         <Link
           href="/"
-          className="hidden items-center gap-2 rounded-[16px] border border-white/15 bg-white/5 px-4 py-2 text-sm font-light text-white/80 backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:text-amber-100 hover:scale-105 md:inline-flex"
+          className="hidden items-center gap-2 rounded-[16px] border border-surface-outline/50 bg-surface-panel/80 px-4 py-2 text-sm font-light text-text-primary backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-surface-panel/90 hover:text-primary hover:scale-105 dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:border-amber-200/40 dark:hover:bg-amber-100/10 dark:hover:text-amber-100 md:inline-flex"
         >
           查看前台
         </Link>
@@ -141,18 +141,18 @@ function CommandPaletteLauncher({ onOpen }: CommandPaletteLauncherProps) {
     <button
       type="button"
       onClick={onOpen}
-      className="group flex h-12 w-full max-w-md items-center gap-3 rounded-[20px] border border-white/15 bg-black/20 px-4 text-sm text-white/70 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/50"
+      className="group flex h-12 w-full max-w-md items-center gap-3 rounded-[20px] border border-surface-outline/50 bg-surface-panel/80 px-4 text-sm text-text-secondary shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-surface-panel/90 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-white/15 dark:bg-black/20 dark:text-white/70 dark:hover:border-amber-200/40 dark:hover:bg-amber-100/10 dark:hover:text-amber-100 dark:focus-visible:ring-amber-200/50"
     >
-      <Command className="h-4 w-4 text-white/60 group-hover:text-amber-200" />
+      <Command className="h-4 w-4 text-text-muted group-hover:text-primary dark:text-white/60 dark:group-hover:text-amber-200" />
       <Input
         readOnly
         value="搜索页面、操作或命令"
         className="h-auto flex-1 border-none bg-transparent p-0 text-sm text-inherit shadow-none placeholder-white/50"
         style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
       />
-      <span className="hidden items-center gap-1 text-[11px] font-medium text-white/50 sm:flex">
-        <kbd className="rounded-[6px] border border-white/20 bg-white/10 px-2 py-1 text-white/70">⌘</kbd>
-        <kbd className="rounded-[6px] border border-white/20 bg-white/10 px-2 py-1 text-white/70">K</kbd>
+      <span className="hidden items-center gap-1 text-[11px] font-medium text-text-muted sm:flex dark:text-white/50">
+        <kbd className="rounded-[6px] border border-surface-outline/40 bg-surface-panel/70 px-2 py-1 text-text-secondary dark:border-white/20 dark:bg-white/10 dark:text-white/70">⌘</kbd>
+        <kbd className="rounded-[6px] border border-surface-outline/40 bg-surface-panel/70 px-2 py-1 text-text-secondary dark:border-white/20 dark:bg-white/10 dark:text-white/70">K</kbd>
       </span>
     </button>
   )
@@ -176,7 +176,7 @@ function AdminQuickActionButton({ action, badge, onClick, disabled }: QuickActio
         return "border-red-400/30 bg-red-500/10 text-red-100 hover:border-red-400/50 hover:bg-red-500/20"
       case 'secondary':
       default:
-        return "border-white/15 bg-white/5 text-white/80 hover:border-white/30 hover:bg-white/10 hover:text-white"
+        return "border-surface-outline/50 bg-surface-panel/80 text-text-primary hover:border-primary hover:bg-surface-panel/90 hover:text-primary dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:border-white/30 dark:hover:bg-white/10 dark:hover:text-white"
     }
   }
 
@@ -242,7 +242,7 @@ function getBadgeToneClass(tone: BadgeTone) {
       return 'border-emerald-400/40 bg-emerald-500/20 text-emerald-100'
     case 'neutral':
     default:
-      return 'border-white/30 bg-white/10 text-white/80'
+      return 'border-surface-outline/50 bg-surface-panel/80 text-text-primary dark:border-white/30 dark:bg-white/10 dark:text-white/80'
   }
 }
 

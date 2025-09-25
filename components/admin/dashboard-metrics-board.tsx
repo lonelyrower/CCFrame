@@ -1,6 +1,7 @@
 import { Image, UploadCloud, AlertTriangle, HardDrive } from 'lucide-react'
 import { motion } from 'framer-motion'
 
+import { cn } from '@/lib/utils'
 import type { AdminDashboardMetrics, AdminTaskCenterSummary } from '@/types/admin'
 
 interface DashboardMetricsBoardProps {
@@ -90,7 +91,12 @@ export function DashboardMetricsBoard({ metrics, taskSummary }: DashboardMetrics
             scale: 1.02,
             borderColor: card.borderColor.replace('/30', '/50')
           }}
-          className={`relative overflow-hidden rounded-[24px] border ${card.borderColor} bg-gradient-to-br ${card.gradientFrom} ${card.gradientTo} bg-black/40 p-6 backdrop-blur-xl shadow-xl transition-all duration-300`}
+          className={cn(
+            'admin-surface-card bg-gradient-to-br text-text-primary',
+            card.gradientFrom,
+            card.gradientTo,
+            card.borderColor,
+          )}
         >
           {/* Film grain background */}
           <div
@@ -104,7 +110,7 @@ export function DashboardMetricsBoard({ metrics, taskSummary }: DashboardMetrics
           <div className="relative flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3
-                className="text-sm font-medium text-white/90"
+                className="text-sm font-medium text-text-primary"
                 style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
               >
                 {card.title}
@@ -115,12 +121,12 @@ export function DashboardMetricsBoard({ metrics, taskSummary }: DashboardMetrics
             </div>
             <div className="space-y-2">
               <p
-                className="text-2xl font-light text-white tracking-tight"
+                className="text-2xl font-light tracking-tight text-text-primary"
                 style={{ fontFamily: 'var(--token-typography-display-font-family)' }}
               >
                 {card.value}
               </p>
-              <p className="text-xs font-light text-white/60">
+              <p className="text-xs font-light text-text-secondary">
                 {card.caption}
               </p>
             </div>

@@ -33,7 +33,7 @@ export function ActivityStream({ items }: ActivityStreamProps) {
         delay: 0.4,
         ease: [0.25, 0.25, 0.25, 1]
       }}
-      className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl shadow-xl"
+      className="admin-surface-card"
     >
       {/* Film grain background */}
       <div
@@ -46,14 +46,14 @@ export function ActivityStream({ items }: ActivityStreamProps) {
 
       <div className="relative flex flex-col gap-5">
         <h2
-          className="text-lg font-medium text-white"
+          className="admin-heading"
           style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
         >
           最新活动
         </h2>
         {items.length === 0 ? (
-          <div className="flex items-center justify-center rounded-[16px] border border-white/10 bg-white/5 px-4 py-10 text-center backdrop-blur-sm">
-            <p className="text-sm font-light text-white/70">
+          <div className="admin-panel-soft flex items-center justify-center px-4 py-10 text-center">
+            <p className="text-sm font-light text-text-secondary">
               暂无活动记录。
             </p>
           </div>
@@ -70,28 +70,28 @@ export function ActivityStream({ items }: ActivityStreamProps) {
                   ease: [0.25, 0.25, 0.25, 1]
                 }}
                 whileHover={{ scale: 1.01, borderColor: 'rgba(251, 191, 36, 0.3)' }}
-                className="rounded-[16px] border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-lg"
+                className="admin-panel-soft p-4 transition-all duration-200 hover:shadow-lg hover:border-primary/40"
               >
                 <div className="flex gap-3">
                   <ActivityIcon iconKey={item.icon} />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <h3 className="text-sm font-medium text-white">
+                      <h3 className="text-sm font-medium text-text-primary">
                         {item.title}
                       </h3>
-                      <span className="text-xs text-white/60">
+                      <span className="text-xs text-text-muted">
                         {dateFormatter.format(item.timestamp)}
                       </span>
                     </div>
                     {item.description ? (
-                      <p className="mt-1 break-words text-sm font-light text-white/70">
+                      <p className="mt-1 break-words text-sm font-light text-text-secondary">
                         {item.description}
                       </p>
                     ) : null}
                     {item.href ? (
                       <a
                         href={item.href}
-                        className="mt-2 inline-flex text-xs font-medium text-amber-200 transition-colors hover:text-amber-100 hover:underline"
+                        className="mt-2 inline-flex text-xs font-medium text-primary transition-colors hover:text-primary/80"
                       >
                         查看详情
                       </a>

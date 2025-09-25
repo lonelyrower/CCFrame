@@ -41,7 +41,7 @@ export function HomeStory({ statement, albums, featuredPhotos }: HomeStoryProps)
           </div>
           <blockquote className="space-y-8 rounded-3xl border border-white/8 bg-white/[0.03] p-12 backdrop-blur-xl">
             <p className="text-2xl font-light text-white/95 leading-relaxed narrative-text" style={{ fontFamily: 'var(--token-typography-narrative-font-family)' }}>
-              "{voiceover}"
+              &ldquo;{voiceover}&rdquo;
             </p>
             {storyParagraphs.slice(1).map((paragraph, index) => (
               <p key={paragraph} className="text-lg font-light leading-relaxed text-white/75 narrative-text" style={{ fontFamily: 'var(--token-typography-narrative-font-family)' }}>

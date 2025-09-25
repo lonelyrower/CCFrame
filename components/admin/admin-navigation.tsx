@@ -70,7 +70,7 @@ function SectionBlock({ title, pathname, metrics, items }: SectionBlockProps) {
   return (
     <div className="space-y-3">
       {title ? (
-        <p className="px-3 text-xs font-medium uppercase tracking-[0.15em] text-white/50">{title}</p>
+        <p className="px-3 text-xs font-medium uppercase tracking-[0.15em] text-text-muted dark:text-white/50">{title}</p>
       ) : null}
       <ul className="space-y-2">
         {items.map((item) => {
@@ -87,8 +87,11 @@ function SectionBlock({ title, pathname, metrics, items }: SectionBlockProps) {
                 className={cn(
                   'group flex items-center justify-between gap-3 rounded-[16px] px-4 py-3 text-sm font-light transition-all duration-300',
                   isActive
-                    ? 'border border-amber-200/30 bg-amber-100/10 text-amber-100 shadow-lg backdrop-blur-xl scale-105'
-                    : 'text-white/70 hover:border hover:border-white/20 hover:bg-white/5 hover:text-white hover:scale-105 hover:backdrop-blur-xl',
+                    ? 'border border-amber-200/40 bg-amber-100/10 text-amber-700 shadow-lg backdrop-blur-xl scale-105 dark:text-amber-100'
+                    : [
+                        'text-text-secondary hover:border hover:border-surface-outline/50 hover:bg-surface-panel/80 hover:text-text-primary hover:scale-105 hover:backdrop-blur-xl',
+                        'dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white',
+                      ],
                 )}
                 style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
               >
@@ -98,8 +101,8 @@ function SectionBlock({ title, pathname, metrics, items }: SectionBlockProps) {
                       className={cn(
                         'h-4 w-4 shrink-0 transition-colors',
                         isActive
-                          ? 'text-amber-200'
-                          : 'text-white/50 group-hover:text-amber-200'
+                          ? 'text-amber-600 dark:text-amber-200'
+                          : 'text-text-muted group-hover:text-amber-500 dark:text-white/50 dark:group-hover:text-amber-200'
                       )}
                     />
                   ) : null}
@@ -139,16 +142,16 @@ type BadgeTone = AdminNavigationBadge['tone']
 function getBadgeToneClass(tone: BadgeTone) {
   switch (tone) {
     case 'danger':
-      return 'border-red-400/40 bg-red-500/20 text-red-100'
+      return 'border-red-400/50 bg-red-500/10 text-red-600 dark:border-red-400/40 dark:bg-red-500/20 dark:text-red-100'
     case 'warning':
-      return 'border-amber-200/40 bg-amber-100/20 text-amber-100'
+      return 'border-amber-200/50 bg-amber-100/15 text-amber-700 dark:border-amber-200/40 dark:bg-amber-100/20 dark:text-amber-100'
     case 'success':
-      return 'border-emerald-400/40 bg-emerald-500/20 text-emerald-100'
+      return 'border-emerald-400/50 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-100'
     case 'info':
-      return 'border-blue-400/40 bg-blue-500/20 text-blue-100'
+      return 'border-blue-400/50 bg-blue-500/10 text-blue-700 dark:border-blue-400/40 dark:bg-blue-500/20 dark:text-blue-100'
     case 'neutral':
     default:
-      return 'border-white/30 bg-white/10 text-white/80'
+      return 'border-surface-outline/40 bg-surface-panel/70 text-text-secondary dark:border-white/30 dark:bg-white/10 dark:text-white/80'
   }
 }
 
@@ -172,7 +175,7 @@ export function AdminNavigationMobileToggle() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/15 bg-white/5 text-white/80 backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:text-amber-100 hover:scale-105"
+        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-surface-outline/50 bg-surface-panel/80 text-text-primary backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-surface-panel/90 hover:text-primary dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:border-amber-200/40 dark:hover:bg-amber-100/10 dark:hover:text-amber-100"
         aria-expanded={open}
         aria-label={open ? '关闭后台导航' : '打开后台导航'}
       >
@@ -186,7 +189,7 @@ export function AdminNavigationMobileToggle() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.25, 0.25, 0.25, 1] }}
-            className="fixed inset-x-4 top-[5rem] z-40 overflow-hidden rounded-[24px] border border-white/15 bg-black/80 p-6 shadow-2xl backdrop-blur-xl"
+            className="fixed inset-x-4 top-[5rem] z-40 overflow-hidden rounded-[24px] border border-surface-outline/50 bg-surface-canvas/95 p-6 shadow-2xl backdrop-blur-xl dark:border-white/15 dark:bg-black/80"
             style={{
               background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,15,15,0.95) 100%)'
             }}
@@ -239,7 +242,7 @@ function MobileSection({ title, pathname, metrics, items, onNavigate }: MobileSe
   return (
     <div className="space-y-3">
       {title ? (
-        <p className="px-3 text-xs font-medium uppercase tracking-[0.15em] text-white/50">{title}</p>
+        <p className="px-3 text-xs font-medium uppercase tracking-[0.15em] text-text-muted dark:text-white/50">{title}</p>
       ) : null}
       <ul className="space-y-2">
         {items.map((item) => {
@@ -257,8 +260,11 @@ function MobileSection({ title, pathname, metrics, items, onNavigate }: MobileSe
                 className={cn(
                   'flex items-center justify-between rounded-[16px] px-4 py-3 text-sm font-light transition-all duration-300',
                   isActive
-                    ? 'border border-amber-200/30 bg-amber-100/10 text-amber-100 shadow-lg backdrop-blur-xl'
-                    : 'border border-transparent text-white/70 hover:border-white/20 hover:bg-white/5 hover:text-white hover:backdrop-blur-xl',
+                    ? 'border border-amber-200/40 bg-amber-100/10 text-amber-700 shadow-lg backdrop-blur-xl dark:text-amber-100'
+                    : [
+                        'border border-transparent text-text-secondary hover:border-surface-outline/50 hover:bg-surface-panel/80 hover:text-text-primary hover:backdrop-blur-xl',
+                        'dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white',
+                      ],
                 )}
                 style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
               >
@@ -268,8 +274,8 @@ function MobileSection({ title, pathname, metrics, items, onNavigate }: MobileSe
                       className={cn(
                         'h-4 w-4 shrink-0 transition-colors',
                         isActive
-                          ? 'text-amber-200'
-                          : 'text-white/50 group-hover:text-amber-200'
+                          ? 'text-amber-600 dark:text-amber-200'
+                          : 'text-text-muted group-hover:text-amber-500 dark:text-white/50 dark:group-hover:text-amber-200'
                       )}
                     />
                   ) : null}

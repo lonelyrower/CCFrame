@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="relative space-y-8 pb-20 pt-6">
+    <div className="relative space-y-8 pb-20 pt-6 text-text-primary">
       {/* Film grain background */}
       <div
         className="fixed inset-0 opacity-5 mix-blend-overlay pointer-events-none"
@@ -54,14 +54,14 @@ export default function AdminDashboardPage() {
         }}
       />
 
-      <header className="relative space-y-3">
+      <header className="relative space-y-3 text-text-primary">
         <h1
-          className="text-3xl font-light text-white tracking-tight"
+          className="text-3xl font-light tracking-tight text-text-primary"
           style={{ fontFamily: 'var(--token-typography-display-font-family)' }}
         >
           工作台
         </h1>
-        <p className="text-white/70 font-light leading-relaxed">
+        <p className="font-light leading-relaxed text-text-secondary">
           快速了解上传状态、待办与系统健康，保持内容与配置同步。
         </p>
       </header>

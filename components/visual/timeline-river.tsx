@@ -25,6 +25,15 @@ export function TimelineRiver({ events }: TimelineRiverProps) {
   const timelineProgress = useTransform(scrollYProgress, [0, 1], [0, 100])
   const backgroundY = useTransform(scrollYProgress, [0, 1], [0, -50])
   const springBackgroundY = useSpring(backgroundY, { damping: 30, stiffness: 200 })
+  const axisBackground = useTransform(
+    timelineProgress,
+    [0, 50, 100],
+    [
+      'linear-gradient(to bottom, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 100%)',
+      'linear-gradient(to bottom, rgba(251, 191, 36, 0.6) 0%, rgba(245, 158, 11, 0.2) 50%, transparent 100%)',
+      'linear-gradient(to bottom, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 100%)',
+    ],
+  )
 
   // Group events by year for chapter dividers
   const eventsByYear = useMemo(() => {
@@ -78,16 +87,7 @@ export function TimelineRiver({ events }: TimelineRiverProps) {
       {/* Dynamic timeline axis with progress indicator */}
       <motion.div
         className="pointer-events-none absolute left-[calc(50%_-_1px)] top-0 hidden h-full w-0.5 bg-gradient-to-b from-amber-200/40 via-amber-100/10 to-transparent md:block"
-        style={{
-          background: useTransform(timelineProgress,
-            [0, 50, 100],
-            [
-              'linear-gradient(to bottom, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 100%)',
-              'linear-gradient(to bottom, rgba(251, 191, 36, 0.6) 0%, rgba(245, 158, 11, 0.2) 50%, transparent 100%)',
-              'linear-gradient(to bottom, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 100%)'
-            ]
-          )
-        }}
+        style={{ background: axisBackground }}
         aria-hidden="true"
       />
 
