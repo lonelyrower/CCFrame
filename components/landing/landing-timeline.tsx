@@ -35,15 +35,15 @@ export function LandingTimeline({ activity }: LandingTimelineProps) {
         <AnimateOnScroll>
           <Surface padding="lg" className="space-y-6">
             <div className="space-y-2">
-              <Heading size="lg">最新动态</Heading>
+              <Heading size="lg">最新创作记录</Heading>
               <Text tone="secondary" size="sm">
-                实时回顾最近的上传、处理与发布节奏。
+                按时间排列最近的作品更新、系列上线与灵感片段。
               </Text>
             </div>
 
             {activity.length === 0 ? (
               <Text tone="secondary" size="sm">
-                暂无动态。添加首批作品后，这里会显示处理队列的实时状态。
+                暂时还没有新的动态，等我整理完最新的照片再来看看吧。
               </Text>
             ) : (
               <ol className="relative space-y-5 border-l border-surface-outline/40 pl-6">
@@ -56,10 +56,10 @@ export function LandingTimeline({ activity }: LandingTimelineProps) {
                       <span>{dateFormatter.format(new Date(item.createdAt))}</span>
                     </div>
                     <Heading size="xs" className="mt-1">
-                      {item.album?.title || '未归类相册'}
+                      {item.album?.title || '未归档系列'}
                     </Heading>
                     <Text tone="secondary" size="sm" className="mt-1">
-                      状态：{item.status}
+                      进度：{item.status}
                     </Text>
                     {item.tags.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2 text-xs">

@@ -126,3 +126,34 @@ function pseudoRandom(index: number, seed: string) {
     y: ((delta * 1.618) % 1) * magnitude,
   }
 }
+
+// Functions needed for the enhanced Tags page
+export async function getTagGraphQuery(filter: TagGraphFilter = {}) {
+  const snapshot = await getTagGraphSnapshot()
+  const filteredSnapshot = applyFilter(snapshot, filter)
+  const nodes = computeRadialLayout(filteredSnapshot)
+
+  return {
+    layout: 'radial' as const,
+    nodes,
+    edges: filteredSnapshot.edges,
+    stats: filteredSnapshot.stats,
+    filter,
+    generatedAt: filteredSnapshot.generatedAt,
+    version: filteredSnapshot.version,
+  }
+}
+
+export function parseTagGraphFilters(searchParams: Record<string, string | string[] | undefined> = {}): TagGraphFilter {
+  const focusTagId = typeof searchParams.focus === 'string' ? searchParams.focus : undefined
+  const minimumWeight = typeof searchParams.minWeight === 'string' ? parseFloat(searchParams.minWeight) : undefined
+  const role = typeof searchParams.role === 'string' && ['primary', 'secondary', 'supporting'].includes(searchParams.role)
+    ? searchParams.role as 'primary' | 'secondary' | 'supporting'
+    : undefined
+
+  return {
+    focusTagId,
+    minimumWeight,
+    role,
+  }
+}

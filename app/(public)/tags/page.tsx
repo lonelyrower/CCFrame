@@ -1,270 +1,201 @@
 import { Suspense } from 'react'
-import { db } from '@/lib/db'
-import { PhotoWithDetails } from '@/types'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Tag, Hash, ArrowRight } from 'lucide-react'
-import { getImageUrl } from '@/lib/utils'
+import type { Metadata } from 'next'
+import { motion } from 'framer-motion'
+import { Tag as TagIcon, Hash, ArrowRight, Sparkles, Globe } from 'lucide-react'
 
-interface TagWithCount {
-  id: string
-  name: string
-  color?: string
-  _count: {
-    photos: number
-  }
-  photos: PhotoWithDetails[]
+import { TagOrbit } from '@/components/visual/tag-orbit'
+import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
+import { getTagGraphQuery, parseTagGraphFilters } from '@/lib/tags/tag-graph-service'
+import type { TagGraphQueryResult, TagGraphFilter } from '@/types/tag-graph'
+
+interface TagsPageProps {
+  searchParams?: Record<string, string | string[] | undefined>
 }
 
-async function getTags(): Promise<TagWithCount[]> {
-  const tags = await db.tag.findMany({
-    select: {
-      id: true,
-      name: true,
-      color: true,
-      _count: {
-        select: {
-          photos: {
-            where: {
-              photo: {
-                visibility: 'PUBLIC',
-                status: 'COMPLETED'
-              }
-            }
-          }
-        }
-      },
-      photos: {
-        where: {
-          photo: {
-            visibility: 'PUBLIC',
-            status: 'COMPLETED'
-          }
-        },
-        include: {
-          photo: {
-            include: {
-              variants: true,
-              tags: {
-                include: {
-                  tag: true
-                }
-              },
-              album: true
-            }
-          }
-        },
-        take: 6
-      }
-    },
-    where: {
-      photos: {
-        some: {
-          photo: {
-            visibility: 'PUBLIC',
-            status: 'COMPLETED'
-          }
-        }
-      }
-    },
-    orderBy: {
-      photos: {
-        _count: 'desc'
-      }
-    }
-  })
-
-  return tags.map(tag => ({
-    ...tag,
-    photos: tag.photos.map(p => p.photo)
-  }))
+export const metadata: Metadata = {
+  title: '标签宇宙 · CC Frame',
+  description: '通过交互式标签宇宙探索作品间的关联关系，发现色彩、情绪与主题的隐藏连接。',
 }
 
-function TagCard({ tag }: { tag: TagWithCount }) {
-  const tagColor = tag.color || '#6366f1'
-  
-  return (
-    <div className="bg-surface-panel dark:bg-surface-panel rounded-xl border border-surface-outline/40 dark:border-surface-outline/70 overflow-hidden hover:shadow-surface transition-shadow">
-      <div className="p-6 border-b border-surface-outline/40 dark:border-surface-outline/70">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: tagColor + '20' }}
-            >
-              <Hash 
-                className="w-5 h-5"
-                style={{ color: tagColor }}
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-text-primary dark:text-text-inverted">
-                {tag.name}
-              </h3>
-              <p className="text-sm text-text-secondary dark:text-text-muted">
-                {tag._count.photos} 张照片
-              </p>
-            </div>
-          </div>
-          <Link 
-            href={`/photos?tag=${encodeURIComponent(tag.name)}`}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
-          >
-            查看全部
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </div>
-      
-      {tag.photos.length > 0 && (
-        <div className="p-4">
-          <div className="grid grid-cols-3 gap-2">
-            {tag.photos.slice(0, 6).map((photo) => (
-              <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-surface-panel dark:bg-surface-panel">
-                <Image
-                  src={getImageUrl(photo.id, 'thumb', 'webp')}
-                  alt={photo.album?.title || 'Photo thumbnail'}
-                  fill
-                  sizes="(min-width: 1024px) 8vw, (min-width: 768px) 10vw, 33vw"
-                  className="object-cover hover:scale-105 transition-transform duration-200"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function TagCloud({ tags }: { tags: TagWithCount[] }) {
-  const maxCount = Math.max(...tags.map(t => t._count.photos))
-  
-  return (
-    <div className="bg-surface-panel dark:bg-surface-panel rounded-xl p-6 border border-surface-outline/40 dark:border-surface-outline/70">
-      <h2 className="text-xl font-semibold mb-4 text-text-primary dark:text-text-inverted flex items-center gap-2">
-        <Tag className="w-5 h-5" />
-        标签云
-      </h2>
-      <div className="flex flex-wrap gap-3">
-        {tags.map(tag => {
-          const size = Math.max(0.75, (tag._count.photos / maxCount) * 1.5)
-          const tagColor = tag.color || '#6366f1'
-          
-          return (
-            <Link
-              key={tag.id}
-              href={`/photos?tag=${encodeURIComponent(tag.name)}`}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-surface-outline/40 dark:border-surface-outline/70 
-                         hover:border-primary hover:bg-primary/5 transition-all duration-200"
-              style={{
-                fontSize: `${size}rem`,
-                color: tagColor
-              }}
-            >
-              <Hash className="w-4 h-4" />
-              {tag.name}
-              <span className="text-xs text-text-muted dark:text-text-muted">
-                {tag._count.photos}
-              </span>
-            </Link>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+export const revalidate = 300
 
 function TagsLoading() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="h-8 bg-surface-panel dark:bg-surface-panel rounded w-32 animate-pulse mb-2" />
-        <div className="h-4 bg-surface-panel dark:bg-surface-panel rounded w-64 animate-pulse" />
-      </div>
+    <div className="space-y-12 pb-32">
+      <TagUniverseIntro />
 
-      <div className="bg-surface-panel dark:bg-surface-panel rounded-xl p-6 mb-8 animate-pulse">
-        <div className="h-6 bg-surface-panel dark:bg-surface-panel rounded w-24 mb-4" />
-        <div className="flex flex-wrap gap-3">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="h-8 bg-surface-panel dark:bg-surface-panel rounded-full" style={{width: Math.random() * 60 + 60}} />
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-surface-panel dark:bg-surface-panel rounded-xl animate-pulse">
-            <div className="p-6 border-b border-surface-outline/60 dark:border-surface-outline/70">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-surface-panel dark:bg-surface-panel rounded-lg" />
-                <div>
-                  <div className="h-4 bg-surface-panel dark:bg-surface-panel rounded w-20 mb-1" />
-                  <div className="h-3 bg-surface-panel dark:bg-surface-panel rounded w-16" />
-                </div>
-              </div>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-3 gap-2">
-                {Array.from({ length: 6 }).map((_, j) => (
-                  <div key={j} className="aspect-square bg-surface-panel dark:bg-surface-panel rounded-lg" />
-                ))}
-              </div>
-            </div>
+      {/* Loading state for Tag Orbit */}
+      <div className="relative min-h-[600px] overflow-hidden rounded-[48px] border border-white/10 bg-black/20 p-8 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 via-transparent to-slate-900/20" />
+        <div className="flex items-center justify-center h-full">
+          <div className="space-y-4 text-center">
+            <div className="mx-auto h-16 w-16 animate-spin rounded-full border-2 border-white/10 border-t-amber-200/60" />
+            <h3 className="text-xl font-light text-white/80" style={{ fontFamily: 'var(--token-typography-display-font-family)' }}>
+              正在构建标签宇宙
+            </h3>
+            <p className="text-white/60 font-light max-w-md">
+              正在分析作品间的关联关系与主题网络...
+            </p>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )
 }
 
-async function TagsContent() {
-  const tags = await getTags()
+function TagUniverseIntro() {
+  return (
+    <AnimateOnScroll>
+      <section className="relative overflow-hidden rounded-[48px] border border-white/10 bg-gradient-to-br from-black/90 via-slate-900/80 to-black/95 p-8 text-white shadow-2xl backdrop-blur-lg md:p-12">
+        <div className="absolute inset-0" aria-hidden="true">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-400/3 via-transparent to-slate-900/10" />
+          <div
+            className="absolute inset-0 opacity-20 mix-blend-overlay"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
+              backgroundSize: '200px 200px'
+            }}
+          />
+        </div>
+
+        <div className="relative grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-end">
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <Globe className="h-6 w-6 text-amber-200/80" />
+              <p className="text-xs font-light uppercase tracking-[0.3em] text-white/60">Tag Universe</p>
+            </div>
+            <h1
+              className="text-4xl font-light leading-[1.15] tracking-tight md:text-5xl"
+              style={{ fontFamily: 'var(--token-typography-display-font-family)' }}
+            >
+              标签宇宙
+            </h1>
+            <p className="max-w-2xl text-base font-light leading-relaxed text-white/75">
+              每个标签都是一颗恒星，它们因共同的主题与情感而相互连接。
+              在这个可交互的宇宙中，发现作品间隐藏的关联与创意的网络。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-center text-white/80 sm:grid-cols-4 md:grid-cols-2">
+            <StatBlock label="标签节点" iconComponent={Hash} />
+            <StatBlock label="关联连接" iconComponent={Sparkles} />
+          </div>
+        </div>
+      </section>
+    </AnimateOnScroll>
+  )
+}
+
+function StatBlock({
+  label,
+  value,
+  iconComponent: IconComponent
+}: {
+  label: string
+  value?: number
+  iconComponent: React.ComponentType<{ className?: string }>
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/5 px-4 py-6">
+      <div className="flex flex-col items-center space-y-2">
+        <IconComponent className="h-5 w-5 text-amber-200/60" />
+        <p className="text-xs font-light uppercase tracking-[0.25em] text-white/50">{label}</p>
+        {value !== undefined && (
+          <p className="text-xl font-light">{Intl.NumberFormat('zh-CN').format(value)}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+async function TagsContent({ searchParams }: TagsPageProps) {
+  const filters = parseTagGraphFilters(searchParams)
+  const result = await getTagGraphQuery(filters)
+  const { nodes, edges, stats, filter } = result
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-text-primary dark:text-text-inverted">
-          标签分类
-        </h1>
-        <p className="text-text-secondary dark:text-text-muted">
-          通过标签发现和整理你的照片，共 {tags.length} 个标签
-        </p>
-      </div>
+    <div className="space-y-12 pb-32">
+      <TagUniverseIntro />
 
-      {tags.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 bg-surface-panel dark:bg-surface-panel rounded-full flex items-center justify-center mx-auto mb-6">
-            <Tag className="w-12 h-12 text-text-muted" />
+      <AnimateOnScroll delay={0.2}>
+        <div className="space-y-6">
+          {/* Enhanced Tag Universe Visualization */}
+          <TagOrbit nodes={nodes} edges={edges} className="min-h-[700px]" />
+
+          {/* Stats and Controls */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="标签节点"
+              value={stats.totalTags}
+              description="作品主题分类"
+              iconComponent={TagIcon}
+            />
+            <StatCard
+              label="关联连接"
+              value={stats.totalEdges}
+              description="标签间关系"
+              iconComponent={Sparkles}
+            />
+            <StatCard
+              label="最高频次"
+              value={stats.maxFrequency}
+              description="最常用标签"
+              iconComponent={Hash}
+            />
+            <StatCard
+              label="视图模式"
+              value={filter.focusTagId ? 1 : 0}
+              description={filter.focusTagId ? "焦点模式" : "全景模式"}
+              iconComponent={Globe}
+              isToggle
+            />
           </div>
-          <h3 className="text-xl font-semibold mb-2 text-text-primary dark:text-text-inverted">
-            暂时还没有标签
-          </h3>
-          <p className="text-text-secondary dark:text-text-muted">
-            开始为你的照片添加标签来更好地组织它们
-          </p>
         </div>
-      ) : (
-        <>
-          <div className="mb-8">
-            <TagCloud tags={tags} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tags.map(tag => (
-              <TagCard key={tag.id} tag={tag} />
-            ))}
-          </div>
-        </>
-      )}
+      </AnimateOnScroll>
     </div>
   )
 }
 
-export default function TagsPage() {
+function StatCard({
+  label,
+  value,
+  description,
+  iconComponent: IconComponent,
+  isToggle = false
+}: {
+  label: string
+  value: number
+  description: string
+  iconComponent: React.ComponentType<{ className?: string }>
+  isToggle?: boolean
+}) {
+  return (
+    <motion.div
+      className="rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl"
+      whileHover={{ scale: 1.02, borderColor: 'rgba(251, 191, 36, 0.3)' }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <IconComponent className="h-5 w-5 text-amber-200/70" />
+          {!isToggle && (
+            <span className="text-2xl font-light text-white">
+              {Intl.NumberFormat('zh-CN').format(value)}
+            </span>
+          )}
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium text-white/90">{label}</h3>
+          <p className="text-xs font-light text-white/60">{description}</p>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+export default function TagsPage({ searchParams }: TagsPageProps) {
   return (
     <Suspense fallback={<TagsLoading />}>
-      <TagsContent />
+      <TagsContent searchParams={searchParams} />
     </Suspense>
   )
 }

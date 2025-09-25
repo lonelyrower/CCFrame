@@ -16,40 +16,40 @@ interface FeatureItem {
 
 const FEATURES: FeatureItem[] = [
   {
-    id: 'semantic',
-    title: '语义理解',
-    description: '通过嵌入向量识别情绪、场景与构图，跨语言检索灵感。',
+    id: 'city-walks',
+    title: '城市漫游',
+    description: '在夜色与清晨之间追逐霓虹与倒影，让熟悉的城市成为故事背景。',
     icon: Sparkles,
   },
   {
-    id: 'automation',
-    title: '全自动归档',
-    description: '批量处理上传、自动生成多种规格的图像变体并保留 EXIF。',
-    icon: Wand2,
+    id: 'portraits',
+    title: '亲密肖像',
+    description: '记录家人和朋友的神情，把相处时的温度和信任留在照片里。',
+    icon: Camera,
   },
   {
-    id: 'storyline',
-    title: '时序叙事',
-    description: '以时间轴、故事集与动态相册呈现完整的创作旅程。',
-    icon: Workflow,
-  },
-  {
-    id: 'collaboration',
-    title: '轻松分享',
-    description: '面向客户的公共页面与可控权限，一键输出精选集。',
-    icon: Share2,
-  },
-  {
-    id: 'layers',
-    title: '结构化管理',
-    description: '标签、智能相册与高级筛选组合，快速定位素材。',
+    id: 'seasons',
+    title: '四季色调',
+    description: '用不同的色彩主题整理春夏秋冬的光线变化。',
     icon: Layers,
   },
   {
-    id: 'capture',
-    title: '高保真影像',
-    description: '自适应色彩管理、HDR、RAW 处理，保留作品细节与质感。',
-    icon: Camera,
+    id: 'journeys',
+    title: '旅途记忆',
+    description: '旅途中随写的影像日记，每一站都是新的灵感和注脚。',
+    icon: Workflow,
+  },
+  {
+    id: 'notes',
+    title: '创作随笔',
+    description: '每个系列都有文字旁白，记录拍摄当下的心绪与灵感来源。',
+    icon: Wand2,
+  },
+  {
+    id: 'sharing',
+    title: '开放分享',
+    description: '把整理好的作品册分享给朋友，也欢迎你留言交流心得。',
+    icon: Share2,
   },
 ]
 
@@ -61,9 +61,9 @@ export function LandingFeatureRail() {
           <AnimateOnScroll>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <Heading size="lg">工作流亮点</Heading>
+                <Heading size="lg">创作亮点</Heading>
                 <Text tone="secondary">
-                  将创作过程中的采集、整理、交付串联成一体化体验。
+                  挑选几件最近让我着迷的主题，带你快速认识这些作品。
                 </Text>
               </div>
             </div>

@@ -16,7 +16,7 @@ import { CatalogCompareTray } from '@/components/catalog/compare-tray'
 import { CatalogSearchBar } from '@/components/catalog/search-bar'
 import { CatalogShell } from '@/components/catalog/catalog-shell'
 import { CatalogToolbar } from '@/components/catalog/catalog-toolbar'
-import { MasonryGallery } from '@/components/gallery/masonry-gallery'
+import { PhotographyMasonry } from '@/components/gallery/photography-masonry'
 import { Lightbox } from '@/components/gallery/lightbox'
 import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
@@ -96,7 +96,7 @@ function PhotosLoading() {
 
       <Container size="xl" bleed="none">
         <div className="rounded-xl border border-surface-outline/30 bg-surface-panel/60 p-6 shadow-subtle">
-          <MasonryGallery photos={[]} loading />
+          <PhotographyMasonry photos={[]} loading />
         </div>
       </Container>
     </div>
@@ -209,7 +209,7 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
                     </Text>
                   </Surface>
                 ) : (
-                  <MasonryGallery
+                  <PhotographyMasonry
                     photos={photos}
                     renderOverlay={(photo) => <CatalogPhotoActions photo={photo} />}
                   />

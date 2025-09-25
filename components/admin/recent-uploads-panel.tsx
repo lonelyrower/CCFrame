@@ -1,8 +1,7 @@
 import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
+import { motion } from 'framer-motion'
 
-import { Surface } from '@/components/ui/surface'
-import { Heading, Text } from '@/components/ui/typography'
 import type { AdminRecentUploadItem } from '@/types/admin'
 import { cn } from '@/lib/utils'
 
@@ -12,51 +11,86 @@ interface RecentUploadsPanelProps {
 
 export function RecentUploadsPanel({ items }: RecentUploadsPanelProps) {
   return (
-    <div className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.5,
+        delay: 0.5,
+        ease: [0.25, 0.25, 0.25, 1]
+      }}
+      className="space-y-6"
+    >
       <div className="flex items-center justify-between">
-        <Heading size="sm">最近上传</Heading>
-        <Text size="xs" tone="muted">
+        <h2
+          className="text-lg font-medium text-white"
+          style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
+        >
+          最近上传
+        </h2>
+        <span className="text-xs text-white/60">
           最新 {items.length} 条记录
-        </Text>
+        </span>
       </div>
-      <Surface tone="panel" padding="lg" className="shadow-subtle">
+
+      <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/40 p-6 backdrop-blur-xl shadow-xl">
+        {/* Film grain background */}
+        <div
+          className="absolute inset-0 opacity-5 mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
+            backgroundSize: '100px 100px'
+          }}
+        />
+
         {items.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <Text size="sm" tone="secondary">
+          <div className="relative flex flex-col items-center gap-3 py-12 text-center">
+            <p className="text-sm font-light text-white/70">
               暂无上传记录。
-            </Text>
+            </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {items.map((item) => (
-              <figure key={item.id} className="group relative overflow-hidden rounded-2xl border border-surface-outline/30 bg-surface-canvas/80">
-                <div className="relative aspect-video w-full">
+          <div className="relative grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((item, index) => (
+              <motion.figure
+                key={item.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.1 + 0.2,
+                  ease: [0.25, 0.25, 0.25, 1]
+                }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="group relative overflow-hidden rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="relative aspect-video w-full overflow-hidden">
                   <Image
                     src={item.thumbUrl}
                     alt={item.title ?? 'Recent upload thumbnail'}
                     fill
                     sizes="(min-width: 1280px) 16vw, (min-width: 768px) 28vw, 80vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 </div>
-                <figcaption className="flex items-center justify-between gap-2 px-4 py-3">
-                  <div className="min-w-0">
-                    <Text size="sm" weight="medium" className="truncate text-text-primary">
+                <figcaption className="flex items-center justify-between gap-3 p-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white">
                       {item.title ?? '未命名文件'}
-                    </Text>
-                    <Text size="xs" tone="muted" className="truncate">
+                    </p>
+                    <p className="truncate text-xs font-light text-white/60">
                       {item.albumTitle ?? '未归档'}
-                    </Text>
+                    </p>
                   </div>
                   <VisibilityBadge visibility={item.visibility} />
                 </figcaption>
-              </figure>
+              </motion.figure>
             ))}
           </div>
         )}
-      </Surface>
-    </div>
+      </div>
+    </motion.div>
   )
 }
 
@@ -69,10 +103,12 @@ function VisibilityBadge({ visibility }: VisibilityBadgeProps) {
   const Icon = isPublic ? Eye : EyeOff
   return (
     <span className={cn(
-      'inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold',
-      isPublic ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-200' : 'bg-surface-outline/40 text-text-secondary',
+      'inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-[11px] font-medium',
+      isPublic
+        ? 'border border-emerald-400/30 bg-emerald-400/20 text-emerald-200'
+        : 'border border-white/20 bg-white/10 text-white/70',
     )}>
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-3 w-3" />
       {isPublic ? '公开' : '私密'}
     </span>
   )

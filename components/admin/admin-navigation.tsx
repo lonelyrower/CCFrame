@@ -27,24 +27,35 @@ export function AdminNavigationSidebar({ className }: AdminNavigationSidebarProp
   const pathname = usePathname()
 
   return (
-    <nav className={cn('hidden flex-col gap-8 lg:flex', className)} aria-label="后台主要导航">
-      {adminNavigationSections.map((section) => (
+    <div className={cn('relative hidden lg:flex', className)}>
+      {/* Film grain background */}
+      <div
+        className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
+          backgroundSize: '100px 100px'
+        }}
+      />
+
+      <nav className="relative flex flex-col gap-8" aria-label="后台主要导航">
+        {adminNavigationSections.map((section) => (
+          <SectionBlock
+            key={section.id}
+            title={section.title}
+            pathname={pathname}
+            metrics={metrics}
+            items={section.items}
+          />
+        ))}
+
         <SectionBlock
-          key={section.id}
-          title={section.title}
+          title={adminSupportLinks.title}
           pathname={pathname}
           metrics={metrics}
-          items={section.items}
+          items={adminSupportLinks.items}
         />
-      ))}
-
-      <SectionBlock
-        title={adminSupportLinks.title}
-        pathname={pathname}
-        metrics={metrics}
-        items={adminSupportLinks.items}
-      />
-    </nav>
+      </nav>
+    </div>
   )
 }
 
@@ -57,11 +68,11 @@ interface SectionBlockProps {
 
 function SectionBlock({ title, pathname, metrics, items }: SectionBlockProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {title ? (
-        <p className="px-2 text-xs font-semibold uppercase tracking-wide text-text-muted">{title}</p>
+        <p className="px-3 text-xs font-medium uppercase tracking-[0.15em] text-white/50">{title}</p>
       ) : null}
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         {items.map((item) => {
           const Icon = item.icon
           const badge = formatNavigationBadge(item, metrics)
@@ -74,14 +85,24 @@ function SectionBlock({ title, pathname, metrics, items }: SectionBlockProps) {
               <Link
                 href={item.href}
                 className={cn(
-                  'group flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium transition',
+                  'group flex items-center justify-between gap-3 rounded-[16px] px-4 py-3 text-sm font-light transition-all duration-300',
                   isActive
-                    ? 'bg-primary/10 text-primary shadow-soft'
-                    : 'text-text-secondary hover:bg-surface-panel/80 hover:text-text-primary',
+                    ? 'border border-amber-200/30 bg-amber-100/10 text-amber-100 shadow-lg backdrop-blur-xl scale-105'
+                    : 'text-white/70 hover:border hover:border-white/20 hover:bg-white/5 hover:text-white hover:scale-105 hover:backdrop-blur-xl',
                 )}
+                style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  {Icon ? <Icon className="h-4 w-4 shrink-0 text-text-muted group-hover:text-primary" /> : null}
+                  {Icon ? (
+                    <Icon
+                      className={cn(
+                        'h-4 w-4 shrink-0 transition-colors',
+                        isActive
+                          ? 'text-amber-200'
+                          : 'text-white/50 group-hover:text-amber-200'
+                      )}
+                    />
+                  ) : null}
                   <span className="truncate">{item.label}</span>
                 </span>
                 {badge ? <BadgePill badge={badge} /> : null}
@@ -104,7 +125,7 @@ function BadgePill({ badge }: BadgePillProps) {
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold',
+        'inline-flex shrink-0 items-center rounded-[8px] border px-2 py-1 text-[10px] font-medium tracking-wide',
         toneClass,
       )}
     >
@@ -118,16 +139,16 @@ type BadgeTone = AdminNavigationBadge['tone']
 function getBadgeToneClass(tone: BadgeTone) {
   switch (tone) {
     case 'danger':
-      return 'border-transparent bg-red-500/90 text-text-inverted dark:bg-red-500'
+      return 'border-red-400/40 bg-red-500/20 text-red-100'
     case 'warning':
-      return 'border-transparent bg-amber-200/70 text-amber-900 dark:bg-amber-300/80 dark:text-amber-950'
+      return 'border-amber-200/40 bg-amber-100/20 text-amber-100'
     case 'success':
-      return 'border-transparent bg-emerald-500/20 text-emerald-600 dark:bg-emerald-400/20 dark:text-emerald-300'
+      return 'border-emerald-400/40 bg-emerald-500/20 text-emerald-100'
     case 'info':
-      return 'border-transparent bg-primary/10 text-primary'
+      return 'border-blue-400/40 bg-blue-500/20 text-blue-100'
     case 'neutral':
     default:
-      return 'border-surface-outline/40 bg-surface-panel/60 text-text-secondary'
+      return 'border-white/30 bg-white/10 text-white/80'
   }
 }
 
@@ -148,26 +169,27 @@ export function AdminNavigationMobileToggle() {
 
   return (
     <div className="lg:hidden">
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
-        className="h-10 w-10"
         onClick={() => setOpen((prev) => !prev)}
+        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/15 bg-white/5 text-white/80 backdrop-blur-xl transition-all duration-300 hover:border-amber-200/40 hover:bg-amber-100/10 hover:text-amber-100 hover:scale-105"
         aria-expanded={open}
         aria-label={open ? '关闭后台导航' : '打开后台导航'}
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+      </button>
 
       <AnimatePresence>
         {open ? (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-4 top-[4.5rem] z-40 overflow-hidden rounded-2xl border border-surface-outline/40 bg-surface-panel/95 p-4 shadow-floating backdrop-blur"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.25, 0.25, 1] }}
+            className="fixed inset-x-4 top-[5rem] z-40 overflow-hidden rounded-[24px] border border-white/15 bg-black/80 p-6 shadow-2xl backdrop-blur-xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,15,15,0.95) 100%)'
+            }}
           >
             <nav aria-label="后台导航（移动）" className="space-y-6">
               {adminNavigationSections.map((section) => (
@@ -215,9 +237,9 @@ interface MobileSectionProps {
 
 function MobileSection({ title, pathname, metrics, items, onNavigate }: MobileSectionProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {title ? (
-        <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{title}</p>
+        <p className="px-3 text-xs font-medium uppercase tracking-[0.15em] text-white/50">{title}</p>
       ) : null}
       <ul className="space-y-2">
         {items.map((item) => {
@@ -233,14 +255,24 @@ function MobileSection({ title, pathname, metrics, items, onNavigate }: MobileSe
                 href={item.href}
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition',
+                  'flex items-center justify-between rounded-[16px] px-4 py-3 text-sm font-light transition-all duration-300',
                   isActive
-                    ? 'bg-primary/10 text-primary shadow-soft'
-                    : 'bg-surface-canvas text-text-secondary hover:bg-surface-panel/80 hover:text-text-primary',
+                    ? 'border border-amber-200/30 bg-amber-100/10 text-amber-100 shadow-lg backdrop-blur-xl'
+                    : 'border border-transparent text-white/70 hover:border-white/20 hover:bg-white/5 hover:text-white hover:backdrop-blur-xl',
                 )}
+                style={{ fontFamily: 'var(--token-typography-sans-font-family)' }}
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  {Icon ? <Icon className="h-4 w-4 shrink-0 text-text-muted" /> : null}
+                  {Icon ? (
+                    <Icon
+                      className={cn(
+                        'h-4 w-4 shrink-0 transition-colors',
+                        isActive
+                          ? 'text-amber-200'
+                          : 'text-white/50 group-hover:text-amber-200'
+                      )}
+                    />
+                  ) : null}
                   <span className="truncate">{item.label}</span>
                 </span>
                 {badge ? <BadgePill badge={badge} /> : null}

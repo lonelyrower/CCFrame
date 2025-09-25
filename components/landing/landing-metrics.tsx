@@ -21,30 +21,30 @@ export function LandingMetrics({ metrics, semantic }: LandingMetricsProps) {
   const metricItems = [
     {
       id: 'photos',
-      label: '公开作品',
+      label: '作品总数',
       value: metrics.totalPhotos,
-      description: '已经完成处理的公开照片',
+      description: '目前整理入册的照片',
       icon: Camera,
     },
     {
       id: 'recent',
-      label: '近 30 日新增',
+      label: '最近 30 天',
       value: metrics.recentPhotosCount,
-      description: '创作者持续上传的最新灵感',
+      description: '最近 30 天新加入的作品',
       icon: Sparkles,
     },
     {
       id: 'tags',
-      label: '主题标签',
+      label: '常用标签',
       value: metrics.totalTags,
-      description: '语义理解与色彩聚类的结合',
+      description: '常用标签，帮助我整理灵感',
       icon: Tags,
     },
     {
       id: 'albums',
-      label: '精选相册',
+      label: '精选系列',
       value: metrics.totalAlbums,
-      description: '按故事线串联的沉浸式合集',
+      description: '精选系列，用来串起故事线',
       icon: Bookmark,
     },
   ]
@@ -56,9 +56,9 @@ export function LandingMetrics({ metrics, semantic }: LandingMetricsProps) {
           <AnimateOnScroll>
             <Surface padding="lg" className="h-full space-y-8">
               <div className="space-y-2">
-                <Heading size="lg">数据驱动的摄影中台</Heading>
+                <Heading size="lg">作品速览</Heading>
                 <Text tone="secondary">
-                  从自动归档、语义检索到智能故事线，CC Frame 的数据底座时刻准备就绪。
+                  用几组数字记录我最近的创作节奏，看看作品、标签与系列正在如何生长。
                 </Text>
               </div>
               <div className="grid gap-6 sm:grid-cols-2">
@@ -83,9 +83,9 @@ export function LandingMetrics({ metrics, semantic }: LandingMetricsProps) {
           <AnimateOnScroll delay={0.08}>
             <Surface tone="glass" padding="lg" className="h-full">
               <div className="space-y-4">
-                <Heading size="md">语义搜索实验室</Heading>
+                <Heading size="md">灵感词典</Heading>
                 <Text tone="secondary" size="sm">
-                  通过嵌入向量理解照片含义，以自然语言检索特定场景、情绪或色调。实时演示由实验模式驱动。
+                  试着输入某种颜色或情绪，语义搜索会立刻把相册里与之呼应的作品找出来。
                 </Text>
               </div>
               <div className="mt-6">

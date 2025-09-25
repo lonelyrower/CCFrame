@@ -17,15 +17,15 @@ export function LandingMoodboard({ tags }: LandingMoodboardProps) {
             <div className="space-y-6">
               <div className="max-w-2xl space-y-3">
                 <Heading size="lg" className="text-balance text-text-inverted">
-                  Moodboard 色彩情绪板
+                  色彩灵感地图
                 </Heading>
                 <Text tone="inverted" size="sm">
-                  从大量素材中提炼出的热门主题与色彩，帮助你快速定位灵感方向。
+                  把常用的色彩和关键词编织成灵感地图，帮助我寻找下一张照片的方向。
                 </Text>
               </div>
               {tags.length === 0 ? (
                 <Text tone="inverted" size="sm">
-                  当前没有可用的热门标签。上传并打标签后，这里会自动生成色彩情绪板。
+                  还没有积累足够的标签，等我再整理一些作品就与你分享最新的色彩灵感。
                 </Text>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

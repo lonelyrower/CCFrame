@@ -2,31 +2,19 @@ import type { Metadata } from 'next'
 import { unstable_noStore as noStore } from 'next/cache'
 import { headers } from 'next/headers'
 
-import {
-  LandingHero,
-  LandingShowcase,
-  LandingMetrics,
-  LandingFeatureRail,
-  LandingCollections,
-  LandingMoodboard,
-  LandingPipeline,
-  LandingTimeline,
-  LandingCTA,
-} from '@/components/landing'
+import { HomeCurations, HomeHero, HomeLatest, HomeStory } from '@/components/home'
+import { FloatingActions } from '@/components/ui'
 import { getLandingSnapshot } from '@/lib/landing-data'
-import { getSemanticConfig } from '@/lib/semantic-config'
 import { getImageUrl } from '@/lib/utils'
 
-const landingTitle = 'CC Frame · 我的摄影时光'
-const landingDescription = '记录生活中的美好瞬间，分享摄影路上的点点滴滴。一个简洁优雅的个人相册，让每一张照片都有它的故事。'
+const landingTitle = 'CC Frame · 光影展厅'
+const landingDescription = '这是一场为摄影师而设的小型展览，记录那些诚实的情绪与光影。愿你在缓慢的浏览里，与我共同经历风、树与人群的呼吸。'
 
 function getSiteUrl() {
-  // 优先使用环境变量
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL
   }
 
-  // 生产环境尝试从请求头获取
   if (process.env.NODE_ENV === 'production') {
     try {
       const headersList = headers()
@@ -36,11 +24,10 @@ function getSiteUrl() {
         return `${proto}://${host}`
       }
     } catch {
-      // headers() 在某些情况下可能无法使用
+      // headers() 在某些执行环境可能不可用
     }
   }
 
-  // 开发环境默认值
   return 'http://localhost:3000'
 }
 
@@ -72,7 +59,7 @@ export const metadata: Metadata = {
     description: landingDescription,
     images: [ogImage],
   },
-  keywords: ['个人相册', '摄影作品', '生活记录', '美好时光', 'CC Frame'],
+  keywords: ['摄影师', '摄影作品', '影像叙事', '个人展览', 'CC Frame'],
 }
 
 export const dynamic = 'force-dynamic'
@@ -80,10 +67,7 @@ export const dynamic = 'force-dynamic'
 export default async function HomePage() {
   noStore()
 
-  const [snapshot, semanticConfig] = await Promise.all([
-    getLandingSnapshot(),
-    Promise.resolve(getSemanticConfig()),
-  ])
+  const snapshot = await getLandingSnapshot()
 
   const siteUrl = getSiteUrl()
   const toAbsolute = (path: string) => (path.startsWith('http') ? path : `${siteUrl}${path}`)
@@ -120,24 +104,24 @@ export default async function HomePage() {
   }
 
   return (
-    <>
-      <LandingHero photos={snapshot.featuredPhotos} metrics={snapshot.metrics} />
-      <LandingShowcase photos={snapshot.featuredPhotos} />
-      <LandingMetrics
-        metrics={snapshot.metrics}
-        semantic={{ enabled: semanticConfig.enabled, mode: semanticConfig.mode }}
+    <main className="relative min-h-screen overflow-hidden bg-canvas text-foreground" style={{ background: 'var(--token-color-surface-canvas)' }}>
+      <HomeHero photos={snapshot.featuredPhotos} metrics={snapshot.metrics} />
+      <HomeCurations photos={snapshot.featuredPhotos} tags={snapshot.topTags} albums={snapshot.topAlbums} />
+      <HomeStory statement={landingDescription} albums={snapshot.topAlbums} featuredPhotos={snapshot.featuredPhotos} />
+      <HomeLatest photos={snapshot.featuredPhotos} activity={snapshot.recentActivity} />
+
+      {/* Floating Actions */}
+      <FloatingActions
+        shareUrl={siteUrl}
+        shareTitle={landingTitle}
+        shareDescription={landingDescription}
       />
-      <LandingFeatureRail />
-      <LandingCollections albums={snapshot.topAlbums} />
-      <LandingMoodboard tags={snapshot.topTags} />
-      <LandingPipeline pipeline={snapshot.pipeline} />
-      <LandingTimeline activity={snapshot.recentActivity} />
-      <LandingCTA metrics={snapshot.metrics} />
+
       <script
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-    </>
+    </main>
   )
 }

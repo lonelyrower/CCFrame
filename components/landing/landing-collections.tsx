@@ -19,17 +19,17 @@ const blurPlaceholder = `data:image/svg+xml;base64,${toBase64('<svg width="400" 
 
 export function LandingCollections({ albums }: LandingCollectionsProps) {
   return (
-    <section>
+    <section id="collections">
       <Container size="xl" bleed="none" className="py-16">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <Overline>Signature Collections</Overline>
-            <Heading size="lg">精选故事集</Heading>
-            <Text tone="secondary">按主题、情绪或项目归纳的相册，快速了解我们的叙事方式。</Text>
+            <Overline>精选系列</Overline>
+            <Heading size="lg">精选影像集</Heading>
+            <Text tone="secondary">围绕主题、地点与情绪策划的小型展览，像翻一本随身画册。</Text>
           </div>
           <Button asChild variant="outline" size="lg">
             <Link href="/photos">
-              浏览图库
+              浏览图册
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -38,9 +38,9 @@ export function LandingCollections({ albums }: LandingCollectionsProps) {
         {albums.length === 0 ? (
           <div className="mt-10">
             <Surface padding="lg" className="text-center">
-              <Heading size="sm">暂未收录公共相册</Heading>
+              <Heading size="sm">暂未整理系列</Heading>
               <Text tone="secondary" size="sm" className="mt-2">
-                当你上传并公开作品后，这里将自动推荐最受欢迎的合集。
+                正在挑选照片，很快就会有新的影像故事与大家见面。
               </Text>
             </Surface>
           </div>
@@ -65,7 +65,7 @@ export function LandingCollections({ albums }: LandingCollectionsProps) {
                           />
                         ) : (
                           <div className="flex h-full min-h-[260px] w-full items-center justify-center bg-gradient-to-br from-surface-outline/20 to-surface-panel">
-                            <Text tone="secondary">等待第一个封面</Text>
+                            <Text tone="secondary">等待下一组影像</Text>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
@@ -87,12 +87,16 @@ export function LandingCollections({ albums }: LandingCollectionsProps) {
                             <Text tone="secondary" size="sm" className="text-pretty leading-relaxed">
                               {album.description}
                             </Text>
-                          ) : null}
+                          ) : (
+                            <Text tone="secondary" size="sm" className="text-pretty leading-relaxed">
+                              这组作品还在补写说明，欢迎先一饱眼福。
+                            </Text>
+                          )}
                         </div>
                         <div className="mt-8 flex items-center justify-between text-sm text-text-secondary">
-                          <span>以现实项目为单位的故事合集</span>
+                          <span>点击跳转到该系列的完整图集</span>
                           <Link href={`/photos?album=${album.id}`} className="inline-flex items-center gap-1 text-primary hover:underline">
-                            查看相册
+                            查看更多
                             <ArrowUpRight className="h-4 w-4" />
                           </Link>
                         </div>

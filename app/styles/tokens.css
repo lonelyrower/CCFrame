@@ -1,18 +1,20 @@
 :root {
-  /* Light mode color tokens */
-  --token-color-text-primary: 225 21% 8%;
-  --token-color-text-secondary: 225 16% 32%;
-  --token-color-text-muted: 225 12% 48%;
+  /* Light mode color tokens - Photography Site Theme */
+  --token-color-text-primary: 25 15% 12%;
+  --token-color-text-secondary: 25 12% 28%;
+  --token-color-text-muted: 25 8% 45%;
   --token-color-text-inverted: 0 0% 100%;
 
-  --token-color-brand-primary: 237 100% 65%;
-  --token-color-brand-primary-strong: 238 63% 50%;
-  --token-color-brand-accent: 198 77% 56%;
+  /* Photography-inspired brand colors */
+  --token-color-brand-primary: 32 65% 65%;  /* Amber Gold */
+  --token-color-brand-primary-strong: 32 78% 55%;
+  --token-color-brand-accent: 213 28% 35%;  /* Night Blue */
 
-  --token-color-surface-canvas: 216 29% 97%;
-  --token-color-surface-panel: 0 0% 100% / 0.72;
-  --token-color-surface-glass: 0 0% 100% / 0.56;
-  --token-color-surface-outline: 225 20% 92%;
+  /* Warm gray canvas with subtle tint */
+  --token-color-surface-canvas: 25 8% 92%;  /* ECE9E6 equivalent */
+  --token-color-surface-panel: 0 0% 100% / 0.68;
+  --token-color-surface-glass: 0 0% 100% / 0.48;
+  --token-color-surface-outline: 25 6% 88%;
   --token-color-interaction-background: 0 0% 100% / 0.88;
   --token-color-interaction-muted: 237 100% 65% / 0.08;
   --token-color-interaction-border: 225 18% 82%;
@@ -30,14 +32,18 @@
 
   --token-color-overlay-backdrop: 225 40% 10% / 0.32;
 
-  /* Gradients */
-  --token-gradient-glow-primary: linear-gradient(135deg, rgba(99, 102, 241, 0.32) 0%, rgba(142, 155, 255, 0.05) 100%);
-  --token-gradient-glow-secondary: radial-gradient(60% 60% at 50% 40%, rgba(55, 176, 229, 0.25) 0%, rgba(107, 231, 255, 0) 80%);
-  --token-gradient-veil-deep: linear-gradient(180deg, rgba(15, 17, 23, 0.82) 0%, rgba(15, 17, 23, 0.68) 100%);
+  /* Photography-inspired gradients */
+  --token-gradient-glow-primary: linear-gradient(135deg, rgba(212, 163, 115, 0.25) 0%, rgba(212, 163, 115, 0.05) 100%);
+  --token-gradient-glow-secondary: radial-gradient(60% 60% at 50% 40%, rgba(33, 53, 71, 0.18) 0%, rgba(33, 53, 71, 0) 80%);
+  --token-gradient-veil-deep: linear-gradient(180deg, rgba(25, 25, 25, 0.85) 0%, rgba(25, 25, 25, 0.65) 100%);
+  --token-gradient-hero-backdrop: radial-gradient(circle at 25% 25%, rgba(212, 163, 115, 0.12), transparent 60%),
+                                  radial-gradient(circle at 75% 15%, rgba(33, 53, 71, 0.15), transparent 65%),
+                                  linear-gradient(180deg, rgba(236, 233, 230, 0.96), rgba(236, 233, 230, 0.88));
 
-  /* Typography */
-  --token-typography-display-font-family: "Playfair Display", "Source Han Serif SC", serif;
-  --token-typography-sans-font-family: "Inter", "Source Han Sans SC", system-ui, sans-serif;
+  /* Typography - Photography Editorial Style */
+  --token-typography-display-font-family: "Playfair Display", "Source Han Serif SC", "Times New Roman", serif;
+  --token-typography-sans-font-family: "Source Sans Pro", "Source Han Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  --token-typography-narrative-font-family: "Source Serif Pro", "Source Han Serif SC", Georgia, serif;
 
   --token-typography-display-font-size: 4rem;
   --token-typography-display-line-height: 1.2;
@@ -141,19 +147,19 @@
 }
 
 .dark {
-  --token-color-text-primary: 216 29% 97%;
-  --token-color-text-secondary: 216 20% 84%;
-  --token-color-text-muted: 216 15% 68%;
-  --token-color-text-inverted: 225 21% 8%;
+  --token-color-text-primary: 25 8% 94%;
+  --token-color-text-secondary: 25 6% 78%;
+  --token-color-text-muted: 25 4% 62%;
+  --token-color-text-inverted: 25 15% 12%;
 
-  --token-color-brand-primary: 238 63% 68%;
-  --token-color-brand-primary-strong: 237 100% 65%;
-  --token-color-brand-accent: 198 77% 56%;
+  --token-color-brand-primary: 32 68% 72%;  /* Warmer amber in dark mode */
+  --token-color-brand-primary-strong: 32 75% 68%;
+  --token-color-brand-accent: 213 32% 45%;  /* Lighter night blue */
 
-  --token-color-surface-canvas: 225 21% 7%;
-  --token-color-surface-panel: 228 24% 12% / 0.88;
-  --token-color-surface-glass: 225 30% 10% / 0.68;
-  --token-color-surface-outline: 225 18% 30% / 0.8;
+  --token-color-surface-canvas: 25 12% 8%;   /* Dark warm tone */
+  --token-color-surface-panel: 25 15% 12% / 0.85;
+  --token-color-surface-glass: 25 18% 10% / 0.65;
+  --token-color-surface-outline: 25 8% 25% / 0.75;
   --token-color-interaction-background: 228 24% 12% / 0.72;
   --token-color-interaction-muted: 238 63% 68% / 0.12;
   --token-color-interaction-border: 225 22% 28% / 0.9;
