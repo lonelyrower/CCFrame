@@ -11,52 +11,84 @@ RUN apt-get update && \
       python3 \
       make \
       g++ \
-      libvips \
+      libvips-dev \
       libheif1 \
       libjpeg62-turbo \
       libpng16-16 \
       libwebp7 \
       libtiff6 \
       curl && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Set npm configuration for better performance
+RUN npm config set fetch-retry-maxtimeout 600000 && \
+    npm config set fetch-retry-mintimeout 10000 && \
+    npm config set fetch-timeout 300000
 
 # Build stage
 FROM base AS build
 
-COPY package.json ./
-COPY package-lock.json ./
-COPY .npmrc ./
-RUN npm ci --omit=optional
+# Copy package files for dependency installation
+COPY package.json package-lock.json .npmrc ./
+
+# Install dependencies with retry logic and caching
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=optional --silent --no-audit --no-fund
 
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN --mount=type=cache,target=/root/.cache \
+    npx prisma generate
 
+# Copy source code (use .dockerignore to exclude unnecessary files)
 COPY . .
 
-# Build Next.js
+# Build Next.js with optimizations
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 # Prune dev dependencies after build
-RUN npm prune --production
+RUN npm prune --production --silent
 
-# Runner image
-FROM base AS runner
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Runner image - use minimal node alpine for production
+FROM node:20-alpine AS runner
+
+# Install necessary runtime dependencies
+RUN apk add --no-cache \
+    libvips-dev \
+    libc6-compat \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Set working directory
 WORKDIR /app
 
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
-COPY --from=build /app/prisma ./prisma
-COPY --from=build /app/scripts ./scripts
-COPY --from=build /app/jobs ./jobs
-# Fallback copy: duplicate jobs under scripts/jobs to avoid path issues in some builds
-COPY --from=build /app/jobs ./scripts/jobs
+# Set production environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Copy built application from build stage
+COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=build --chown=nextjs:nodejs /app/public ./public
+COPY --from=build --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Switch to non-root user
+USER nextjs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["node", "server.js"]
