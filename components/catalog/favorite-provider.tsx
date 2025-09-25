@@ -1,6 +1,8 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import React from 'react'
+
+const { createContext, useCallback, useContext, useEffect, useMemo, useState } = React
 
 import type { PhotoWithDetails } from '@/types'
 import type { CatalogFavoriteSnapshot } from '@/types/catalog'

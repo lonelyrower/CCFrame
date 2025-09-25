@@ -1,6 +1,8 @@
 "use client"
 
-import { createContext, useContext, useMemo } from 'react'
+import React from 'react'
+
+const { createContext, useContext, useMemo } = React
 
 import { useAudioPreference, useReducedMotionSetting } from '@/hooks/use-motion-preferences'
 

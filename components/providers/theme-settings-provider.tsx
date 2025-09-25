@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import React from 'react'
+
+const { createContext, useCallback, useContext, useEffect, useMemo, useState } = React
 
 type ContrastMode = 'default' | 'high'
 type MotionPreference = 'system' | 'reduce'

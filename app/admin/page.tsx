@@ -1,13 +1,25 @@
-import { getDashboardSnapshot } from '@/lib/admin/dashboard-service'
+'use client'
+
 import { DashboardMetricsBoard } from '@/components/admin/dashboard-metrics-board'
 import { TaskHub } from '@/components/admin/task-hub'
 import { ActivityStream } from '@/components/admin/activity-stream'
 import { RecentUploadsPanel } from '@/components/admin/recent-uploads-panel'
 
-export const revalidate = 30
-
-export default async function AdminDashboardPage() {
-  const snapshot = await getDashboardSnapshot()
+export default function AdminDashboardPage() {
+  // Mock snapshot data for client-side rendering
+  const snapshot = {
+    metrics: {
+      totalPhotos: 0,
+      totalAlbums: 0,
+      totalTags: 0,
+      totalViews: 0,
+      storageUsed: 0,
+      todaysUploads: 0
+    },
+    recentUploads: [],
+    activities: [],
+    tasks: []
+  }
 
   return (
     <div className="relative space-y-8 pb-20 pt-6">

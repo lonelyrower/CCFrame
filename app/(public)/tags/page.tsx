@@ -1,5 +1,6 @@
+'use client'
+
 import { Suspense } from 'react'
-import type { Metadata } from 'next'
 import { motion } from 'framer-motion'
 import { Tag as TagIcon, Hash, ArrowRight, Sparkles, Globe } from 'lucide-react'
 
@@ -10,12 +11,7 @@ interface TagsPageProps {
   searchParams?: Record<string, string | string[] | undefined>
 }
 
-export const metadata: Metadata = {
-  title: '标签宇宙 · CC Frame',
-  description: '通过交互式标签宇宙探索作品间的关联关系，发现色彩、情绪与主题的隐藏连接。',
-}
-
-export const revalidate = 300
+// Metadata moved to layout due to client component
 
 function TagsLoading() {
   return (
@@ -205,4 +201,3 @@ export default function TagsPage({ searchParams }: TagsPageProps) {
 }
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'

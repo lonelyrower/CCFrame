@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React from 'react'
+
+const { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } = React
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 

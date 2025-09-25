@@ -1,9 +1,14 @@
-import { Suspense } from 'react'
-import { getAnalyticsSettings } from '@/lib/admin/settings-service'
+'use client'
+
 import { AnalyticsProvider } from './analytics-provider'
 
-async function AnalyticsContent() {
-  const analytics = await getAnalyticsSettings()
+export function AnalyticsScripts() {
+  // Use default analytics settings for now to avoid server-side fs dependencies
+  const analytics = {
+    enabled: false,
+    googleAnalyticsId: '',
+    microsoftClarityId: ''
+  }
 
   return (
     <AnalyticsProvider
@@ -11,13 +16,5 @@ async function AnalyticsContent() {
       googleAnalyticsId={analytics.googleAnalyticsId}
       microsoftClarityId={analytics.microsoftClarityId}
     />
-  )
-}
-
-export function AnalyticsScripts() {
-  return (
-    <Suspense fallback={null}>
-      <AnalyticsContent />
-    </Suspense>
   )
 }

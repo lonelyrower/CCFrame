@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useReducer, useCallback } from 'react'
+import React from 'react'
+
+const { createContext, useContext, useEffect, useMemo, useReducer, useCallback } = React
 import type { PhotoWithDetails } from '@/types'
 import type { StorySequence } from '@/types/lightbox'
 import { buildStorySequence } from '@/lib/lightbox/story-service'

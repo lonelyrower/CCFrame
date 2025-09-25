@@ -1,6 +1,9 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import React from 'react'
+import type { ReactNode } from 'react'
+
+const { createContext, useCallback, useContext, useEffect, useMemo, useState } = React
 import { usePathname } from 'next/navigation'
 
 import { performanceMonitor, shouldDeferPrefetch } from '@/lib/performance-monitor'
