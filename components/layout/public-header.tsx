@@ -107,7 +107,7 @@ export function PublicHeader() {
           {session?.user ? (
             <Link href="/admin">
               <Button variant="outline" size="sm">
-                Admin
+                管理后台
               </Button>
             </Link>
           ) : (
@@ -184,7 +184,7 @@ export function PublicHeader() {
             <div className="flex items-center justify-between gap-2 text-sm">
               {session?.user ? (
                 <Link href="/admin" className="font-medium text-primary" onClick={() => setMobileMenuOpen(false)}>
-                  Admin
+                  管理后台
                 </Link>
               ) : (
                 <Link href="/admin/login" className="font-medium text-primary" onClick={() => setMobileMenuOpen(false)}>

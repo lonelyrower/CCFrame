@@ -31,7 +31,7 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
               <AnimateOnScroll>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-surface-glass/80 px-4 py-2 text-xs font-medium text-primary shadow-subtle backdrop-blur">
                   <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
-                  <span>\u6765\u81ea CC Frame \u7684\u6bcf\u65e5\u7075\u611f</span>
+                  <span>来自 CC Frame 的每日灵感</span>
                 </div>
               </AnimateOnScroll>
 
@@ -39,10 +39,10 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
                 <div className="space-y-4 text-balance">
                   <Overline className="text-text-muted">我的摄影时光</Overline>
                   <Heading as="h1" size="xl" className="text-balance text-text-inverted">
-                    \u6355\u6349\u5149\u5f71\uff0c\u8bb2\u8ff0\u5c5e\u4e8e\u4f60\u7684\u6444\u5f71\u6545\u4e8b
+                    捕捉光影，讲述属于你的摄影故事
                   </Heading>
                   <Text size="lg" tone="secondary" className="max-w-xl text-text-inverted/80">
-                    \u81ea\u52a8\u6574\u7406\u3001\u8bed\u4e49\u641c\u7d22\u3001\u65f6\u5e8f\u53d9\u4e8b\uff0c\u4ee5\u6781\u81f4\u6027\u80fd\u5448\u73b0\u4f60\u7684\u4f5c\u54c1\u96c6\u3002\u65e0\u8bba\u662f\u54c1\u724c\u6d3b\u52a8\u8fd8\u662f\u79c1\u4eab\u77ac\u95f4\uff0cCC Frame \u90fd\u80fd\u8ba9\u7075\u611f\u88ab\u770b\u89c1\u3002
+                    在这里，每一张照片都有它的故事。通过精心策展的影像，展现生活中的美好瞬间与独特视角。
                   </Text>
                 </div>
               </AnimateOnScroll>
@@ -50,20 +50,20 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
               <AnimateOnScroll delay={0.1}>
                 <div className="flex flex-wrap gap-4">
                   <Button asChild size="lg">
-                    <Link href="/photos">\u6d4f\u89c8\u4f5c\u54c1\u96c6</Link>
+                    <Link href="/photos">浏览作品集</Link>
                   </Button>
                   <Button asChild variant="glass" size="lg">
-                    <Link href="#experience">\u4f53\u9a8c\u667a\u80fd\u7ba1\u7ebf</Link>
+                    <Link href="#collections">探索系列作品</Link>
                   </Button>
                 </div>
               </AnimateOnScroll>
 
               <AnimateOnScroll delay={0.15}>
                 <dl className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                  <MetricItem label="\u516c\u5f00\u4f5c\u54c1" value={metrics.totalPhotos} suffix="+" />
-                  <MetricItem label="\u8fd1 30 \u65e5\u65b0\u589e" value={metrics.recentPhotosCount} />
-                  <MetricItem label="\u4e3b\u9898\u6807\u7b7e" value={metrics.totalTags} />
-                  <MetricItem label="\u7cbe\u9009\u76f8\u518c" value={metrics.totalAlbums} />
+                  <MetricItem label="公开作品" value={metrics.totalPhotos} suffix="+" />
+                  <MetricItem label="近 30 日新增" value={metrics.recentPhotosCount} />
+                  <MetricItem label="主题标签" value={metrics.totalTags} />
+                  <MetricItem label="精选相册" value={metrics.totalAlbums} />
                 </dl>
               </AnimateOnScroll>
             </div>
@@ -78,7 +78,7 @@ export function LandingHero({ photos, metrics }: LandingHeroProps) {
                     >
                       <Image
                         src={getImageUrl(photo.id, 'medium', 'webp')}
-                        alt={photo.album?.title || '\u7cbe\u9009\u4f5c\u54c1'}
+                        alt={photo.album?.title || '精选作品'}
                         fill
                         sizes="112px"
                         className="object-cover transition-transform duration-500 ease-[var(--ease-out)] group-hover:scale-105"

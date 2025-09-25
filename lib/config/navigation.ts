@@ -34,20 +34,7 @@ export const publicPrimaryNavigation: NavigationItem[] = [
   { title: '标签', href: '/tags', icon: Tag },
 ]
 
-export const publicHighlightActions: NavigationItem[] = [
-  {
-    title: '服务项目',
-    href: '/services',
-    description: '探索拍摄套餐、工作流程和成功案例。',
-    icon: Sparkles,
-  },
-  {
-    title: '联系我们',
-    href: '/contact',
-    description: '欢迎联系咨询合作事宜。',
-    icon: Aperture,
-  },
-]
+export const publicHighlightActions: NavigationItem[] = []
 
 export const adminPrimaryNavigation: NavigationItem[] = [
   { title: 'Overview', href: '/admin', icon: BarChart3 },

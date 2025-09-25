@@ -22,10 +22,10 @@ export function LandingCTA({ metrics }: LandingCTAProps) {
           <Surface tone="glass" padding="lg" className="flex flex-col items-start gap-6 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/20 via-surface-panel to-surface-canvas shadow-floating sm:flex-row sm:items-center sm:justify-between sm:gap-12">
             <div className="space-y-3 text-balance">
               <Heading size="lg" className="text-text-inverted">
-                准备好构建你的下一场视觉叙事了吗？
+                发现更多摄影时光
               </Heading>
               <Text tone="inverted">
-                目前我们已经托管了 {numberFormatter.format(metrics.totalPhotos)} 张作品，随时欢迎你上传、整理与分享新的灵感。
+                这里收录了 {numberFormatter.format(metrics.totalPhotos)} 张精选作品，每一张都承载着独特的瞬间与情感。
               </Text>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -36,7 +36,7 @@ export function LandingCTA({ metrics }: LandingCTAProps) {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/admin">登录后台</Link>
+                <Link href="/timeline">时间足迹</Link>
               </Button>
             </div>
           </Surface>
