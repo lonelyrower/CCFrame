@@ -233,6 +233,23 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* 动态主题过渡动画 */
+  .theme-transition-active {
+    transition:
+      background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .theme-transition-active * {
+    transition:
+      background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
   /* 改进的毛玻璃效果 */
   .glass-enhanced {
     backdrop-filter: blur(12px) saturate(150%);

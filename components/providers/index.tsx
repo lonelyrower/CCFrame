@@ -8,6 +8,7 @@ import { CommandPaletteProvider } from './command-palette-provider'
 import { PrefetchProvider } from './prefetch-provider'
 import { SWRProvider } from './swr-provider'
 import { ThemeSettingsProvider } from './theme-settings-provider'
+import { DynamicThemeProvider } from './dynamic-theme-provider'
 import { PreferenceProvider } from '@/components/context/preference-provider'
 import { ObservabilityProvider } from './observability-provider'
 import { UploadQueueProvider } from './upload-queue-provider'
@@ -29,15 +30,17 @@ export function RuntimeProviders({ children }: RuntimeProvidersProps) {
   return (
     <ErrorBoundary>
       <ThemeSettingsProvider>
-        <PreferenceProvider>
-          <ObservabilityProvider>
-            <SWRProvider>
-              <PrefetchProvider>
-                <AppStateProvider>{tree}</AppStateProvider>
-              </PrefetchProvider>
-            </SWRProvider>
-          </ObservabilityProvider>
-        </PreferenceProvider>
+        <DynamicThemeProvider>
+          <PreferenceProvider>
+            <ObservabilityProvider>
+              <SWRProvider>
+                <PrefetchProvider>
+                  <AppStateProvider>{tree}</AppStateProvider>
+                </PrefetchProvider>
+              </SWRProvider>
+            </ObservabilityProvider>
+          </PreferenceProvider>
+        </DynamicThemeProvider>
       </ThemeSettingsProvider>
     </ErrorBoundary>
   )
