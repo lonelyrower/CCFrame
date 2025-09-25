@@ -42,9 +42,15 @@ type RuntimeSemanticForm = {
   openaiBaseUrl: string
 }
 
+type RuntimePixabayForm = {
+  apiKey: string
+  enabled: boolean
+}
+
 type RuntimeConfigForm = {
   storage: RuntimeStorageForm
   semantic: RuntimeSemanticForm
+  pixabay: RuntimePixabayForm
 }
 
 const STORAGE_OPTIONS: Array<{ value: StorageProviderOption; label: string }> = [
@@ -87,6 +93,10 @@ const INITIAL_CONFIG: RuntimeConfigForm = {
     dim: 768,
     openaiApiKey: "",
     openaiBaseUrl: ""
+  },
+  pixabay: {
+    apiKey: "",
+    enabled: false
   }
 }
 
@@ -132,6 +142,10 @@ function normalizeConfig(input: any): RuntimeConfigForm {
       dim: normalizeNumber(input?.semantic?.dim, 768),
       openaiApiKey: input?.semantic?.openaiApiKey || "",
       openaiBaseUrl: input?.semantic?.openaiBaseUrl || ""
+    },
+    pixabay: {
+      apiKey: input?.pixabay?.apiKey || "",
+      enabled: Boolean(input?.pixabay?.enabled)
     }
   }
 }
@@ -163,7 +177,7 @@ async function updateRuntimeConfigPartial(payload: Partial<RuntimeConfigForm>): 
 export default function RuntimeConfigPanel() {
   const [config, setConfig] = useState<RuntimeConfigForm>(INITIAL_CONFIG)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState({ storage: false, semantic: false })
+  const [saving, setSaving] = useState({ storage: false, semantic: false, pixabay: false })
 
   useEffect(() => {
     let mounted = true
@@ -189,6 +203,10 @@ export default function RuntimeConfigPanel() {
 
   const handleSemanticChange = (updater: (prev: RuntimeSemanticForm) => RuntimeSemanticForm) => {
     setConfig((prev) => ({ ...prev, semantic: updater(prev.semantic) }))
+  }
+
+  const handlePixabayChange = (updater: (prev: RuntimePixabayForm) => RuntimePixabayForm) => {
+    setConfig((prev) => ({ ...prev, pixabay: updater(prev.pixabay) }))
   }
 
   const saveStorage = async () => {
@@ -224,6 +242,23 @@ export default function RuntimeConfigPanel() {
       toast.error(error instanceof Error ? error.message : '保存语义配置失败')
     } finally {
       setSaving((prev) => ({ ...prev, semantic: false }))
+    }
+  }
+
+  const savePixabay = async () => {
+    setSaving((prev) => ({ ...prev, pixabay: true }))
+    try {
+      const payload: Partial<RuntimeConfigForm> = {
+        pixabay: config.pixabay
+      }
+      const updated = await updateRuntimeConfigPartial(payload)
+      setConfig(updated)
+      toast.success('Pixabay 配置已更新')
+    } catch (error) {
+      console.error('更新 Pixabay 配置失败:', error)
+      toast.error(error instanceof Error ? error.message : '保存 Pixabay 配置失败')
+    } finally {
+      setSaving((prev) => ({ ...prev, pixabay: false }))
     }
   }
 
@@ -511,6 +546,86 @@ export default function RuntimeConfigPanel() {
             <div className="flex justify-end pt-2">
               <Button onClick={saveSemantic} disabled={saving.semantic || loading} className="px-6">
                 {saving.semantic ? '保存中…' : '保存语义配置'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Surface>
+
+      <Surface tone="panel" padding="lg" className="shadow-subtle space-y-4">
+        <header>
+          <h2 className="text-lg font-semibold text-text-primary dark:text-text-inverted">Pixabay API</h2>
+          <p className="text-sm text-text-muted dark:text-text-muted mt-1">
+            配置 Pixabay API 密钥以导入高质量示例图片到相册中。
+          </p>
+        </header>
+        {loading ? (
+          <p className="text-sm text-text-muted dark:text-text-muted">正在加载运行时配置...</p>
+        ) : (
+          <div className="space-y-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={config.pixabay.enabled}
+                onChange={(e) => handlePixabayChange((prev) => ({
+                  ...prev,
+                  enabled: e.target.checked
+                }))}
+                disabled={saving.pixabay}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-surface-outline/60 rounded"
+              />
+              <span className="text-sm text-text-secondary dark:text-text-muted">启用 Pixabay 示例图片导入</span>
+            </label>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
+                Pixabay API Key
+                {config.pixabay.enabled && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
+              </label>
+              <input
+                type="password"
+                value={config.pixabay.apiKey}
+                onChange={(e) => handlePixabayChange((prev) => ({
+                  ...prev,
+                  apiKey: e.target.value
+                }))}
+                disabled={saving.pixabay || !config.pixabay.enabled}
+                placeholder={config.pixabay.enabled ? "请输入 Pixabay API 密钥" : "启用后填写 API 密钥"}
+                className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
+              />
+              {config.pixabay.enabled && !config.pixabay.apiKey && (
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                  💡 需要 Pixabay API 密钥来导入示例图片
+                </p>
+              )}
+              {config.pixabay.enabled && config.pixabay.apiKey && (
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                  ✅ API 密钥已配置，可以导入示例图片
+                </p>
+              )}
+              {config.pixabay.enabled && (
+                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    <strong>如何获取 Pixabay API 密钥：</strong>
+                  </p>
+                  <ol className="text-sm text-green-700 dark:text-green-300 mt-1 space-y-1">
+                    <li>1. 访问 <a href="https://pixabay.com/accounts/register/" target="_blank" rel="noopener noreferrer" className="underline">pixabay.com</a> 注册账户</li>
+                    <li>2. 登录后进入 <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener noreferrer" className="underline">API 文档页面</a></li>
+                    <li>3. 查看你的 API 密钥并复制</li>
+                    <li>4. 将密钥粘贴到上方输入框</li>
+                  </ol>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                    🆓 免费账户每小时可调用 5000 次，完全够用
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={savePixabay} disabled={saving.pixabay || loading} className="px-6">
+                {saving.pixabay ? '保存中…' : '保存 Pixabay 配置'}
               </Button>
             </div>
           </div>

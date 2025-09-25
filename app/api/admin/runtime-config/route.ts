@@ -48,9 +48,15 @@ const semanticSchema = z.object({
   negativeCacheTtlMs: z.number().int().nonnegative().optional(),
 }).optional()
 
+const pixabaySchema = z.object({
+  apiKey: z.string().optional(),
+  enabled: z.boolean().optional(),
+}).optional()
+
 const updateSchema = z.object({
   storage: storageSchema,
-  semantic: semanticSchema
+  semantic: semanticSchema,
+  pixabay: pixabaySchema
 })
 
 function boolFromEnv(value: string | undefined, fallback = false) {
@@ -75,6 +81,7 @@ function buildConfigResponse() {
   const runtime = getRuntimeConfig()
   const runtimeStorage = runtime.storage || {}
   const runtimeSemantic = runtime.semantic || {}
+  const runtimePixabay = runtime.pixabay || {}
 
   return {
     storage: {
@@ -116,6 +123,10 @@ function buildConfigResponse() {
       cacheSize: numberFromConfig(runtimeSemantic.cacheSize, process.env.SEMANTIC_LRU_SIZE, 100),
       negativeCache: runtimeSemantic.negativeCache ?? boolFromEnv(process.env.EMBED_NEG_CACHE, false),
       negativeCacheTtlMs: numberFromConfig(runtimeSemantic.negativeCacheTtlMs, process.env.EMBED_NEG_CACHE_TTL_MS, 5000),
+    },
+    pixabay: {
+      apiKey: runtimePixabay.apiKey || process.env.PIXABAY_API_KEY || '',
+      enabled: runtimePixabay.enabled ?? boolFromEnv(process.env.ENABLE_PIXABAY_IMPORT, false),
     }
   }
 }

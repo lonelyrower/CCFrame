@@ -58,7 +58,7 @@ FROM node:20-alpine AS runner
 
 # Install necessary runtime dependencies
 RUN apk add --no-cache \
-    libvips-dev \
+    vips-dev \
     libc6-compat \
     curl \
     && rm -rf /var/cache/apk/*

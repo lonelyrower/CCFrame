@@ -4,6 +4,7 @@ import { DashboardMetricsBoard } from '@/components/admin/dashboard-metrics-boar
 import { TaskHub } from '@/components/admin/task-hub'
 import { ActivityStream } from '@/components/admin/activity-stream'
 import { RecentUploadsPanel } from '@/components/admin/recent-uploads-panel'
+import { PixabayImportPanel } from '@/components/admin/pixabay-import-panel'
 
 export default function AdminDashboardPage() {
   // Mock snapshot data for client-side rendering
@@ -67,6 +68,8 @@ export default function AdminDashboardPage() {
       </header>
 
       <DashboardMetricsBoard metrics={snapshot.metrics} taskSummary={snapshot.taskCenter.summary} />
+
+      <PixabayImportPanel />
 
       <div className="relative grid gap-8 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <TaskHub groups={snapshot.taskCenter.groups} />
