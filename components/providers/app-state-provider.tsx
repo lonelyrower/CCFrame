@@ -1,6 +1,9 @@
 'use client'
 
-import { createContext, useContext, ReactNode, useCallback } from 'react'
+import React from 'react'
+import type { ReactNode } from 'react'
+
+const { createContext, useContext, useCallback } = React
 import * as Sentry from '@sentry/nextjs'
 import LogRocket from 'logrocket'
 import { mutate } from 'swr'
