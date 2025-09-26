@@ -36,6 +36,9 @@ COPY package.json package-lock.json .npmrc ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=optional
 
+# Reinstall sharp for the correct platform
+RUN npm install --platform=linux --arch=x64 sharp
+
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma
 RUN --mount=type=cache,target=/root/.cache \
