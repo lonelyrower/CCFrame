@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file for SQLite development
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -49,69 +49,88 @@ model Album {
   @@map("albums")
 }
 
+model SmartAlbum {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  query       String   // JSON string containing query parameters
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("smart_albums")
+}
+
 model Photo {
-  id         String   @id @default(cuid())
-  fileKey    String   @map("file_key")
-  hash       String
-  contentHash String? @map("content_hash")
-  width      Int
-  height     Int
-  takenAt    DateTime? @map("taken_at")
-  location   Json?    @map("location")
-  exifJson   Json?    @map("exif_json")
-  visibility String   @default("PUBLIC") // "PUBLIC" or "PRIVATE"
-  status     String   @default("UPLOADING") // "UPLOADING", "PROCESSING", "COMPLETED", "FAILED"
-  blurhash   String?
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id                   String   @id @default(cuid())
+  url                  String?  
+  localPath            String?  @map("local_path")
+  originalFileName     String?  @map("original_file_name")
+  aspectRatio          Float?   @map("aspect_ratio")
+  width                Int?
+  height               Int?
+  blurHashDataURL      String?  @map("blur_hash_data_url")
+  status               String   @default("PENDING") // "PENDING", "COMPLETED", "FAILED", "ARCHIVED"
+  visibility           String   @default("PUBLIC") // "PUBLIC" or "PRIVATE"
+  extractedCoordinates String?  @map("extracted_coordinates") // JSON string
+  dominantColor        String?  @map("dominant_color") // hex color
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
   
-  userId  String  @map("user_id")
+  userId  String @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   albumId String? @map("album_id")
+  album   Album?  @relation(fields: [albumId], references: [id])
   
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  album Album? @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  photoTags      PhotoTag[]
+  notes          PhotoNote[]
+  favoritedBy    UserPhotoFavorite[]
+  variants       PhotoVariant[]
+  albumCovers    Album[] @relation("AlbumCover")
   
-  variants     PhotoVariant[]
-  tags         PhotoTag[]
-  faces        Face[]
-  albumCovers  Album[]        @relation("AlbumCover")
-  smartAlbumCovers SmartAlbum[] @relation("SmartAlbumCover")
-  editVersions EditVersion[]
-  notes        PhotoNote[]
-  embedding  PhotoEmbedding?
-  
-  @@index([userId])
-  @@index([albumId])
-  @@index([visibility])
-  @@index([takenAt])
-  @@index([status])
-  @@index([hash])
-  @@index([contentHash])
   @@map("photos")
 }
 
 model PhotoVariant {
   id        String @id @default(cuid())
-  variant   String // "thumb", "small", "medium", "large", "original"
-  format    String // "avif", "webp", "jpeg"
-  width     Int
-  height    Int
-  fileKey   String @map("file_key")
-  sizeBytes Int    @map("size_bytes")
+  photoId   String @map("photo_id")
+  size      String // "thumbnail", "small", "medium", "large"
+  format    String // "webp", "jpeg", "png"
+  url       String?
+  localPath String? @map("local_path")
+  width     Int?
+  height    Int?
+  fileSize  Int?    @map("file_size")
   
-  photoId String @map("photo_id")
-  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
   
-  @@unique([photoId, variant, format])
+  @@unique([photoId, size, format])
   @@map("photo_variants")
 }
 
-model Tag {
-  id    String @id @default(cuid())
-  name  String @unique
-  color String @default("#6b7280") // hex color
+model PhotoNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   
-  photos PhotoTag[]
+  photoId String @map("photo_id")
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  userId  String @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("photo_notes")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   @default("#6366f1") // hex color
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  photoTags PhotoTag[]
   
   @@map("tags")
 }
@@ -127,28 +146,27 @@ model PhotoTag {
   @@map("photo_tags")
 }
 
-model Face {
-  id        String  @id @default(cuid())
-  bbox      String  // JSON string: {x, y, width, height}
-  personId  String? @map("person_id")
-  embedding Bytes? // face embedding for similarity
-  
+model UserPhotoFavorite {
+  userId  String @map("user_id")
   photoId String @map("photo_id")
-  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
   
-  @@map("faces")
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  @@id([userId, photoId])
+  @@map("user_photo_favorites")
 }
 
 model Job {
-  id          String   @id @default(cuid())
-  type        String   // "THUMBNAIL_GENERATION", "EXIF_EXTRACTION", "AI_ENHANCEMENT", etc.
-  payloadJson Json     @map("payload_json")
-  status      String   @default("PENDING") // "PENDING", "RUNNING", "COMPLETED", "FAILED"
-  progress    Int      @default(0) // 0-100
-  resultJson  Json?    @map("result_json")
-  errorMsg    String?  @map("error_msg")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  type      String   // JOB_TYPE enum as string
+  status    String   @default("PENDING") // JOB_STATUS enum as string
+  data      String?  // JSON string
+  result    String?  // JSON string
+  error     String?  // JSON string
+  progress  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -156,26 +174,15 @@ model Job {
   @@map("jobs")
 }
 
-model EditVersion {
-  id        String   @id @default(cuid())
-  name      String   // "Original", "Enhanced", "Upscaled", etc.
-  fileKey   String   @map("file_key")
-  params    String?  @map("params") // JSON string: edit parameters for reproducibility
-  createdAt DateTime @default(now()) @map("created_at")
-  
-  photoId String @map("photo_id")
-  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  
-  @@map("edit_versions")
-}
-
 model Audit {
-  id         String   @id @default(cuid())
-  action     String   // "LOGIN", "UPLOAD", "DELETE", "EDIT", "EXPORT", "SHARE"
-  targetType String   @map("target_type") // "photo", "album", etc.
-  targetId   String   @map("target_id")
-  meta       Json?    @map("meta")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  action    String   // ACTION_TYPE enum as string
+  entityId  String   @map("entity_id")
+  entityType String  @map("entity_type")
+  details   String?  // JSON string
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
   
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -183,69 +190,17 @@ model Audit {
   @@map("audits")
 }
 
-model SmartAlbum {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  ruleJson    Json     @map("rule_json")
-  visibility  String   @default("PRIVATE")
-  coverPhotoId String? @map("cover_photo_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  coverPhoto Photo? @relation("SmartAlbumCover", fields: [coverPhotoId], references: [id])
-
-  @@map("smart_albums")
+model Config {
+  key   String @id
+  value String
+  
+  @@map("config")
 }
 
-// Application-level settings (singleton row)
-model AppSettings {
-  id             String   @id @default("singleton")
-  openaiApiKey   String?  @map("openai_api_key")
-  googleApiKey   String?  @map("google_api_key")
-  clipdropApiKey String?  @map("clipdrop_api_key")
-  removeBgApiKey String?  @map("remove_bg_api_key")
-  // Storage strategy
-  imageFormats      String? @map("image_formats")
-  imageVariantNames String? @map("image_variant_names")
-  // Auto-tagging preferences
-  autoTagEnabled         Boolean  @default(false) @map("auto_tag_enabled")
-  autoTagIncludeColors   Boolean  @default(true)  @map("auto_tag_include_colors")
-  autoTagIncludeContent  Boolean  @default(true)  @map("auto_tag_include_content")
-  autoTagProvider        String?               @map("auto_tag_provider") // 'auto' | 'gemini' | 'openai'
-  autoTagDailyLimit      Int?                  @map("auto_tag_daily_limit")
-  autoTagUsageDate       String?               @map("auto_tag_usage_date") // YYYY-MM-DD
-  autoTagUsageCount      Int       @default(0) @map("auto_tag_usage_count")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  @@map("app_settings")
-}
-model PhotoEmbedding {
-  photoId   String  @id @map("photo_id")
-  embedding Bytes   @map("embedding")
-  model     String  @default("deterministic")
-  provider  String  @default("deterministic")
-  dim       Int     @default(768)
-  createdAt DateTime @default(now()) @map("created_at")
+model SystemInfo {
+  key       String   @id
+  value     String
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
-
-  @@map("photo_embeddings")
-}
-model PhotoNote {
-  photoId  String @map("photo_id")
-  userId   String @map("user_id")
-  note     String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([photoId, userId])
-  @@map("photo_notes")
+  
+  @@map("system_info")
 }
