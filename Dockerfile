@@ -34,7 +34,7 @@ COPY package.json package-lock.json .npmrc ./
 
 # Install dependencies with retry logic and caching
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --verbose || (echo "npm ci failed, trying with clean cache" && npm cache clean --force && npm ci)
+    npm ci --omit=optional
 
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma
