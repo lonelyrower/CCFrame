@@ -112,6 +112,24 @@ const baseConfig = {
           },
         ],
       },
+      {
+        source: '/_next/static/css/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/css; charset=utf-8',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/js/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+        ],
+      },
       ...(process.env.NODE_ENV === 'production' ? [
         {
           source: '/(.*)',

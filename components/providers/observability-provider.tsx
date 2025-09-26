@@ -55,15 +55,30 @@ function ensureSentry() {
 function ensureLogRocket() {
   if (logrocketInitialized) return
   const appId = process.env.NEXT_PUBLIC_LOGROCKET_APP_ID
-  if (!appId) return
+  if (!appId || typeof window === 'undefined') return
 
   try {
     LogRocket.init(appId, {
       release: process.env.NEXT_PUBLIC_COMMIT_SHA,
+      dom: {
+        textContent: false,
+        inputContent: false
+      },
+      network: {
+        requestSanitizer: request => {
+          // 不记录敏感请求
+          if (request.url.includes('auth') || request.url.includes('login')) {
+            return null
+          }
+          return request
+        }
+      }
     })
     logrocketInitialized = true
   } catch (error) {
     console.warn('[observability] LogRocket init failed', error)
+    // 如果LogRocket初始化失败，标记为已初始化防止重复尝试
+    logrocketInitialized = true
   }
 }
 

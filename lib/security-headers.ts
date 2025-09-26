@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server'
 
 const BASE_CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.lgrckt-in.com https://*.logrocket.io https://*.logrocket.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https:",
+  "connect-src 'self' https: https://cdn.lgrckt-in.com https://*.logrocket.io https://*.logrocket.com wss://*.logrocket.com",
   "media-src 'self' blob:",
   "object-src 'none'",
   "child-src 'none'",

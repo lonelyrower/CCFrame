@@ -11,14 +11,14 @@ import ErrorBoundary from '@/components/error-boundary'
 const landingTitle = 'CC Frame · 光影展厅'
 const landingDescription = '这是一场为摄影师而设的小型展览，记录那些诚实的情绪与光影。愿你在缓慢的浏览里，与我共同经历风、树与人群的呼吸。'
 
-function getSiteUrl() {
+async function getSiteUrl() {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL
   }
 
   if (process.env.NODE_ENV === 'production') {
     try {
-      const headersList = headers()
+      const headersList = await headers()
       const host = headersList.get('host')
       const proto = headersList.get('x-forwarded-proto') || 'https'
       if (host) {
@@ -71,7 +71,7 @@ export default async function HomePage() {
   try {
     const snapshot = await getLandingSnapshot()
 
-    const siteUrl = getSiteUrl()
+    const siteUrl = await getSiteUrl()
     const toAbsolute = (path: string) => (path.startsWith('http') ? path : `${siteUrl}${path}`)
 
     const structuredData = {
@@ -113,11 +113,7 @@ export default async function HomePage() {
       <HomeLatest photos={snapshot.featuredPhotos} activity={snapshot.recentActivity} />
 
       {/* Floating Actions */}
-      <FloatingActions
-        shareUrl={siteUrl}
-        shareTitle={landingTitle}
-        shareDescription={landingDescription}
-      />
+      <FloatingActions />
 
       <script
         type="application/ld+json"

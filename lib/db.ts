@@ -101,16 +101,24 @@ function createPrismaClient() {
   })
 }
 
-const dbClient = isDatabaseConfigured
-  ? globalForPrisma.prisma ?? createPrismaClient()
-  : createMissingDatabaseProxy()
+let dbClient: PrismaClient
 
-if (!isDatabaseConfigured && process.env.NODE_ENV === 'development') {
-  console.warn('[database] DATABASE_URL is not configured. Public pages fall back to placeholder data.')
-}
+try {
+  dbClient = isDatabaseConfigured
+    ? globalForPrisma.prisma ?? createPrismaClient()
+    : createMissingDatabaseProxy()
 
-if (process.env.NODE_ENV !== 'production' && isDatabaseConfigured) {
-  globalForPrisma.prisma = dbClient
+  if (!isDatabaseConfigured && process.env.NODE_ENV === 'development') {
+    console.warn('[database] DATABASE_URL is not configured. Public pages fall back to placeholder data.')
+  }
+
+  if (process.env.NODE_ENV !== 'production' && isDatabaseConfigured) {
+    globalForPrisma.prisma = dbClient
+  }
+} catch (error) {
+  console.error('[database] Failed to initialize database client:', error)
+  // 在生产环境中，如果数据库初始化失败，使用代理
+  dbClient = createMissingDatabaseProxy()
 }
 
 export const db = dbClient
