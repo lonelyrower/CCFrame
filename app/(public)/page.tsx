@@ -6,6 +6,7 @@ import { HomeCurations, HomeHero, HomeLatest, HomeStory } from '@/components/hom
 import { FloatingActions } from '@/components/ui'
 import { getLandingSnapshot } from '@/lib/landing-data'
 import { getImageUrl } from '@/lib/utils'
+import ErrorBoundary from '@/components/error-boundary'
 
 const landingTitle = 'CC Frame · 光影展厅'
 const landingDescription = '这是一场为摄影师而设的小型展览，记录那些诚实的情绪与光影。愿你在缓慢的浏览里，与我共同经历风、树与人群的呼吸。'
@@ -67,12 +68,13 @@ export const dynamic = 'force-dynamic'
 export default async function HomePage() {
   noStore()
 
-  const snapshot = await getLandingSnapshot()
+  try {
+    const snapshot = await getLandingSnapshot()
 
-  const siteUrl = getSiteUrl()
-  const toAbsolute = (path: string) => (path.startsWith('http') ? path : `${siteUrl}${path}`)
+    const siteUrl = getSiteUrl()
+    const toAbsolute = (path: string) => (path.startsWith('http') ? path : `${siteUrl}${path}`)
 
-  const structuredData = {
+    const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: landingTitle,
@@ -124,4 +126,67 @@ export default async function HomePage() {
       />
     </main>
   )
+  } catch (error) {
+    console.error('HomePage error:', error)
+    
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-red-500 text-6xl mb-6">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            网站启动失败
+          </h1>
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">可能的原因：</h2>
+            <ul className="text-left text-gray-600 space-y-2">
+              <li>• 数据库未启动或连接失败</li>
+              <li>• 环境变量配置错误</li>
+              <li>• 依赖包未正确安装</li>
+              <li>• Prisma 客户端未生成</li>
+            </ul>
+          </div>
+          
+          <div className="bg-blue-50 p-6 rounded-lg mb-6">
+            <h2 className="text-lg font-semibold text-blue-800 mb-3">解决步骤：</h2>
+            <ol className="text-left text-blue-700 space-y-2">
+              <li>1. 在项目根目录运行 <code className="bg-blue-100 px-2 py-1 rounded text-sm">init-db.bat</code></li>
+              <li>2. 或手动执行：
+                <ul className="ml-4 mt-2 space-y-1">
+                  <li>• <code className="bg-blue-100 px-2 py-1 rounded text-sm">npx prisma generate</code></li>
+                  <li>• <code className="bg-blue-100 px-2 py-1 rounded text-sm">npx prisma db push</code></li>
+                </ul>
+              </li>
+              <li>3. 重启开发服务器：<code className="bg-blue-100 px-2 py-1 rounded text-sm">npm run dev</code></li>
+            </ol>
+          </div>
+
+          {process.env.NODE_ENV === 'development' && (
+            <details className="text-left bg-red-50 p-4 rounded-lg mb-6">
+              <summary className="cursor-pointer font-semibold text-red-800 mb-2">
+                详细错误信息 (开发模式)
+              </summary>
+              <pre className="text-xs text-red-700 overflow-auto max-h-40 bg-white p-3 rounded border">
+                {error instanceof Error ? error.stack : String(error)}
+              </pre>
+            </details>
+          )}
+          
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              🔄 重新加载页面
+            </button>
+            <button
+              onClick={() => window.location.href = '/admin'}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
+            >
+              进入管理后台
+            </button>
+          </div>
+        </div>
+      </main>
+    )
+  }
 }

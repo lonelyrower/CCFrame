@@ -84,47 +84,83 @@ const EMPTY_SNAPSHOT: LandingSnapshot = {
 
 export async function getLandingSnapshot(): Promise<LandingSnapshot> {
   if (!isDatabaseConfigured) {
+    console.warn('[landing-data] Database not configured, returning empty snapshot')
     return EMPTY_SNAPSHOT
   }
 
-  const [featuredPhotos, metrics, topAlbums, topTags, pipeline, recentActivity] = await Promise.all([
-    fetchFeaturedPhotos(),
-    fetchMetrics(),
-    fetchTopAlbums(),
-    fetchTopTags(),
-    fetchPipelineSnapshot(),
-    fetchRecentActivity(),
-  ])
+  try {
+    const [featuredPhotos, metrics, topAlbums, topTags, pipeline, recentActivity] = await Promise.all([
+      fetchFeaturedPhotos().catch(err => {
+        console.error('[landing-data] fetchFeaturedPhotos failed:', err)
+        return []
+      }),
+      fetchMetrics().catch(err => {
+        console.error('[landing-data] fetchMetrics failed:', err)
+        return { totalPhotos: 0, totalTags: 0, totalAlbums: 0, recentPhotosCount: 0 }
+      }),
+      fetchTopAlbums().catch(err => {
+        console.error('[landing-data] fetchTopAlbums failed:', err)
+        return []
+      }),
+      fetchTopTags().catch(err => {
+        console.error('[landing-data] fetchTopTags failed:', err)
+        return []
+      }),
+      fetchPipelineSnapshot().catch(err => {
+        console.error('[landing-data] fetchPipelineSnapshot failed:', err)
+        return { totals: {} as any, totalActive: 0 }
+      }),
+      fetchRecentActivity().catch(err => {
+        console.error('[landing-data] fetchRecentActivity failed:', err)
+        return []
+      }),
+    ])
 
-  return {
-    metrics,
-    featuredPhotos,
-    topAlbums,
-    topTags,
-    pipeline,
-    recentActivity,
+    return {
+      metrics,
+      featuredPhotos,
+      topAlbums,
+      topTags,
+      pipeline,
+      recentActivity,
+    }
+  } catch (error) {
+    console.error('[landing-data] getLandingSnapshot failed:', error)
+    
+    // 在生产环境中，返回空快照而不是抛出错误
+    if (process.env.NODE_ENV === 'production') {
+      return EMPTY_SNAPSHOT
+    }
+    
+    // 在开发环境中，抛出错误以便调试
+    throw error
   }
 }
 
 async function fetchFeaturedPhotos(): Promise<PhotoWithDetails[]> {
-  const photos = await db.photo.findMany({
-    where: PUBLIC_COMPLETED_WHERE,
-    include: {
-      variants: true,
-      tags: {
-        include: {
-          tag: true,
+  try {
+    const photos = await db.photo.findMany({
+      where: PUBLIC_COMPLETED_WHERE,
+      include: {
+        variants: true,
+        tags: {
+          include: {
+            tag: true,
+          },
         },
+        album: true,
       },
-      album: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: 18,
-  })
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 18,
+    })
 
-  return photos as unknown as PhotoWithDetails[]
+    return photos as unknown as PhotoWithDetails[]
+  } catch (error) {
+    console.error('[landing-data] fetchFeaturedPhotos database error:', error)
+    throw new Error(`Failed to fetch featured photos: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 async function fetchMetrics(): Promise<LandingMetricsSnapshot> {

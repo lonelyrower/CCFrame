@@ -24,8 +24,6 @@ export const metadata: Metadata = {
   title: 'CC Frame - 我的摄影时光',
   description: 'CC Frame 是一个简洁优雅的个人相册，记录生活中的美好瞬间，分享摄影路上的点点滴滴。',
   manifest: '/manifest.webmanifest',
-  themeColor: '#6366f1',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
@@ -33,6 +31,13 @@ export const metadata: Metadata = {
     ],
     apple: '/icons/icon-192.png',
   },
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#6366f1',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

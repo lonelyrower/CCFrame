@@ -17,6 +17,13 @@ export async function GET() {
     version,
     time: new Date().toISOString(),
     uptimeSeconds: process.uptime(),
+    environment: process.env.NODE_ENV || 'unknown',
+    config: {
+      databaseConfigured: Boolean(process.env.DATABASE_URL),
+      authConfigured: Boolean(process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_URL),
+      adminConfigured: Boolean(process.env.ADMIN_EMAIL),
+      storageProvider: process.env.STORAGE_PROVIDER || 'local',
+    },
     services: {
       db: { ok: false, latencyMs: null as null | number },
       storage: { ok: false, latencyMs: null as null | number, authOk: null as null | boolean },
