@@ -1,5 +1,6 @@
+import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { addSecurityHeaders } from './lib/security-headers'
+import { addSecurityHeaders, CSP_NONCE_HEADER } from './lib/security-headers'
 
 // 需要认证的路径
 const PROTECTED_PATHS = [
@@ -38,6 +39,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  const nonce = crypto.randomBytes(16).toString('base64')
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set(CSP_NONCE_HEADER, nonce)
+
   // 生产环境 HTTPS 重定向
   if (
     process.env.NODE_ENV === 'production' &&
@@ -50,10 +55,14 @@ export function middleware(request: NextRequest) {
   }
 
   // 创建响应
-  const response = NextResponse.next()
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
 
   // 添加安全头
-  addSecurityHeaders(response)
+  addSecurityHeaders(response, { nonce })
 
   // 添加自定义安全头
   response.headers.set('X-Robots-Tag', 'noindex, nofollow')

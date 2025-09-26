@@ -2,11 +2,60 @@ import { getRedis } from './redis'
 
 export type RateLimitResult = { allowed: boolean; remaining: number; limit: number; resetIn: number }
 
+const FALLBACK_LIMIT_STORE = new Map<string, { count: number; resetAt: number }>()
+let fallbackWarned = false
+
+function cleanupFallback(now: number) {
+  for (const [key, value] of FALLBACK_LIMIT_STORE) {
+    if (value.resetAt <= now) {
+      FALLBACK_LIMIT_STORE.delete(key)
+    }
+  }
+}
+
+function fallbackRateLimit(
+  userId: string,
+  key: string,
+  limit: number,
+  windowSec: number
+): RateLimitResult {
+  const safeWindow = Math.max(1, windowSec)
+  const now = Math.floor(Date.now() / 1000)
+  const windowStart = Math.floor(now / safeWindow) * safeWindow
+  const storageKey = `rl:${key}:${userId}:${windowStart}`
+  const resetAt = windowStart + safeWindow
+  cleanupFallback(now)
+
+  const entry = FALLBACK_LIMIT_STORE.get(storageKey)
+  const nextCount = entry && entry.resetAt > now ? entry.count + 1 : 1
+
+  FALLBACK_LIMIT_STORE.set(storageKey, { count: nextCount, resetAt })
+
+  if (!fallbackWarned) {
+    const message = '[rate-limit] Redis unavailable, using in-memory fallback limiter'
+    if (process.env.NODE_ENV === 'production') {
+      console.error(message)
+    } else {
+      console.warn(message)
+    }
+    fallbackWarned = true
+  }
+
+  if (FALLBACK_LIMIT_STORE.size > 5000) {
+    cleanupFallback(now)
+  }
+
+  const remaining = Math.max(0, limit - nextCount)
+  const allowed = nextCount <= limit
+  const resetIn = Math.max(0, resetAt - now)
+  return { allowed, remaining, limit, resetIn }
+}
+
 // Simple sliding window via fixed window buckets
 export async function rateLimit(userId: string, key: string, limit: number, windowSec: number): Promise<RateLimitResult> {
   const redis = await getRedis()
   if (!redis) {
-    return { allowed: true, remaining: limit, limit, resetIn: windowSec }
+    return fallbackRateLimit(userId, key, limit, windowSec)
   }
   try {
     const now = Math.floor(Date.now() / 1000)
@@ -21,9 +70,13 @@ export async function rateLimit(userId: string, key: string, limit: number, wind
     const allowed = count <= limit
     const resetIn = Math.max(0, windowStart + windowSec - now)
     return { allowed, remaining, limit, resetIn }
-  } catch {
-    // Fail-open if Redis not available during development
-    return { allowed: true, remaining: limit, limit, resetIn: windowSec }
+  } catch (error) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[rate-limit] Redis error, switching to fallback', error)
+    } else {
+      console.warn('[rate-limit] Redis error, switching to fallback', error)
+    }
+    return fallbackRateLimit(userId, key, limit, windowSec)
   }
 }
 

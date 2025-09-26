@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { db } from '@/lib/db'
 import { buildPhotoWhereFromRule } from '@/lib/smart-albums'
 
@@ -33,12 +34,12 @@ export default async function PublicSmartAlbumsList({ searchParams }: { searchPa
         <h1 className="text-2xl font-bold">智能相册集</h1>
         <div className="text-sm text-text-secondary flex items-center gap-2">
           排序：
-          <a href="/smart?sort=recent" className={`px-2 py-1 rounded ${sort === 'recent' ? 'bg-surface-panel' : ''}`}>
+          <Link href="/smart?sort=recent" className={`px-2 py-1 rounded ${sort === 'recent' ? 'bg-surface-panel' : ''}`}>
             最新创建
-          </a>
-          <a href="/smart?sort=count" className={`px-2 py-1 rounded ${sort === 'count' ? 'bg-surface-panel' : ''}`}>
+          </Link>
+          <Link href="/smart?sort=count" className={`px-2 py-1 rounded ${sort === 'count' ? 'bg-surface-panel' : ''}`}>
             匹配数量
-          </a>
+          </Link>
         </div>
       </div>
       {albums.length === 0 ? (
@@ -46,7 +47,7 @@ export default async function PublicSmartAlbumsList({ searchParams }: { searchPa
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {albums.map((album) => (
-            <a key={album.id} href={`/smart/${album.id}`} className="block border rounded overflow-hidden bg-surface-panel hover:shadow">
+            <Link key={album.id} href={`/smart/${album.id}`} className="block border rounded overflow-hidden bg-surface-panel hover:shadow">
               <div className="aspect-video bg-surface-panel relative">
                 {album.coverPhotoId ? (
                   <Image
@@ -65,7 +66,7 @@ export default async function PublicSmartAlbumsList({ searchParams }: { searchPa
                   <div className="text-sm text-text-muted line-clamp-2 mt-1">{album.description}</div>
                 )}
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       )}

@@ -3,7 +3,15 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from './auth'
 
-const CSRF_SECRET = process.env.NEXTAUTH_SECRET || 'default-csrf-secret'
+const CSRF_SECRET = (() => {
+  const secret = process.env.NEXTAUTH_SECRET
+  if (!secret) {
+    throw new Error(
+      '[csrf] NEXTAUTH_SECRET must be configured. See README env setup to generate a unique value.'
+    )
+  }
+  return secret
+})()
 const CSRF_EXPIRY = 1000 * 60 * 60 // 1 hour
 
 interface CSRFTokenData {

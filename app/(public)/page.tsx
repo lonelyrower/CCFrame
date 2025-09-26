@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { unstable_noStore as noStore } from 'next/cache'
 import { headers } from 'next/headers'
+import Script from 'next/script'
 
 import { HomeCurations, HomeHero, HomeLatest, HomeStory } from '@/components/home'
 import { FloatingActions } from '@/components/ui'
 import { getLandingSnapshot } from '@/lib/landing-data'
+import { CSP_NONCE_HEADER } from '@/lib/security-headers'
 import { getImageUrl } from '@/lib/utils'
 import ErrorBoundary from '@/components/error-boundary'
 
@@ -18,7 +20,7 @@ async function getSiteUrl() {
 
   if (process.env.NODE_ENV === 'production') {
     try {
-      const headersList = await headers()
+      const headersList = headers()
       const host = headersList.get('host')
       const proto = headersList.get('x-forwarded-proto') || 'https'
       if (host) {
@@ -67,6 +69,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   noStore()
+  const nonce = headers().get(CSP_NONCE_HEADER) ?? undefined
 
   try {
     const snapshot = await getLandingSnapshot()
@@ -115,9 +118,11 @@ export default async function HomePage() {
       {/* Floating Actions */}
       <FloatingActions />
 
-      <script
+      <Script
+        id="landing-structured-data"
         type="application/ld+json"
-        suppressHydrationWarning
+        strategy="afterInteractive"
+        nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
     </main>

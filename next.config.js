@@ -7,6 +7,11 @@ try {
   // @next/bundle-analyzer is not installed, skip analysis
 }
 
+const enforceTypeChecks = process.env.ENFORCE_TYPECHECKS === 'true'
+if (!enforceTypeChecks && process.env.NODE_ENV === 'production') {
+  console.warn('[build] TypeScript build errors are currently ignored. Set ENFORCE_TYPECHECKS=true to enforce them once the schema drift is resolved.')
+}
+
 /** @type {import('next').NextConfig} */
 const baseConfig = {
   reactStrictMode: false, // ����ʱ�����ϸ�ģʽ��������
@@ -52,12 +57,8 @@ const baseConfig = {
       removeConsole: true,
     },
   }),
-  // ���������Ż� - �� Docker ����ʱ�������ͼ��� ESLint
   typescript: {
-    ignoreBuildErrors: true, // Docker ���������� TS ��������������ٶ�
-  },
-  eslint: {
-    ignoreDuringBuilds: true, // Docker ���������� ESLint ��������������ٶ�
+    ignoreBuildErrors: !enforceTypeChecks,
   },
   serverExternalPackages: ['sharp', 'exifr'],
   experimental: {

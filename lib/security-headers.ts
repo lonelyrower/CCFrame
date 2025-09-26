@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server'
 
-const BASE_CSP_DIRECTIVES = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.lgrckt-in.com https://*.logrocket.io https://*.logrocket.com",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https: https://cdn.lgrckt-in.com https://*.logrocket.io https://*.logrocket.com wss://*.logrocket.com",
-  "media-src 'self' blob:",
-  "object-src 'none'",
-  "child-src 'none'",
-  "worker-src 'self' blob:",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "base-uri 'self'"
+export const CSP_NONCE_HEADER = 'x-request-nonce'
+
+const LOGROCKET_SCRIPT_ENDPOINTS = [
+  'https://cdn.lgrckt-in.com',
+  'https://*.logrocket.io',
+  'https://*.logrocket.com',
 ]
 
 const BASE_SECURITY_HEADERS: Record<string, string> = {
@@ -25,15 +17,19 @@ const BASE_SECURITY_HEADERS: Record<string, string> = {
     'camera=()',
     'microphone=()',
     'geolocation=()',
-    'interest-cohort=()'
-  ].join(', ')
+    'interest-cohort=()',
+  ].join(', '),
 }
 
 const HTTPS_ONLY_SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'Cross-Origin-Embedder-Policy': 'credentialless',
   'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Resource-Policy': 'same-origin'
+  'Cross-Origin-Resource-Policy': 'same-origin',
+}
+
+type SecurityHeaderOptions = {
+  nonce?: string
 }
 
 function isProduction() {
@@ -45,54 +41,90 @@ function shouldForceHttps() {
   return process.env.FORCE_HTTPS !== 'false'
 }
 
-function resolveSecurityHeaders(): Record<string, string> {
-  const forceHttps = shouldForceHttps()
-  const cspDirectives = [...BASE_CSP_DIRECTIVES]
-
-  if (forceHttps) {
-    cspDirectives.push('upgrade-insecure-requests')
+function buildContentSecurityPolicy({ nonce }: SecurityHeaderOptions): string {
+  const scriptSrc = ["'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
+  if (nonce) {
+    scriptSrc.push(`'nonce-${nonce}'`, "'strict-dynamic'")
+  }
+  if (!isProduction()) {
+    scriptSrc.push("'unsafe-inline'", "'unsafe-eval'")
   }
 
+  const directives: Array<[string, string[]]> = [
+    ["default-src", ["'self'"]],
+    ['script-src', scriptSrc],
+    ["style-src", ["'self'", "'unsafe-inline'"]],
+    ["img-src", ["'self'", 'data:', 'blob:', 'https:']],
+    ["font-src", ["'self'", 'data:']],
+    ["connect-src", ["'self'", 'https:', 'wss:', ...LOGROCKET_SCRIPT_ENDPOINTS]],
+    ["media-src", ["'self'", 'blob:']],
+    ["object-src", ["'none'"]],
+    ["child-src", ["'none'"]],
+    ["worker-src", ["'self'", 'blob:']],
+    ["frame-ancestors", ["'none'"]],
+    ["form-action", ["'self'"]],
+    ["base-uri", ["'self'"]],
+  ]
+
+  if (shouldForceHttps()) {
+    directives.push(['upgrade-insecure-requests', []])
+  }
+
+  return directives
+    .map(([name, values]) => (values.length ? `${name} ${values.join(' ')}` : name))
+    .join('; ')
+}
+
+function resolveSecurityHeaders(options: SecurityHeaderOptions = {}): Record<string, string> {
   const headers: Record<string, string> = {
     ...BASE_SECURITY_HEADERS,
-    'Content-Security-Policy': cspDirectives.join('; ')
+    'Content-Security-Policy': buildContentSecurityPolicy(options),
   }
 
-  if (forceHttps) {
+  if (shouldForceHttps()) {
     Object.assign(headers, HTTPS_ONLY_SECURITY_HEADERS)
   }
 
   return headers
 }
 
-export function addSecurityHeaders(response: NextResponse): NextResponse {
-  Object.entries(resolveSecurityHeaders()).forEach(([key, value]) => {
+export function addSecurityHeaders(
+  response: NextResponse,
+  options: SecurityHeaderOptions = {}
+): NextResponse {
+  Object.entries(resolveSecurityHeaders(options)).forEach(([key, value]) => {
     response.headers.set(key, value)
   })
+
+  if (options.nonce) {
+    response.headers.set('x-csp-nonce', options.nonce)
+  }
 
   return response
 }
 
 export function createSecureResponse(
   body?: BodyInit | null,
-  init?: ResponseInit
+  init?: ResponseInit,
+  options: SecurityHeaderOptions = {}
 ): NextResponse {
   const response = new NextResponse(body, init)
-  return addSecurityHeaders(response)
+  return addSecurityHeaders(response, options)
 }
 
 export function secureJsonResponse(
   data: any,
   status: number = 200,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
+  options: SecurityHeaderOptions = {}
 ): NextResponse {
   const response = NextResponse.json(data, {
     status,
     headers: {
       ...headers,
-      'Content-Type': 'application/json; charset=utf-8'
-    }
+      'Content-Type': 'application/json; charset=utf-8',
+    },
   })
 
-  return addSecurityHeaders(response)
+  return addSecurityHeaders(response, options)
 }

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Download, Image, Loader2, CheckCircle2, AlertCircle, Settings } from 'lucide-react'
+import { Download, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Surface } from '@/components/ui/surface'
 import toast from 'react-hot-toast'
@@ -95,7 +96,7 @@ export function PixabayImportPanel() {
 
         <header className="relative flex items-start gap-4">
           <div className="rounded-lg bg-green-50 dark:bg-green-950/30 p-3">
-            <Image className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <ImageIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-text-primary">示例图片导入</h2>
@@ -179,13 +180,13 @@ export function PixabayImportPanel() {
                 请先在运行时配置中启用 Pixabay API 并填写密钥
               </p>
             </div>
-            <a
+            <Link
               href="/admin/runtime-config"
               className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
               <Settings className="h-4 w-4" />
               前往配置
-            </a>
+            </Link>
           </div>
         )}
       </Surface>

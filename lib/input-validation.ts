@@ -1,3 +1,4 @@
+import { isIP } from 'node:net'
 import { z } from 'zod'
 
 /**
@@ -198,19 +199,10 @@ export function validateAndSanitizeTags(tags: unknown): string[] {
 export const ipAddressSchema = z
   .string()
   .refine(
-    (ip) => {
-      // IPv4 验证
-      const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-      // IPv6 验证（简化）
-      const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/
-      return ipv4Regex.test(ip) || ipv6Regex.test(ip)
-    },
-    'IP地址格式不正确'
+    (ip) => isIP(ip) !== 0,
+    'IP��ַ��ʽ����ȷ'
   )
 
-/**
- * 用户代理验证
- */
 export function sanitizeUserAgent(userAgent: string | null): string {
   if (!userAgent) return 'Unknown'
 
