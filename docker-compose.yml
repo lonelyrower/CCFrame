@@ -34,18 +34,18 @@ services:
     command: >
       sh -c "
       echo 'Applying database migrations...' &&
-      for i in $(seq 1 30); do npx prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done &&
-      npx prisma generate &&
+      for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done &&
+      ./node_modules/.bin/prisma generate &&
       node scripts/create-admin.js || true &&
       echo 'Starting Next.js server on port 3000...' &&
-      npm run start
+      node server.js
       "
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health-check || exit 1"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
     networks:
       - ccframe
 
@@ -75,8 +75,8 @@ services:
     command: >
       sh -c "
       echo 'Applying database migrations for worker...' &&
-      for i in $(seq 1 30); do npx prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done &&
-      npx prisma generate &&
+      for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done &&
+      ./node_modules/.bin/prisma generate &&
       node scripts/start-worker.js
       "
     networks:
