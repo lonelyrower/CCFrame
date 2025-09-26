@@ -26,6 +26,7 @@ model User {
   audits  Audit[]
   photoNotes PhotoNote[]
   smartAlbums SmartAlbum[]
+  favoritePhotos UserPhotoFavorite[]
   
   @@map("users")
 }
