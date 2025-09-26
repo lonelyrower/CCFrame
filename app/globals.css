@@ -117,19 +117,19 @@
 
 @layer components {
   .admin-surface-card {
-    @apply relative overflow-hidden rounded-[24px] border border-surface-outline/40 bg-surface-panel/90 backdrop-blur-xl shadow-xl transition-all duration-300;
+    @apply relative overflow-hidden rounded-[24px] border border-surface-outline/40 bg-surface-panel/90 dark:border-white/10 dark:bg-black/40 backdrop-blur-xl shadow-xl transition-all duration-300;
   }
 
   .admin-panel {
-    @apply rounded-[16px] border border-surface-outline/40 bg-surface-panel/80 backdrop-blur-md transition-all duration-200;
+    @apply rounded-[16px] border border-surface-outline/40 bg-surface-panel/90 dark:border-white/10 dark:bg-black/50 backdrop-blur-md transition-all duration-200;
   }
 
   .admin-panel-soft {
-    @apply rounded-[16px] border border-surface-outline/30 bg-surface-panel/70 backdrop-blur-sm;
+    @apply rounded-[16px] border border-surface-outline/30 bg-surface-panel/80 dark:border-white/8 dark:bg-black/30 backdrop-blur-sm;
   }
 
   .admin-heading {
-    @apply text-lg font-medium text-text-primary;
+    @apply text-lg font-medium text-text-primary tracking-tight;
   }
 
   .admin-body {
@@ -141,7 +141,24 @@
   }
 
   .admin-chip {
-    @apply inline-flex items-center rounded-[8px] border border-surface-outline/40 bg-surface-panel/80 px-2 py-1 text-[11px] font-medium text-text-secondary backdrop-blur-sm;
+    @apply inline-flex items-center rounded-[8px] border border-surface-outline/40 bg-surface-panel/80 dark:border-white/10 dark:bg-white/5 px-2 py-1 text-[11px] font-medium text-text-secondary backdrop-blur-sm;
+  }
+
+  /* 管理后台专用优化 */
+  .admin-container {
+    @apply min-h-screen bg-gradient-to-br from-surface-canvas via-surface-canvas to-surface-panel/50;
+  }
+
+  .admin-content {
+    @apply px-6 py-8 max-w-7xl mx-auto;
+  }
+
+  .admin-section {
+    @apply space-y-6;
+  }
+
+  .admin-card-elevated {
+    @apply bg-surface-panel/95 dark:bg-black/60 border border-surface-outline/40 dark:border-white/10 shadow-xl backdrop-blur-xl rounded-[20px] p-6;
   }
 
   .masonry-container {
