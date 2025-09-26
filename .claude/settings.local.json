@@ -77,7 +77,14 @@
       "Bash(PORT=3001 npm run dev)",
       "Bash(PORT=3002 npm run dev)",
       "Bash(NEXT_TELEMETRY_DISABLED=1 npx next build --no-lint)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(NODE_OPTIONS=--max-old-space-size=4096 npx next dev --port 3000)",
+      "Bash(timeout 60s NODE_OPTIONS=--max-old-space-size=4096 npx next dev --port 3000)",
+      "Bash(export NODE_OPTIONS=--max-old-space-size=4096)",
+      "Bash(timeout 60s npx next dev --port 3000)",
+      "Bash(timeout 30s npx next dev --port 3000)",
+      "Bash(./scripts/diagnose-production.bat)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []
