@@ -76,7 +76,8 @@
       "WebFetch(domain:2.135.147.52)",
       "Bash(PORT=3001 npm run dev)",
       "Bash(PORT=3002 npm run dev)",
-      "Bash(NEXT_TELEMETRY_DISABLED=1 npx next build --no-lint)"
+      "Bash(NEXT_TELEMETRY_DISABLED=1 npx next build --no-lint)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []
