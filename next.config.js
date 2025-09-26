@@ -5,7 +5,6 @@ const withAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const baseConfig = {
   reactStrictMode: false, // ����ʱ�����ϸ�ģʽ��������
-  swcMinify: process.env.NODE_ENV === 'production',
   output: 'standalone',
   poweredByHeader: false,
   compress: true,
@@ -55,8 +54,8 @@ const baseConfig = {
   eslint: {
     ignoreDuringBuilds: true, // Docker ���������� ESLint ��������������ٶ�
   },
+  serverExternalPackages: ['sharp', 'exifr'],
   experimental: {
-    serverComponentsExternalPackages: ['sharp', 'exifr'],
     optimizePackageImports: ['lucide-react', '@aws-sdk/client-s3'],
     webVitalsAttribution: ['CLS', 'FCP', 'FID', 'INP', 'LCP', 'TTFB'],
     // 优化资源加载

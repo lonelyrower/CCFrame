@@ -125,7 +125,7 @@
   }
 
   .admin-panel-soft {
-    @apply rounded-[16px] border border-surface-outline/30 bg-surface-panel/80 dark:border-white/8 dark:bg-black/30 backdrop-blur-sm;
+    @apply rounded-[16px] border border-surface-outline/30 bg-surface-panel/80 dark:border-white/[0.08] dark:bg-black/30 backdrop-blur-sm;
   }
 
   .admin-heading {
