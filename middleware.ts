@@ -1,4 +1,3 @@
-import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { addSecurityHeaders, CSP_NONCE_HEADER } from './lib/security-headers'
 
@@ -30,6 +29,26 @@ const STATIC_PATHS = [
   '/manifest.webmanifest'
 ]
 
+function generateNonce(length: number = 16): string {
+  const bytes = new Uint8Array(length)
+  globalThis.crypto.getRandomValues(bytes)
+
+  let binary = ''
+  bytes.forEach(byte => {
+    binary += String.fromCharCode(byte)
+  })
+
+  if (typeof btoa === 'function') {
+    return btoa(binary)
+  }
+
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(bytes).toString('base64')
+  }
+
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const url = request.nextUrl.clone()
@@ -39,7 +58,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const nonce = crypto.randomBytes(16).toString('base64')
+  const nonce = generateNonce()
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set(CSP_NONCE_HEADER, nonce)
 
