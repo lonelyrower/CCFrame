@@ -15,7 +15,6 @@ if (!enforceTypeChecks && process.env.NODE_ENV === 'production') {
 /** @type {import('next').NextConfig} */
 const baseConfig = {
   reactStrictMode: false, // ����ʱ�����ϸ�ģʽ��������
-  output: 'standalone',
   poweredByHeader: false,
   compress: true,
   // ���������Ż�
