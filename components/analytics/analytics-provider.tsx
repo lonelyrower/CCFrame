@@ -10,6 +10,15 @@ interface AnalyticsProviderProps {
   nonce?: string
 }
 
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void
+    GA_MEASUREMENT_ID?: string
+    clarity?: (...args: any[]) => void
+    dataLayer?: any[]
+  }
+}
+
 export function AnalyticsProvider({ googleAnalyticsId, microsoftClarityId, enabled, nonce }: AnalyticsProviderProps) {
   useEffect(() => {
     // 只在生产环境且启用跟踪时加载
@@ -53,6 +62,7 @@ export function AnalyticsProvider({ googleAnalyticsId, microsoftClarityId, enabl
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
             strategy="afterInteractive"
+            nonce={nonce}
           />
           <Script id="google-analytics" strategy="afterInteractive" nonce={nonce}>
             {`

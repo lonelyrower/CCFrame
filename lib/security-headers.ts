@@ -43,19 +43,22 @@ function shouldForceHttps() {
 }
 
 function buildContentSecurityPolicy({ nonce }: SecurityHeaderOptions): string {
-  const scriptSrc = nonce
-    ? [`'nonce-${nonce}'`, "'strict-dynamic'", "'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
-    : ["'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
+  const scriptSrc = ["'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
+
+  if (nonce) {
+    scriptSrc.unshift(`'nonce-${nonce}'`)
+  }
+
+  scriptSrc.push(
+    'https://www.googletagmanager.com',
+    'https://www.clarity.ms'
+  )
 
   if (!isProduction()) {
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'")
   } else {
     // 生产环境添加特定的 SHA 哈希用于已知的内联脚本
-    scriptSrc.push(
-      "'sha256-X9GtzORyUShRgrb5vBVwF3p8WtKom3jBuMyocEhfL3Q='", // 结构化数据脚本
-      "https://www.googletagmanager.com", // Google Analytics
-      "https://www.clarity.ms" // Microsoft Clarity
-    )
+    scriptSrc.push("'sha256-X9GtzORyUShRgrb5vBVwF3p8WtKom3jBuMyocEhfL3Q='")
   }
   const directives: Array<[string, string[]]> = [
     ["default-src", ["'self'"]],
