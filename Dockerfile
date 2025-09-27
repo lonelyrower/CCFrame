@@ -90,6 +90,10 @@ COPY --from=build --chown=nextjs:nodejs /app/tsconfig.json ./
 COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=build --chown=nextjs:nodejs /app/app ./app
+COPY --from=build --chown=nextjs:nodejs /app/components ./components
+COPY --from=build --chown=nextjs:nodejs /app/lib ./lib
+COPY --from=build --chown=nextjs:nodejs /app/types ./types
 COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=build --chown=nextjs:nodejs /app/jobs ./jobs
 COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
