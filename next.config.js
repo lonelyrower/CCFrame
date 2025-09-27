@@ -113,39 +113,15 @@ const baseConfig = {
           },
         ],
       },
-      {
-        source: '/_next/static/css/:path*',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'text/css; charset=utf-8',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-        ],
-      },
-      {
-        source: '/_next/static/js/:path*',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'application/javascript; charset=utf-8',
-          },
-        ],
-      },
+      // Let Next.js handle static file headers automatically
+      // Removed custom CSS/JS headers that may conflict with Next.js internal handling
       ...(process.env.NODE_ENV === 'production' ? [
         {
-          source: '/(.*)',
+          source: '/((?!_next/static).*)',
           headers: [
             {
               key: 'X-Frame-Options',
               value: 'SAMEORIGIN',
-            },
-            {
-              key: 'X-Content-Type-Options',
-              value: 'nosniff',
             },
             {
               key: 'Referrer-Policy',
@@ -153,21 +129,7 @@ const baseConfig = {
             },
           ],
         },
-      ] : [
-        {
-          source: '/(.*)',
-          headers: [
-            {
-              key: 'X-Content-Type-Options',
-              value: 'nosniff',
-            },
-            {
-              key: 'Referrer-Policy',
-              value: 'no-referrer-when-downgrade',
-            },
-          ],
-        },
-      ]),
+      ] : []),
     ]
   },
 }
