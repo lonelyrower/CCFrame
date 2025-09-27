@@ -56,19 +56,22 @@ RUN npm run build
 # Prune dev dependencies after build
 RUN npm prune --production --silent
 
-# Runner image - use minimal node alpine for production
-FROM node:20-alpine AS runner
+# Runner image - use Debian-based Node for production
+FROM node:20-bookworm-slim AS runner
 
-# Install necessary runtime dependencies
-RUN apk add --no-cache \
-    vips-dev \
-    libc6-compat \
-    curl \
-    && rm -rf /var/cache/apk/*
+# Install necessary runtime dependencies for sharp & Prisma
+RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl \
+            libvips \
+            libssl3 \
+            openssl \
+        && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+        adduser --system --uid 1001 nextjs
 
 # Set working directory
 WORKDIR /app
@@ -79,25 +82,23 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Copy built application from build stage
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy production build artifacts and dependencies
+COPY --from=build --chown=nextjs:nodejs /app/package.json ./
+COPY --from=build --chown=nextjs:nodejs /app/next.config.js ./
+COPY --from=build --chown=nextjs:nodejs /app/.next ./
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=build --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=build --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
-COPY --from=build --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Switch to non-root user
 USER nextjs
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]
 
