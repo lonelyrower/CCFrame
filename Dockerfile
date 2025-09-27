@@ -64,7 +64,6 @@ RUN apk add --no-cache \
     vips-dev \
     libc6-compat \
     curl \
-    openssl1.1-compat \
     && rm -rf /var/cache/apk/*
 
 # Create non-root user for security
