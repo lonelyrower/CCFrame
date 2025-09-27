@@ -34,10 +34,7 @@ COPY package.json package-lock.json .npmrc ./
 
 # Install dependencies with retry logic and caching
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --omit=optional
-
-# Reinstall sharp for the correct platform
-RUN npm install --platform=linux --arch=x64 sharp
+    npm ci
 
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma

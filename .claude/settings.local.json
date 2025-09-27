@@ -84,7 +84,12 @@
       "Bash(timeout 60s npx next dev --port 3000)",
       "Bash(timeout 30s npx next dev --port 3000)",
       "Bash(./scripts/diagnose-production.bat)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm i:*)",
+      "Bash(sudo npm i -g @anthropic-ai/claude-code)",
+      "Bash(docker-compose config:*)",
+      "Bash(grep:*)",
+      "Bash(npm audit:*)"
     ],
     "deny": [],
     "ask": []
