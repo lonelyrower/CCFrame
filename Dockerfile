@@ -86,7 +86,8 @@ RUN mkdir -p /home/nextjs/.npm && chown -R nextjs:nodejs /home/nextjs
 # Copy production build artifacts and dependencies
 COPY --from=build --chown=nextjs:nodejs /app/package.json ./
 COPY --from=build --chown=nextjs:nodejs /app/next.config.js ./
-COPY --from=build --chown=nextjs:nodejs /app/.next ./
+COPY --from=build --chown=nextjs:nodejs /app/tsconfig.json ./
+COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts

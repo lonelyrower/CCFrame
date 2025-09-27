@@ -41,7 +41,7 @@ services:
         ./node_modules/.bin/prisma generate
         node scripts/create-admin.js || true
         echo 'Starting Next.js server on port 3000...'
-        npm run start
+        npm start
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health-check || exit 1"]
       interval: 30s
