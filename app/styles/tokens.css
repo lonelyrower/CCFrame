@@ -41,9 +41,9 @@
                                   linear-gradient(180deg, rgba(248, 249, 251, 0.96), rgba(248, 249, 251, 0.88));
 
   /* Typography - Photography Editorial Style */
-  --token-typography-display-font-family: "Playfair Display", "Source Han Serif SC", "Times New Roman", serif;
-  --token-typography-sans-font-family: "Source Sans Pro", "Source Han Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
-  --token-typography-narrative-font-family: "Source Serif Pro", "Source Han Serif SC", Georgia, serif;
+  --token-typography-display-font-family: var(--font-noto-sans-sc), "Times New Roman", serif;
+  --token-typography-sans-font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  --token-typography-narrative-font-family: var(--font-noto-sans-sc), Georgia, serif;
 
   --token-typography-display-font-size: 4rem;
   --token-typography-display-line-height: 1.2;

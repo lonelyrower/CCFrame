@@ -120,6 +120,10 @@ const baseConfig = {
             key: 'Content-Type',
             value: 'text/css; charset=utf-8',
           },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
         ],
       },
       {

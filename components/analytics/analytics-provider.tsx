@@ -7,9 +7,10 @@ interface AnalyticsProviderProps {
   googleAnalyticsId?: string
   microsoftClarityId?: string
   enabled: boolean
+  nonce?: string
 }
 
-export function AnalyticsProvider({ googleAnalyticsId, microsoftClarityId, enabled }: AnalyticsProviderProps) {
+export function AnalyticsProvider({ googleAnalyticsId, microsoftClarityId, enabled, nonce }: AnalyticsProviderProps) {
   useEffect(() => {
     // 只在生产环境且启用跟踪时加载
     if (!enabled || process.env.NODE_ENV !== 'production') {
@@ -53,7 +54,7 @@ export function AnalyticsProvider({ googleAnalyticsId, microsoftClarityId, enabl
             src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
             strategy="afterInteractive"
           />
-          <Script id="google-analytics" strategy="afterInteractive">
+          <Script id="google-analytics" strategy="afterInteractive" nonce={nonce}>
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
@@ -66,7 +67,7 @@ export function AnalyticsProvider({ googleAnalyticsId, microsoftClarityId, enabl
 
       {/* Microsoft Clarity */}
       {microsoftClarityId && (
-        <Script id="microsoft-clarity" strategy="afterInteractive">
+        <Script id="microsoft-clarity" strategy="afterInteractive" nonce={nonce}>
           {`
             (function(c,l,a,r,i,t,y){
                 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};

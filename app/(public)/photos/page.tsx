@@ -22,6 +22,7 @@ import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
 import { Container } from '@/components/layout/container'
 import { Surface } from '@/components/ui/surface'
+import { Button } from '@/components/ui/button'
 import { Heading, Text } from '@/components/ui/typography'
 import {
   buildCatalogFacetSections,
@@ -104,19 +105,20 @@ function PhotosLoading() {
 }
 
 async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
-  const normalized: CatalogNormalizedParams = {
-    sort: normalizeSort(getStringParam(searchParams.sort)),
-    view: normalizeView(getStringParam(searchParams.view)),
-    search: getStringParam(searchParams.search)?.trim() || undefined,
-    album: getStringParam(searchParams.album) || undefined,
-    tags: getArrayParam(searchParams.tags ?? searchParams.tag),
-    colors: getArrayParam(searchParams.colors),
-  }
+  try {
+    const normalized: CatalogNormalizedParams = {
+      sort: normalizeSort(getStringParam(searchParams.sort)),
+      view: normalizeView(getStringParam(searchParams.view)),
+      search: getStringParam(searchParams.search)?.trim() || undefined,
+      album: getStringParam(searchParams.album) || undefined,
+      tags: getArrayParam(searchParams.tags ?? searchParams.tag),
+      colors: getArrayParam(searchParams.colors),
+    }
 
-  const [{ photos, total }, filterOptions] = await Promise.all([
-    getCatalogResults(normalized),
-    getCatalogFilterOptions(),
-  ])
+    const [{ photos, total }, filterOptions] = await Promise.all([
+      getCatalogResults(normalized),
+      getCatalogFilterOptions(),
+    ])
 
   const stats = buildCatalogStats(total, filterOptions)
   const quickLinks = buildCatalogQuickLinks(filterOptions)
@@ -223,6 +225,29 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
       </FavoriteProvider>
     </CatalogEventBusProvider>
   )
+  } catch (error) {
+    console.error('PhotosContent error:', error)
+    
+    return (
+      <Container size="xl" bleed="none" className="py-20">
+        <Surface tone="panel" padding="lg" className="text-center">
+          <div className="space-y-4">
+            <Heading size="sm">加载失败</Heading>
+            <Text tone="secondary" size="sm">
+              照片目录暂时无法加载，请刷新页面重试。
+            </Text>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
+              刷新页面
+            </Button>
+          </div>
+        </Surface>
+      </Container>
+    )
+  }
 }
 
 export default function PhotosPage({ searchParams }: { searchParams: SearchParams }) {

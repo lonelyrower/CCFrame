@@ -40,8 +40,8 @@ export const gradient = {
 
 export const typography = {
   'font-family': {
-    display: '"Playfair Display", "Source Han Serif SC", serif',
-    sans: '"Inter", "Source Han Sans SC", system-ui, sans-serif',
+    display: 'var(--font-noto-sans-sc), serif',
+    sans: 'var(--font-inter), system-ui, sans-serif',
   },
   'font-weight': {
     light: 300,

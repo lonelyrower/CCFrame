@@ -10,13 +10,13 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
-  preload: true,
+  preload: false, // 避免未使用的预加载警告
 })
 const notoSansSC = Noto_Sans_SC({
   subsets: ['latin'],
   variable: '--font-noto-sans-sc',
   display: 'swap',
-  preload: true,
+  preload: false, // 避免未使用的预加载警告
   weight: ['400', '500', '600', '700'],
 })
 

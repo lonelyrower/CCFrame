@@ -2,7 +2,7 @@
 
 import { AnalyticsProvider } from './analytics-provider'
 
-export function AnalyticsScripts() {
+export function AnalyticsScripts({ nonce }: { nonce?: string }) {
   // Use default analytics settings for now to avoid server-side fs dependencies
   const analytics = {
     enabled: false,
@@ -15,6 +15,7 @@ export function AnalyticsScripts() {
       enabled={analytics.enabled}
       googleAnalyticsId={analytics.googleAnalyticsId}
       microsoftClarityId={analytics.microsoftClarityId}
+      nonce={nonce}
     />
   )
 }

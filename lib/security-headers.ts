@@ -49,13 +49,20 @@ function buildContentSecurityPolicy({ nonce }: SecurityHeaderOptions): string {
 
   if (!isProduction()) {
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'")
+  } else {
+    // 生产环境添加特定的 SHA 哈希用于已知的内联脚本
+    scriptSrc.push(
+      "'sha256-X9GtzORyUShRgrb5vBVwF3p8WtKom3jBuMyocEhfL3Q='", // 结构化数据脚本
+      "https://www.googletagmanager.com", // Google Analytics
+      "https://www.clarity.ms" // Microsoft Clarity
+    )
   }
   const directives: Array<[string, string[]]> = [
     ["default-src", ["'self'"]],
     ['script-src', scriptSrc],
-    ["style-src", ["'self'", "'unsafe-inline'"]],
+    ["style-src", ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"]],
     ["img-src", ["'self'", 'data:', 'blob:', 'https:']],
-    ["font-src", ["'self'", 'data:']],
+    ["font-src", ["'self'", 'data:', "https://fonts.gstatic.com"]],
     ["connect-src", ["'self'", 'https:', 'wss:', ...LOGROCKET_SCRIPT_ENDPOINTS]],
     ["media-src", ["'self'", 'blob:']],
     ["object-src", ["'none'"]],
