@@ -64,6 +64,7 @@ RUN apk add --no-cache \
     vips-dev \
     libc6-compat \
     curl \
+    openssl1.1-compat \
     && rm -rf /var/cache/apk/*
 
 # Create non-root user for security
@@ -87,6 +88,7 @@ COPY --from=build --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=build --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
+COPY --from=build --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts
 
 # Switch to non-root user

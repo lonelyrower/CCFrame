@@ -22,7 +22,6 @@ import { LightboxProvider } from '@/components/gallery/lightbox-context'
 import { AnimateOnScroll } from '@/components/motion/animate-on-scroll'
 import { Container } from '@/components/layout/container'
 import { Surface } from '@/components/ui/surface'
-import { Button } from '@/components/ui/button'
 import { Heading, Text } from '@/components/ui/typography'
 import {
   buildCatalogFacetSections,
@@ -227,23 +226,20 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
   )
   } catch (error) {
     console.error('PhotosContent error:', error)
-    
+
     return (
       <Container size="xl" bleed="none" className="py-20">
-        <Surface tone="panel" padding="lg" className="text-center">
-          <div className="space-y-4">
-            <Heading size="sm">加载失败</Heading>
-            <Text tone="secondary" size="sm">
-              照片目录暂时无法加载，请刷新页面重试。
-            </Text>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => window.location.reload()}
-            >
-              刷新页面
-            </Button>
-          </div>
+        <Surface tone="panel" padding="lg" className="text-center space-y-4">
+          <Heading size="sm">加载失败</Heading>
+          <Text tone="secondary" size="sm">
+            照片目录暂时无法加载，请稍后重试。
+          </Text>
+          <a
+            href="/photos"
+            className="inline-flex items-center justify-center rounded-md border border-surface-outline/60 bg-surface-panel px-4 py-2 text-sm font-medium text-text-primary shadow-subtle transition hover:bg-surface-panel/80"
+          >
+            重新加载页面
+          </a>
         </Surface>
       </Container>
     )
