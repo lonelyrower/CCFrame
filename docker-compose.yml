@@ -31,15 +31,17 @@ services:
         condition: service_started
       minio:
         condition: service_started
-    command: |
-      sh -c "
-        echo 'Applying database migrations...' &&
-        for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done &&
-        ./node_modules/.bin/prisma generate &&
-        node scripts/create-admin.js || true &&
-        echo 'Starting Next.js server on port 3000...' &&
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        echo 'Applying database migrations...'
+        for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done
+        ./node_modules/.bin/prisma generate
+        node scripts/create-admin.js || true
+        echo 'Starting Next.js server on port 3000...'
         npm run start
-      "
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health-check || exit 1"]
       interval: 30s
@@ -72,13 +74,15 @@ services:
         condition: service_started
       minio:
         condition: service_started
-    command: |
-      sh -c "
-        echo 'Applying database migrations for worker...' &&
-        for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done &&
-        ./node_modules/.bin/prisma generate &&
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        echo 'Applying database migrations for worker...'
+        for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done
+        ./node_modules/.bin/prisma generate
         node scripts/start-worker.js
-      "
     networks:
       - ccframe
 
@@ -133,12 +137,12 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ccframe}
     restart: "no"
     entrypoint: ["/bin/sh", "-c"]
-    command: >
-      "sleep 15 && 
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD && 
-      mc mb -p local/ccframe || true && 
-      mc mb -p local/photo-gallery || true && 
-      echo 'MinIO buckets created'"
+    command: |
+      sleep 15
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD
+      mc mb -p local/ccframe || true
+      mc mb -p local/photo-gallery || true
+      echo 'MinIO buckets created'
     networks:
       - ccframe
 
