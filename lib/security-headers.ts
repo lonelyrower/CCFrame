@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export const CSP_NONCE_HEADER = 'x-request-nonce'
+export const CSP_NONCE_HEADER = 'x-nonce'
+export const LEGACY_CSP_NONCE_HEADER = 'x-request-nonce'
 
 const LOGROCKET_SCRIPT_ENDPOINTS = [
   'https://cdn.lgrckt-in.com',
@@ -42,14 +43,13 @@ function shouldForceHttps() {
 }
 
 function buildContentSecurityPolicy({ nonce }: SecurityHeaderOptions): string {
-  const scriptSrc = ["'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
-  if (nonce) {
-    scriptSrc.push(`'nonce-${nonce}'`, "'strict-dynamic'")
-  }
+  const scriptSrc = nonce
+    ? [`'nonce-${nonce}'`, "'strict-dynamic'", "'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
+    : ["'self'", ...LOGROCKET_SCRIPT_ENDPOINTS]
+
   if (!isProduction()) {
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'")
   }
-
   const directives: Array<[string, string[]]> = [
     ["default-src", ["'self'"]],
     ['script-src', scriptSrc],
@@ -98,6 +98,7 @@ export function addSecurityHeaders(
 
   if (options.nonce) {
     response.headers.set('x-csp-nonce', options.nonce)
+    response.headers.set(LEGACY_CSP_NONCE_HEADER, options.nonce)
   }
 
   return response

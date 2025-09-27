@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { addSecurityHeaders, CSP_NONCE_HEADER } from './lib/security-headers'
+import { addSecurityHeaders, CSP_NONCE_HEADER, LEGACY_CSP_NONCE_HEADER } from './lib/security-headers'
 
 // 需要认证的路径
 const PROTECTED_PATHS = [
@@ -61,6 +61,7 @@ export function middleware(request: NextRequest) {
   const nonce = generateNonce()
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set(CSP_NONCE_HEADER, nonce)
+  requestHeaders.set(LEGACY_CSP_NONCE_HEADER, nonce)
 
   // 生产环境 HTTPS 重定向
   if (
