@@ -137,12 +137,13 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ccframe}
     restart: "no"
     entrypoint: ["/bin/sh", "-c"]
-    command: |
-      sleep 15
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD
-      mc mb -p local/ccframe || true
-      mc mb -p local/photo-gallery || true
-      echo 'MinIO buckets created'
+    command: >-
+      set -e;
+      sleep 15;
+      mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
+      mc mb -p local/ccframe || true;
+      mc mb -p local/photo-gallery || true;
+      echo 'MinIO buckets created';
     networks:
       - ccframe
 

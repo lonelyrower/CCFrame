@@ -53,9 +53,6 @@ ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
-# Prune dev dependencies after build
-RUN npm prune --production --silent
-
 # Runner image - use Debian-based Node for production
 FROM node:20-bookworm-slim AS runner
 
@@ -71,7 +68,7 @@ RUN apt-get update && \
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
-        adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 --home /home/nextjs nextjs
 
 # Set working directory
 WORKDIR /app
@@ -81,6 +78,10 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV HOME=/home/nextjs
+
+# Ensure home directory writable for npm logs/cache
+RUN mkdir -p /home/nextjs/.npm && chown -R nextjs:nodejs /home/nextjs
 
 # Copy production build artifacts and dependencies
 COPY --from=build --chown=nextjs:nodejs /app/package.json ./
@@ -89,6 +90,7 @@ COPY --from=build --chown=nextjs:nodejs /app/.next ./
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=build --chown=nextjs:nodejs /app/jobs ./jobs
 COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Switch to non-root user
