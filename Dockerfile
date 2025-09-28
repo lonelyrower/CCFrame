@@ -36,53 +36,27 @@ FROM base AS build
 # Copy package files for dependency installation
 COPY package.json package-lock.json .npmrc ./
 
-# Install dependencies with dynamic memory optimization
+# Install dependencies with memory optimization
 RUN --mount=type=cache,target=/root/.npm bash -c '\
-if [ -n "$MANUAL_MEMORY_MB" ]; then \
-    echo "=== Manual Memory Override ==="; \
-    echo "Using manual memory setting: ${MANUAL_MEMORY_MB}MB"; \
-    AVAILABLE_MEM=$MANUAL_MEMORY_MB; \
-else \
-    TOTAL_MEM=$(awk "/MemTotal/ {printf \"%.0f\", \$2/1024}" /proc/meminfo); \
-    AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo); \
-fi; \
-echo "=== Memory Detection ==="; \
-echo "Total Memory: ${TOTAL_MEM}MB"; \
-echo "Available Memory: ${AVAILABLE_MEM}MB"; \
+AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo 2>/dev/null || echo "1024"); \
+if [ -n "$MANUAL_MEMORY_MB" ]; then AVAILABLE_MEM=$MANUAL_MEMORY_MB; fi; \
 if [ "$AVAILABLE_MEM" -lt 512 ]; then \
-    echo "⚠️  WARNING: Very low memory detected (${AVAILABLE_MEM}MB)"; \
-    echo "   Recommended: Add more memory or enable swap on host system"; \
-    echo "   Attempting minimal installation..."; \
+    echo "🔧 Low memory (${AVAILABLE_MEM}MB) - using minimal settings"; \
     export NODE_OPTIONS="--max-old-space-size=256"; \
     NPM_FLAGS="--prefer-offline --no-audit --progress=false --loglevel=error"; \
 elif [ "$AVAILABLE_MEM" -lt 1024 ]; then \
-    echo "⚠️  Low memory detected (${AVAILABLE_MEM}MB)"; \
-    echo "   Using conservative memory settings..."; \
+    echo "🔧 Moderate memory (${AVAILABLE_MEM}MB) - using conservative settings"; \
     export NODE_OPTIONS="--max-old-space-size=512"; \
     NPM_FLAGS="--prefer-offline --no-audit --progress=false"; \
-elif [ "$AVAILABLE_MEM" -lt 2048 ]; then \
-    echo "✓ Moderate memory available (${AVAILABLE_MEM}MB)"; \
+else \
+    echo "🔧 Good memory (${AVAILABLE_MEM}MB) - using optimized settings"; \
     export NODE_OPTIONS="--max-old-space-size=1024"; \
     NPM_FLAGS="--prefer-offline --no-audit --progress=false"; \
-else \
-    echo "✓ Good memory available (${AVAILABLE_MEM}MB)"; \
-    export NODE_OPTIONS="--max-old-space-size=2048"; \
-    NPM_FLAGS="--prefer-offline --no-audit"; \
 fi; \
-echo "Node Options: $NODE_OPTIONS"; \
-echo "NPM Flags: $NPM_FLAGS"; \
-echo "========================"; \
 npm ci $NPM_FLAGS || { \
-    echo "❌ npm ci failed - trying emergency fallback"; \
+    echo "⚠️  Retrying with emergency settings..."; \
     export NODE_OPTIONS="--max-old-space-size=256"; \
-    npm ci --prefer-offline --no-audit --progress=false --loglevel=error || { \
-        echo "❌ Installation failed even with minimal settings"; \
-        echo "💡 Suggestions:"; \
-        echo "   1. Increase system memory/swap"; \
-        echo "   2. Try building on a machine with more RAM"; \
-        echo "   3. Use a pre-built image if available"; \
-        exit 1; \
-    }; \
+    npm ci --prefer-offline --no-audit --progress=false --loglevel=error; \
 }'
 COPY prisma ./prisma
 RUN --mount=type=cache,target=/root/.cache \
@@ -96,48 +70,22 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 RUN bash -c '\
-if [ -n "$MANUAL_MEMORY_MB" ]; then \
-    echo "=== Manual Memory Override ==="; \
-    echo "Using manual memory setting: ${MANUAL_MEMORY_MB}MB"; \
-    AVAILABLE_MEM=$MANUAL_MEMORY_MB; \
-else \
-    TOTAL_MEM=$(awk "/MemTotal/ {printf \"%.0f\", \$2/1024}" /proc/meminfo); \
-    AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo); \
-fi; \
-echo "=== Build Stage Memory Check ==="; \
-echo "Total Memory: ${TOTAL_MEM}MB"; \
-echo "Available Memory: ${AVAILABLE_MEM}MB"; \
+AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo 2>/dev/null || echo "1024"); \
+if [ -n "$MANUAL_MEMORY_MB" ]; then AVAILABLE_MEM=$MANUAL_MEMORY_MB; fi; \
 if [ "$AVAILABLE_MEM" -lt 512 ]; then \
-    echo "⚠️  WARNING: Very low memory detected (${AVAILABLE_MEM}MB)"; \
-    echo "   Recommended: Add more memory or enable swap on host system"; \
-    echo "   Attempting minimal build..."; \
+    echo "🏗️  Building with minimal memory (${AVAILABLE_MEM}MB)"; \
     export NODE_OPTIONS="--max-old-space-size=256"; \
 elif [ "$AVAILABLE_MEM" -lt 1024 ]; then \
-    echo "⚠️  Low memory detected (${AVAILABLE_MEM}MB)"; \
-    echo "   Using conservative memory settings..."; \
+    echo "🏗️  Building with conservative memory (${AVAILABLE_MEM}MB)"; \
     export NODE_OPTIONS="--max-old-space-size=512"; \
-elif [ "$AVAILABLE_MEM" -lt 2048 ]; then \
-    echo "✓ Moderate memory available (${AVAILABLE_MEM}MB)"; \
-    export NODE_OPTIONS="--max-old-space-size=1024"; \
 else \
-    echo "✓ Good memory available (${AVAILABLE_MEM}MB)"; \
-    export NODE_OPTIONS="--max-old-space-size=2048"; \
+    echo "🏗️  Building with optimized memory (${AVAILABLE_MEM}MB)"; \
+    export NODE_OPTIONS="--max-old-space-size=1024"; \
 fi; \
-echo "Node Options: $NODE_OPTIONS"; \
-echo "========================"; \
-echo "Starting Next.js build with $NODE_OPTIONS"; \
 npm run build || { \
-    echo "❌ Build failed - trying emergency settings"; \
+    echo "⚠️  Retrying build with emergency settings..."; \
     export NODE_OPTIONS="--max-old-space-size=256"; \
-    echo "Retrying with emergency memory limit: $NODE_OPTIONS"; \
-    npm run build || { \
-        echo "❌ Build failed even with minimal settings"; \
-        echo "💡 Build Suggestions:"; \
-        echo "   1. Increase system memory (recommended: 2GB+)"; \
-        echo "   2. Build locally and copy .next folder"; \
-        echo "   3. Use multi-stage build with smaller chunks"; \
-        exit 1; \
-    }; \
+    npm run build; \
 }'
 
 # Runner image - use Debian-based Node for production
@@ -188,9 +136,9 @@ COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
 # Switch to non-root user
 USER nextjs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
+# Health check - use simple endpoint that doesn't depend on external services
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health-simple || exit 1
 
 EXPOSE 3000
 
