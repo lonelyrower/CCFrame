@@ -543,7 +543,7 @@ ensure_compose_integrity() {
   if [ ! -f "$f" ]; then
     print_error "未找到 $f"
     return 1
-  }
+  fi
 
   # 规范换行并去除 BOM
   sed -i 's/\r$//' "$f" 2>/dev/null || true
@@ -875,6 +875,5 @@ main() {
 trap 'print_error "操作已中断"; exit 1' INT TERM
 
 main "$@"
-
 
 
