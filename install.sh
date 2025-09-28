@@ -540,9 +540,16 @@ clone_project() {
 ensure_compose_integrity() {
   cd /opt/ccframe || return 1
   local f="docker-compose.yml"
+  local FORCE="${1:-0}"
   if [ ! -f "$f" ]; then
     print_error "未找到 $f"
     return 1
+  fi
+
+  # 强制覆盖为上游稳定版本（显式开关 --fix-compose）
+  if [ "$FORCE" = "1" ]; then
+    print_warning "使用 --fix-compose 强制覆盖 docker-compose.yml 为上游版本"
+    curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/docker-compose.yml -o "$f" || true
   fi
 
   # 规范换行并去除 BOM
@@ -555,8 +562,20 @@ ensure_compose_integrity() {
     curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/docker-compose.yml -o "$f" || true
   fi
 
-  # 替换健康检查为轻量端点，避免依赖未就绪导致 unhealthy
-  sed -i 's|/api/health\b|/api/health-simple|g' "$f" 2>/dev/null || true
+  # 如果存在多段重复的 services:，保留最后一段（避免多个 services 造成解析混乱）
+  local svc_count
+  svc_count=$(grep -n '^services:' "$f" | wc -l | tr -d ' ')
+  if [ "$svc_count" -gt 1 ]; then
+    local last_line
+    last_line=$(grep -n '^services:' "$f" | tail -1 | cut -d: -f1)
+    tail -n +"$last_line" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+  fi
+
+  # 替换健康检查为轻量端点（幂等）：仅当未包含 health-simple 时替换精准片段
+  if ! grep -q '/api/health-simple' "$f"; then
+    sed -i 's#/api/health"#/api/health-simple"#g' "$f" 2>/dev/null || true
+    sed -i 's#/api/health #/api/health-simple #g' "$f" 2>/dev/null || true
+  fi
 
   # 校验并在失败时回退为上游版本
   if ! $DOCKER_COMPOSE_CMD -f "$f" config >/dev/null 2>&1; then
@@ -678,6 +697,12 @@ cmd_install() {
   check_system
   clone_project
   ensure_env
+  local FORCE_FIX_COMPOSE=0
+  for arg in "$@"; do
+    case "$arg" in
+      --fix-compose) FORCE_FIX_COMPOSE=1 ;;
+    esac
+  done
 
   # 清理旧容器及资源
   print_step "正在清理旧容器与缓存..."
@@ -691,7 +716,7 @@ cmd_install() {
   print_success "清理完成"
 
   print_step "正在构建并启动容器..."
-  ensure_compose_integrity
+  ensure_compose_integrity "$FORCE_FIX_COMPOSE"
   $DOCKER_COMPOSE_CMD up -d --build --force-recreate
   show_info
 }
@@ -700,6 +725,12 @@ cmd_update() {
   check_system
   clone_project
   ensure_env
+  local FORCE_FIX_COMPOSE=0
+  for arg in "$@"; do
+    case "$arg" in
+      --fix-compose) FORCE_FIX_COMPOSE=1 ;;
+    esac
+  done
 
   # 清理构建缓存
   print_step "正在清理构建缓存..."
@@ -707,7 +738,7 @@ cmd_update() {
   print_success "缓存清理完成"
 
   print_step "正在更新代码并重新构建..."
-  ensure_compose_integrity
+  ensure_compose_integrity "$FORCE_FIX_COMPOSE"
   $DOCKER_COMPOSE_CMD up -d --build --force-recreate
   show_info
 }
@@ -875,5 +906,3 @@ main() {
 trap 'print_error "操作已中断"; exit 1' INT TERM
 
 main "$@"
-
-
