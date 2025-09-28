@@ -1,9 +1,13 @@
 # Multi-stage build for Next.js app with sharp support
 FROM node:20-bookworm AS base
 
-# Build arguments for memory configuration
+# Build arguments for memory/registry configuration
 ARG MANUAL_MEMORY_MB
+ARG NPM_REGISTRY=https://registry.npmjs.org
+ARG SHARP_DIST_BASE_URL
 ENV MANUAL_MEMORY_MB=$MANUAL_MEMORY_MB
+ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
+ENV SHARP_DIST_BASE_URL=$SHARP_DIST_BASE_URL
 
 WORKDIR /app
 
@@ -25,8 +29,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-# Set npm configuration for better performance
-RUN npm config set fetch-retry-maxtimeout 600000 && \
+# Set npm configuration for better performance and regional mirrors
+RUN npm config set registry "$NPM_CONFIG_REGISTRY" && \
+    npm config set fetch-retry-maxtimeout 600000 && \
     npm config set fetch-retry-mintimeout 10000 && \
     npm config set fetch-timeout 300000
 
@@ -36,17 +41,13 @@ FROM base AS build
 # Copy package files for dependency installation
 COPY package.json package-lock.json .npmrc ./
 
-# Set memory configuration based on system resources
-RUN AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo 2>/dev/null || echo "1024") && \
-    if [ -n "$MANUAL_MEMORY_MB" ]; then AVAILABLE_MEM=$MANUAL_MEMORY_MB; fi && \
-    echo "📦 Installing dependencies (${AVAILABLE_MEM}MB available)"
-
+# Proceed to dependency installation
 # Install dependencies with optimized settings
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=ccframe-npm-cache,target=/root/.npm \
     NODE_OPTIONS="--max-old-space-size=1024" \
     npm ci --prefer-offline --no-audit --progress=false
 COPY prisma ./prisma
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,id=ccframe-cache,target=/root/.cache \
     npx prisma generate
 
 # Copy source code (use .dockerignore to exclude unnecessary files)
