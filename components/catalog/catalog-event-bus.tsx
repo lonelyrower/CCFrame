@@ -6,15 +6,10 @@ import type { ReactNode } from 'react'
 const { createContext, useContext, useMemo, useRef } = React
 
 import type { PhotoWithDetails } from '@/types'
-import type {
-  CatalogFavoriteSnapshot,
-  CatalogFilterPatch,
-} from '@/types/catalog'
+import type { CatalogFilterPatch } from '@/types/catalog'
 
 type CatalogEventPayloads = {
   'filters:update': { patch: CatalogFilterPatch; timestamp: number }
-  'favorites:toggle': { id: string; action: 'add' | 'remove'; snapshot: CatalogFavoriteSnapshot | null; total: number }
-  'favorites:clear': { previousIds: string[] }
   'compare:update': { items: PhotoWithDetails[]; ids: string[] }
 }
 

@@ -22,13 +22,6 @@ export interface CatalogColorOption {
   count: number
 }
 
-export interface CatalogFavoriteSnapshot {
-  id: string
-  title?: string | null
-  albumTitle?: string | null
-  primaryTag?: string | null
-}
-
 export interface CatalogRecommendationItem {
   id: string
   title: string

@@ -2,11 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Search, Plus, X } from 'lucide-react'
+import { Search, Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SemanticSearch } from './semantic-search'
-import { FavoritesPanel } from './favorites-panel'
-import { useFavorites } from '@/hooks/use-favorites'
 
 interface FloatingAction {
   id: string
@@ -15,7 +13,6 @@ interface FloatingAction {
   shortcut?: string
   onClick: () => void
   accent?: string
-  badge?: number
 }
 
 interface FloatingActionsProps {
@@ -31,28 +28,14 @@ export function FloatingActions({
   const [isOpen, setIsOpen] = useState(false)
   const [hoveredAction, setHoveredAction] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
-  const [showFavorites, setShowFavorites] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { count: favoritesCount } = useFavorites()
 
   const actions: FloatingAction[] = [
-    {
-      id: 'favorites',
-      icon: Heart,
-      label: '我的收藏',
-      shortcut: '⌘F',
-      onClick: () => {
-        setShowFavorites(true)
-        setIsOpen(false)
-      },
-      accent: 'text-rose-300',
-      badge: favoritesCount
-    },
     {
       id: 'search',
       icon: Search,
       label: '搜索作品',
-      shortcut: '⌘K',
+      shortcut: '⌘K / Ctrl+K',
       onClick: () => {
         setShowSearch(true)
         setIsOpen(false)
@@ -61,7 +44,7 @@ export function FloatingActions({
     }
   ]
 
-  // Close on outside click
+  // 外部点击关闭
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -73,30 +56,19 @@ export function FloatingActions({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Keyboard shortcuts and escape key
+  // 键盘快捷键
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsOpen(false)
         setShowSearch(false)
-        setShowFavorites(false)
         return
       }
 
-      // Handle shortcuts (Cmd on Mac, Ctrl on others)
-      if (event.metaKey || event.ctrlKey) {
-        switch (event.key.toLowerCase()) {
-          case 'k':
-            event.preventDefault()
-            setShowSearch(true)
-            setIsOpen(false)
-            break
-          case 'f':
-            event.preventDefault()
-            setShowFavorites(true)
-            setIsOpen(false)
-            break
-        }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setShowSearch(true)
+        setIsOpen(false)
       }
     }
 
@@ -127,7 +99,6 @@ export function FloatingActions({
         className
       )}
     >
-      {/* Action Items */}
       <AnimatePresence>
         {isOpen && actions.map((action, index) => {
           const IconComponent = action.icon
@@ -144,7 +115,7 @@ export function FloatingActions({
                 ...pos,
                 transition: {
                   delay: index * 0.05,
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 500,
                   damping: 30
                 }
@@ -158,7 +129,6 @@ export function FloatingActions({
               onMouseLeave={() => setHoveredAction(null)}
             >
               <div className="relative flex items-center gap-3">
-                {/* Tooltip */}
                 <AnimatePresence>
                   {hoveredAction === action.id && (
                     <motion.div
@@ -184,7 +154,6 @@ export function FloatingActions({
                   )}
                 </AnimatePresence>
 
-                {/* Action Button */}
                 <button
                   onClick={action.onClick}
                   className={cn(
@@ -195,14 +164,6 @@ export function FloatingActions({
                 >
                   <IconComponent className={cn('h-5 w-5 transition-colors', action.accent || 'text-white/80 group-hover:text-white')} />
 
-                  {/* Badge */}
-                  {action.badge !== undefined && action.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-medium text-white">
-                      {action.badge > 99 ? '99+' : action.badge}
-                    </span>
-                  )}
-
-                  {/* Subtle glow effect */}
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 </button>
               </div>
@@ -211,7 +172,6 @@ export function FloatingActions({
         })}
       </AnimatePresence>
 
-      {/* Main Toggle Button */}
       <div className="pointer-events-auto">
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -226,7 +186,7 @@ export function FloatingActions({
         >
           <motion.div
             animate={{ rotate: isOpen ? 45 : 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {isOpen ? (
               <X className="h-6 w-6 text-white/90" />
@@ -235,29 +195,20 @@ export function FloatingActions({
             )}
           </motion.div>
 
-          {/* Ripple effect */}
           <motion.div
             className="absolute inset-0 rounded-2xl bg-white/10 opacity-0"
             animate={{ opacity: isOpen ? 0.1 : 0, scale: isOpen ? 1.1 : 1 }}
             transition={{ duration: 0.3 }}
           />
 
-          {/* Background glow */}
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-white/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         </button>
       </div>
 
-      {/* Modals */}
       <SemanticSearch
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
       />
-
-      <FavoritesPanel
-        isOpen={showFavorites}
-        onClose={() => setShowFavorites(false)}
-      />
-
     </div>
   )
 }

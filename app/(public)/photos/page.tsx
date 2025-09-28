@@ -8,7 +8,6 @@ import { CatalogFilterPanel } from '@/components/catalog/filter-panel'
 import { CatalogFacetSections } from '@/components/catalog/facet-sections'
 import { CatalogRecommendationRail } from '@/components/catalog/recommendation-rail'
 import { CatalogEventBusProvider } from '@/components/catalog/catalog-event-bus'
-import { FavoriteProvider } from '@/components/catalog/favorite-provider'
 import { CompareProvider } from '@/components/catalog/compare-provider'
 import { CatalogPhotoActions } from '@/components/catalog/photo-actions'
 import { CatalogBulkActions } from '@/components/catalog/bulk-actions-bar'
@@ -142,8 +141,7 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <CatalogEventBusProvider>
-      <FavoriteProvider>
-        <CompareProvider>
+      <CompareProvider>
           <LightboxProvider photos={photos}>
             <CatalogShell
               breadcrumbs={<CatalogBreadcrumbs items={[{ label: '首页', href: '/' }, { label: '作品目录' }]} />}
@@ -221,7 +219,6 @@ async function PhotosContent({ searchParams }: { searchParams: SearchParams }) {
             <Lightbox />
           </LightboxProvider>
         </CompareProvider>
-      </FavoriteProvider>
     </CatalogEventBusProvider>
   )
   } catch (error) {

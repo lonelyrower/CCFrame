@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion"
-import { Heart, Share2, Eye, Calendar, MapPin, Palette } from 'lucide-react'
+import { Share2, Eye, Calendar, MapPin, Palette } from 'lucide-react'
 import type { PhotoWithDetails } from "@/types"
 import { GalleryPicture } from "./gallery-picture"
 import { PhotoModal } from "./photo-modal"
 import { useOptionalLightbox } from "./lightbox-context"
-import { useFavorites } from '@/hooks/use-favorites'
 import { cn } from '@/lib/utils'
 
 interface PhotographyMasonryProps {
@@ -47,8 +46,6 @@ export function PhotographyMasonry({
   const [containerWidth, setContainerWidth] = useState(0)
   const [viewport, setViewport] = useState({ top: 0, bottom: 0 })
   const prefersReducedMotion = useReducedMotion()
-  const { toggleFavorite, isFavorited } = useFavorites()
-
   // Reset when photos change
   useEffect(() => {
     setVisibleCount(Math.min(LOAD_STEP, photos.length))
@@ -259,21 +256,6 @@ export function PhotographyMasonry({
     [lightbox]
   )
 
-  const handleFavorite = useCallback((photo: PhotoWithDetails, event: React.MouseEvent) => {
-    event.stopPropagation()
-    toggleFavorite({
-      id: photo.id,
-      type: 'photo',
-      title: photo.title || `作品 #${photo.id}`,
-      thumbnail: photo.url,
-      metadata: {
-        description: photo.description,
-        tags: photo.tags.map(t => t.tag.name).join(', '),
-        album: photo.album?.title
-      }
-    })
-  }, [toggleFavorite])
-
   if (loading) {
     return (
       <div ref={containerRef} className={cn("w-full", className)}>
@@ -312,7 +294,6 @@ export function PhotographyMasonry({
         {itemsToRender.map(({ photo, column, top, height, width }) => {
           const left = column * (width + COLUMN_GAP)
           const isHovered = hoveredPhoto === photo.id
-          const favorited = isFavorited(photo.id, 'photo')
 
           return (
             <motion.div
@@ -361,21 +342,6 @@ export function PhotographyMasonry({
 
                 {/* Action buttons */}
                 <div className="absolute right-4 top-4 flex gap-2 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                  <motion.button
-                    onClick={(e) => handleFavorite(photo, e)}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-xl transition-all duration-300",
-                      favorited
-                        ? "bg-rose-500/90 text-white shadow-lg shadow-rose-500/25"
-                        : "bg-black/20 text-white/80 hover:bg-black/40 hover:text-white"
-                    )}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label={favorited ? "取消收藏" : "添加收藏"}
-                  >
-                    <Heart className={cn("h-4 w-4", favorited && "fill-current")} />
-                  </motion.button>
-
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation()

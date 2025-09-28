@@ -5,7 +5,6 @@ import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PhotoWithDetails } from '@/types'
 
-import { FavoriteButton } from './favorite-button'
 import { CompareButton } from './compare-button'
 
 export function CatalogPhotoActions({ photo }: { photo: PhotoWithDetails }) {
@@ -20,7 +19,6 @@ export function CatalogPhotoActions({ photo }: { photo: PhotoWithDetails }) {
   return (
     <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1">
       <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-contrast-surface/60 px-1.5 py-1 shadow">
-        <FavoriteButton photo={photo} tone="inverted" />
         <CompareButton photo={photo} tone="inverted" />
         <Button
           type="button"
