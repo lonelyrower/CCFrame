@@ -36,28 +36,15 @@ FROM base AS build
 # Copy package files for dependency installation
 COPY package.json package-lock.json .npmrc ./
 
-# Install dependencies with memory optimization
-RUN --mount=type=cache,target=/root/.npm bash -c '\
-AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo 2>/dev/null || echo "1024"); \
-if [ -n "$MANUAL_MEMORY_MB" ]; then AVAILABLE_MEM=$MANUAL_MEMORY_MB; fi; \
-if [ "$AVAILABLE_MEM" -lt 512 ]; then \
-    echo "🔧 Low memory (${AVAILABLE_MEM}MB) - using minimal settings"; \
-    export NODE_OPTIONS="--max-old-space-size=256"; \
-    NPM_FLAGS="--prefer-offline --no-audit --progress=false --loglevel=error"; \
-elif [ "$AVAILABLE_MEM" -lt 1024 ]; then \
-    echo "🔧 Moderate memory (${AVAILABLE_MEM}MB) - using conservative settings"; \
-    export NODE_OPTIONS="--max-old-space-size=512"; \
-    NPM_FLAGS="--prefer-offline --no-audit --progress=false"; \
-else \
-    echo "🔧 Good memory (${AVAILABLE_MEM}MB) - using optimized settings"; \
-    export NODE_OPTIONS="--max-old-space-size=1024"; \
-    NPM_FLAGS="--prefer-offline --no-audit --progress=false"; \
-fi; \
-npm ci $NPM_FLAGS || { \
-    echo "⚠️  Retrying with emergency settings..."; \
-    export NODE_OPTIONS="--max-old-space-size=256"; \
-    npm ci --prefer-offline --no-audit --progress=false --loglevel=error; \
-}'
+# Set memory configuration based on system resources
+RUN AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo 2>/dev/null || echo "1024") && \
+    if [ -n "$MANUAL_MEMORY_MB" ]; then AVAILABLE_MEM=$MANUAL_MEMORY_MB; fi && \
+    echo "📦 Installing dependencies (${AVAILABLE_MEM}MB available)"
+
+# Install dependencies with optimized settings
+RUN --mount=type=cache,target=/root/.npm \
+    NODE_OPTIONS="--max-old-space-size=1024" \
+    npm ci --prefer-offline --no-audit --progress=false
 COPY prisma ./prisma
 RUN --mount=type=cache,target=/root/.cache \
     npx prisma generate
@@ -69,24 +56,10 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-RUN bash -c '\
-AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo 2>/dev/null || echo "1024"); \
-if [ -n "$MANUAL_MEMORY_MB" ]; then AVAILABLE_MEM=$MANUAL_MEMORY_MB; fi; \
-if [ "$AVAILABLE_MEM" -lt 512 ]; then \
-    echo "🏗️  Building with minimal memory (${AVAILABLE_MEM}MB)"; \
-    export NODE_OPTIONS="--max-old-space-size=256"; \
-elif [ "$AVAILABLE_MEM" -lt 1024 ]; then \
-    echo "🏗️  Building with conservative memory (${AVAILABLE_MEM}MB)"; \
-    export NODE_OPTIONS="--max-old-space-size=512"; \
-else \
-    echo "🏗️  Building with optimized memory (${AVAILABLE_MEM}MB)"; \
-    export NODE_OPTIONS="--max-old-space-size=1024"; \
-fi; \
-npm run build || { \
-    echo "⚠️  Retrying build with emergency settings..."; \
-    export NODE_OPTIONS="--max-old-space-size=256"; \
-    npm run build; \
-}'
+# Build Next.js application
+RUN echo "🏗️  Building Next.js application..." && \
+    NODE_OPTIONS="--max-old-space-size=1024" \
+    npm run build
 
 # Runner image - use Debian-based Node for production
 FROM node:20-bookworm-slim AS runner
