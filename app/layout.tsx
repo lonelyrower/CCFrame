@@ -10,19 +10,22 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
-  preload: false, // 避免未使用的预加载警告
+  preload: false,
 })
 const notoSansSC = Noto_Sans_SC({
   subsets: ['latin'],
   variable: '--font-noto-sans-sc',
   display: 'swap',
-  preload: false, // 避免未使用的预加载警告
+  preload: false,
   weight: ['400', '500', '600', '700'],
 })
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
+
 export const metadata: Metadata = {
-  title: 'CC Frame - 我的摄影时光',
-  description: 'CC Frame 是一个简洁优雅的个人相册，记录生活中的美好瞬间，分享摄影路上的点点滴滴。',
+  metadataBase: new URL(baseUrl),
+  title: 'CC Frame - �ҵ���Ӱʱ��',
+  description: 'CC Frame ��һ��������ŵĸ�����ᣬ��¼�����е�����˲�䣬������Ӱ·�ϵĵ��εΡ�',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
@@ -43,16 +46,11 @@ export const viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${notoSansSC.variable} bg-background font-sans text-foreground`}
-      >
+      <body className={`${inter.variable} ${notoSansSC.variable} bg-background font-sans text-foreground`}>
         <Providers>
           <ServiceWorkerRegister />
           <div className="relative flex min-h-screen flex-col">
-            <div
-              aria-hidden
-              className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-            >
+            <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-accent/10" />
               <div className="absolute left-1/2 top-[12%] h-[480px] w-[680px] -translate-x-1/2 rounded-full bg-glow-primary blur-3xl" />
               <div className="absolute right-[-10%] bottom-[-20%] h-[420px] w-[420px] rounded-full bg-glow-secondary blur-3xl" />
@@ -64,3 +62,4 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     </html>
   )
 }
+
