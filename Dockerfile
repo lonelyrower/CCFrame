@@ -33,8 +33,20 @@ FROM base AS build
 COPY package.json package-lock.json .npmrc ./
 
 # Install dependencies with retry logic and caching
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci
+RUN --mount=type=cache,target=/root/.npm bash -lc '
+  set -euo pipefail
+  npm ci || {
+    echo "npm ci failed, enabling temporary swap"
+    if ! fallocate -l 1G /tmp/swapfile; then
+      dd if=/dev/zero of=/tmp/swapfile bs=1M count=1024
+    fi
+    chmod 600 /tmp/swapfile
+    mkswap /tmp/swapfile
+    swapon /tmp/swapfile
+    trap "swapoff /tmp/swapfile && rm -f /tmp/swapfile" EXIT
+    npm ci
+  }
+'
 
 # Prisma needs schema at build for client generation
 COPY prisma ./prisma
