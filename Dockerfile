@@ -32,8 +32,12 @@ FROM base AS build
 # Copy package files for dependency installation
 COPY package.json package-lock.json .npmrc ./
 
-# Install dependencies with retry logic and caching
-RUN --mount=type=cache,target=/root/.npm bash -c "set -euo pipefail; npm ci || { echo 'npm ci failed, enabling temporary swap'; if ! fallocate -l 1G /tmp/swapfile; then dd if=/dev/zero of=/tmp/swapfile bs=1M count=1024; fi; chmod 600 /tmp/swapfile; mkswap /tmp/swapfile; swapon /tmp/swapfile; trap 'swapoff /tmp/swapfile && rm -f /tmp/swapfile' EXIT; npm ci; }"
+# Install dependencies with memory optimization and fallback
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --progress=false || \
+    (echo "npm ci failed, trying with smaller memory limit" && \
+     NODE_OPTIONS="--max-old-space-size=512" npm ci --prefer-offline --no-audit --progress=false)
 COPY prisma ./prisma
 RUN --mount=type=cache,target=/root/.cache \
     npx prisma generate
@@ -44,8 +48,10 @@ COPY . .
 # Build Next.js with optimizations
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm run build
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+RUN npm run build || \
+    (echo "Build failed, trying with smaller memory limit" && \
+     NODE_OPTIONS="--max-old-space-size=512" npm run build)
 
 # Runner image - use Debian-based Node for production
 FROM node:20-bookworm-slim AS runner
