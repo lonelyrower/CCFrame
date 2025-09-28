@@ -39,52 +39,44 @@ COPY package.json package-lock.json .npmrc ./
 # Install dependencies with dynamic memory optimization
 RUN --mount=type=cache,target=/root/.npm \
     bash -c '
-# Memory detection function
-detect_memory() {
-    # Allow manual override via build args
-    if [ -n "$MANUAL_MEMORY_MB" ]; then
-        echo "=== Manual Memory Override ==="
-        echo "Using manual memory setting: ${MANUAL_MEMORY_MB}MB"
-        AVAILABLE_MEM=$MANUAL_MEMORY_MB
-    else
-        # Get total memory in MB
-        TOTAL_MEM=$(awk "/MemTotal/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
-        AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
-    fi
+if [ -n "$MANUAL_MEMORY_MB" ]; then
+    echo "=== Manual Memory Override ==="
+    echo "Using manual memory setting: ${MANUAL_MEMORY_MB}MB"
+    AVAILABLE_MEM=$MANUAL_MEMORY_MB
+else
+    TOTAL_MEM=$(awk "/MemTotal/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
+    AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
+fi
 
-    echo "=== Memory Detection ==="
-    echo "Total Memory: ${TOTAL_MEM}MB"
-    echo "Available Memory: ${AVAILABLE_MEM}MB"
+echo "=== Memory Detection ==="
+echo "Total Memory: ${TOTAL_MEM}MB"
+echo "Available Memory: ${AVAILABLE_MEM}MB"
 
-    # Determine optimal settings based on available memory
-    if [ "$AVAILABLE_MEM" -lt 512 ]; then
-        echo "⚠️  WARNING: Very low memory detected (${AVAILABLE_MEM}MB)"
-        echo "   Recommended: Add more memory or enable swap on host system"
-        echo "   Attempting minimal installation..."
-        export NODE_OPTIONS="--max-old-space-size=256"
-        export NPM_FLAGS="--prefer-offline --no-audit --progress=false --loglevel=error"
-    elif [ "$AVAILABLE_MEM" -lt 1024 ]; then
-        echo "⚠️  Low memory detected (${AVAILABLE_MEM}MB)"
-        echo "   Using conservative memory settings..."
-        export NODE_OPTIONS="--max-old-space-size=512"
-        export NPM_FLAGS="--prefer-offline --no-audit --progress=false"
-    elif [ "$AVAILABLE_MEM" -lt 2048 ]; then
-        echo "✓ Moderate memory available (${AVAILABLE_MEM}MB)"
-        export NODE_OPTIONS="--max-old-space-size=1024"
-        export NPM_FLAGS="--prefer-offline --no-audit --progress=false"
-    else
-        echo "✓ Good memory available (${AVAILABLE_MEM}MB)"
-        export NODE_OPTIONS="--max-old-space-size=2048"
-        export NPM_FLAGS="--prefer-offline --no-audit"
-    fi
+if [ "$AVAILABLE_MEM" -lt 512 ]; then
+    echo "⚠️  WARNING: Very low memory detected (${AVAILABLE_MEM}MB)"
+    echo "   Recommended: Add more memory or enable swap on host system"
+    echo "   Attempting minimal installation..."
+    export NODE_OPTIONS="--max-old-space-size=256"
+    NPM_FLAGS="--prefer-offline --no-audit --progress=false --loglevel=error"
+elif [ "$AVAILABLE_MEM" -lt 1024 ]; then
+    echo "⚠️  Low memory detected (${AVAILABLE_MEM}MB)"
+    echo "   Using conservative memory settings..."
+    export NODE_OPTIONS="--max-old-space-size=512"
+    NPM_FLAGS="--prefer-offline --no-audit --progress=false"
+elif [ "$AVAILABLE_MEM" -lt 2048 ]; then
+    echo "✓ Moderate memory available (${AVAILABLE_MEM}MB)"
+    export NODE_OPTIONS="--max-old-space-size=1024"
+    NPM_FLAGS="--prefer-offline --no-audit --progress=false"
+else
+    echo "✓ Good memory available (${AVAILABLE_MEM}MB)"
+    export NODE_OPTIONS="--max-old-space-size=2048"
+    NPM_FLAGS="--prefer-offline --no-audit"
+fi
 
-    echo "Node Options: $NODE_OPTIONS"
-    echo "NPM Flags: $NPM_FLAGS"
-    echo "========================"
-}
+echo "Node Options: $NODE_OPTIONS"
+echo "NPM Flags: $NPM_FLAGS"
+echo "========================"
 
-# Detect memory and run npm ci
-detect_memory
 npm ci $NPM_FLAGS || {
     echo "❌ npm ci failed - trying emergency fallback"
     export NODE_OPTIONS="--max-old-space-size=256"
@@ -110,47 +102,39 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 RUN bash -c '
-# Memory detection function
-detect_memory() {
-    # Allow manual override via build args
-    if [ -n "$MANUAL_MEMORY_MB" ]; then
-        echo "=== Manual Memory Override ==="
-        echo "Using manual memory setting: ${MANUAL_MEMORY_MB}MB"
-        AVAILABLE_MEM=$MANUAL_MEMORY_MB
-    else
-        # Get total memory in MB
-        TOTAL_MEM=$(awk "/MemTotal/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
-        AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
-    fi
+if [ -n "$MANUAL_MEMORY_MB" ]; then
+    echo "=== Manual Memory Override ==="
+    echo "Using manual memory setting: ${MANUAL_MEMORY_MB}MB"
+    AVAILABLE_MEM=$MANUAL_MEMORY_MB
+else
+    TOTAL_MEM=$(awk "/MemTotal/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
+    AVAILABLE_MEM=$(awk "/MemAvailable/ {printf \"%.0f\", \$2/1024}" /proc/meminfo)
+fi
 
-    echo "=== Build Stage Memory Check ==="
-    echo "Total Memory: ${TOTAL_MEM}MB"
-    echo "Available Memory: ${AVAILABLE_MEM}MB"
+echo "=== Build Stage Memory Check ==="
+echo "Total Memory: ${TOTAL_MEM}MB"
+echo "Available Memory: ${AVAILABLE_MEM}MB"
 
-    # Determine optimal settings based on available memory
-    if [ "$AVAILABLE_MEM" -lt 512 ]; then
-        echo "⚠️  WARNING: Very low memory detected (${AVAILABLE_MEM}MB)"
-        echo "   Recommended: Add more memory or enable swap on host system"
-        echo "   Attempting minimal build..."
-        export NODE_OPTIONS="--max-old-space-size=256"
-    elif [ "$AVAILABLE_MEM" -lt 1024 ]; then
-        echo "⚠️  Low memory detected (${AVAILABLE_MEM}MB)"
-        echo "   Using conservative memory settings..."
-        export NODE_OPTIONS="--max-old-space-size=512"
-    elif [ "$AVAILABLE_MEM" -lt 2048 ]; then
-        echo "✓ Moderate memory available (${AVAILABLE_MEM}MB)"
-        export NODE_OPTIONS="--max-old-space-size=1024"
-    else
-        echo "✓ Good memory available (${AVAILABLE_MEM}MB)"
-        export NODE_OPTIONS="--max-old-space-size=2048"
-    fi
+if [ "$AVAILABLE_MEM" -lt 512 ]; then
+    echo "⚠️  WARNING: Very low memory detected (${AVAILABLE_MEM}MB)"
+    echo "   Recommended: Add more memory or enable swap on host system"
+    echo "   Attempting minimal build..."
+    export NODE_OPTIONS="--max-old-space-size=256"
+elif [ "$AVAILABLE_MEM" -lt 1024 ]; then
+    echo "⚠️  Low memory detected (${AVAILABLE_MEM}MB)"
+    echo "   Using conservative memory settings..."
+    export NODE_OPTIONS="--max-old-space-size=512"
+elif [ "$AVAILABLE_MEM" -lt 2048 ]; then
+    echo "✓ Moderate memory available (${AVAILABLE_MEM}MB)"
+    export NODE_OPTIONS="--max-old-space-size=1024"
+else
+    echo "✓ Good memory available (${AVAILABLE_MEM}MB)"
+    export NODE_OPTIONS="--max-old-space-size=2048"
+fi
 
-    echo "Node Options: $NODE_OPTIONS"
-    echo "========================"
-}
+echo "Node Options: $NODE_OPTIONS"
+echo "========================"
 
-# Detect memory and run build
-detect_memory
 echo "Starting Next.js build with $NODE_OPTIONS"
 npm run build || {
     echo "❌ Build failed - trying emergency settings"
