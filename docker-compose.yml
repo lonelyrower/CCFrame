@@ -135,15 +135,28 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ccframe}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
     restart: "no"
     entrypoint: ["/bin/sh", "-c"]
     command: >-
       set -e;
       sleep 15;
       mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
-      mc mb -p local/ccframe || true;
+      SHOULD_CREATE_USER=0;
+      if [ -n "$S3_ACCESS_KEY_ID" ] && [ -n "$S3_SECRET_ACCESS_KEY" ]; then
+        if [ "$S3_ACCESS_KEY_ID" != "$MINIO_ROOT_USER" ] || [ "$S3_SECRET_ACCESS_KEY" != "$MINIO_ROOT_PASSWORD" ]; then
+          SHOULD_CREATE_USER=1;
+        fi;
+      fi;
+      if [ "$SHOULD_CREATE_USER" -eq 1 ]; then
+        mc admin user add local "$S3_ACCESS_KEY_ID" "$S3_SECRET_ACCESS_KEY" || true;
+        mc admin policy attach local readwrite --user "$S3_ACCESS_KEY_ID" || true;
+      fi;
+      BUCKET_NAME="${S3_BUCKET_NAME:-ccframe}";
+      mc mb -p "local/$BUCKET_NAME" || true;
       mc mb -p local/photo-gallery || true;
-      echo 'MinIO buckets created';
+      echo 'MinIO buckets ensured';
     networks:
       - ccframe
 
