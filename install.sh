@@ -537,6 +537,40 @@ clone_project() {
   exit 1
 }
 
+ensure_compose_integrity() {
+  cd /opt/ccframe || return 1
+  local f="docker-compose.yml"
+  if [ ! -f "$f" ]; then
+    print_error "未找到 $f"
+    return 1
+  }
+
+  # 规范换行并去除 BOM
+  sed -i 's/\r$//' "$f" 2>/dev/null || true
+  awk 'NR==1{sub(/^[\xef\xbb\xbf]/,"")} {print}' "$f" > "$f.tmp" 2>/dev/null && mv "$f.tmp" "$f" || true
+
+  # 若存在合并冲突标记，直接覆盖为上游版本
+  if grep -qE '^(<<<<<<<|=======|>>>>>>>)[ ]' "$f"; then
+    print_warning "检测到 docker-compose.yml 存在合并冲突，尝试恢复为上游版本"
+    curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/docker-compose.yml -o "$f" || true
+  fi
+
+  # 替换健康检查为轻量端点，避免依赖未就绪导致 unhealthy
+  sed -i 's|/api/health\b|/api/health-simple|g' "$f" 2>/dev/null || true
+
+  # 校验并在失败时回退为上游版本
+  if ! $DOCKER_COMPOSE_CMD -f "$f" config >/dev/null 2>&1; then
+    print_warning "当前 docker-compose.yml 解析失败，回退为上游版本"
+    curl -fsSL https://raw.githubusercontent.com/lonelyrower/CCFrame/main/docker-compose.yml -o "$f" || true
+  fi
+
+  if $DOCKER_COMPOSE_CMD -f "$f" config >/dev/null 2>&1; then
+    print_success "docker-compose.yml 已修复并通过校验"
+  else
+    print_error "docker-compose.yml 仍无法解析，请手动检查"
+  fi
+}
+
 ensure_env() {
   print_step "正在检查并生成环境变量..."
 
@@ -657,6 +691,7 @@ cmd_install() {
   print_success "清理完成"
 
   print_step "正在构建并启动容器..."
+  ensure_compose_integrity
   $DOCKER_COMPOSE_CMD up -d --build --force-recreate
   show_info
 }
@@ -672,6 +707,7 @@ cmd_update() {
   print_success "缓存清理完成"
 
   print_step "正在更新代码并重新构建..."
+  ensure_compose_integrity
   $DOCKER_COMPOSE_CMD up -d --build --force-recreate
   show_info
 }
@@ -839,8 +875,6 @@ main() {
 trap 'print_error "操作已中断"; exit 1' INT TERM
 
 main "$@"
-
-
 
 
 
