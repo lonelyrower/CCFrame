@@ -29,11 +29,17 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-# Set npm configuration for better performance and regional mirrors
+# Set npm configuration for better performance and predictable timeouts
 RUN npm config set registry "$NPM_CONFIG_REGISTRY" && \
-    npm config set fetch-retry-maxtimeout 600000 && \
-    npm config set fetch-retry-mintimeout 10000 && \
-    npm config set fetch-timeout 300000
+    npm config set fetch-retries 2 && \
+    npm config set fetch-retry-maxtimeout 60000 && \
+    npm config set fetch-retry-mintimeout 5000 && \
+    npm config set fetch-timeout 120000 && \
+    npm config set network-timeout 120000 && \
+    npm config set prefer-online true && \
+    npm config set progress false && \
+    npm config set audit false && \
+    npm config set fund false
 
 # Build stage
 FROM base AS build
@@ -42,10 +48,11 @@ FROM base AS build
 COPY package.json package-lock.json .npmrc ./
 
 # Proceed to dependency installation
-# Install dependencies with optimized settings
+# Install dependencies with optimized settings (fallback re-run on transient failure)
 RUN --mount=type=cache,id=ccframe-npm-cache,target=/root/.npm \
     NODE_OPTIONS="--max-old-space-size=1024" \
-    npm ci --prefer-offline --no-audit --progress=false
+    npm ci --prefer-online --no-audit --no-fund --progress=false --cache /root/.npm || \
+    npm ci --no-audit --no-fund --progress=false --cache /root/.npm
 COPY prisma ./prisma
 RUN --mount=type=cache,id=ccframe-cache,target=/root/.cache \
     npx prisma generate
