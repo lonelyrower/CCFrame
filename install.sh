@@ -12,7 +12,7 @@ set -euo pipefail
 #   bash install.sh logs [svc]  # 查看日志（可选指定服务名）
 #   bash install.sh env         # 生成或修复 .env 文件
 #   bash install.sh health      # 健康检查
-#   bash install.sh uninstall   # 卸载（--purge 将删除数据卷）
+#   bash install.sh uninstall   # 卸载容器和服务（--purge 将删除数据卷和应用目录）
 
 # 颜色输出定义
 RED='\033[0;31m'
@@ -808,7 +808,7 @@ cmd_uninstall() {
     shift
   done
 
-  print_warning "即将卸载 CCFrame，将停止并移除容器${PURGE:+，并删除数据卷}。"
+  print_warning "即将卸载 CCFrame，将停止并移除容器${PURGE:+，并删除数据卷和应用目录}。"
   if [ "$YES" -ne 1 ]; then
     read -rp "请输入 'uninstall' 以确认：" confirm || exit 1
     [ "$confirm" = "uninstall" ] || { print_error "已取消"; exit 1; }
@@ -829,6 +829,7 @@ cmd_uninstall() {
   fi
 
   # 清理残留容器
+  print_step "清理残留容器..."
   for c in ccframe-web ccframe-worker ccframe-nginx ccframe-minio ccframe-postgres ccframe-redis; do
     docker rm -f "$c" >/dev/null 2>&1 || true
   done
@@ -836,11 +837,44 @@ cmd_uninstall() {
 
   # 若需要则删除数据卷
   if [ "$PURGE" -eq 1 ]; then
+    print_step "删除数据卷..."
     docker volume rm pgdata >/dev/null 2>&1 || true
     docker volume rm minio >/dev/null 2>&1 || true
   fi
 
-  print_success "卸载完成"
+  # 停止并删除systemd服务（如果存在）
+  print_step "清理systemd服务..."
+  for service in ccframe-web ccframe-worker; do
+    if systemctl is-active --quiet "$service" 2>/dev/null; then
+      systemctl stop "$service" || true
+    fi
+    if systemctl is-enabled --quiet "$service" 2>/dev/null; then
+      systemctl disable "$service" || true
+    fi
+    if [ -f "/etc/systemd/system/$service.service" ]; then
+      rm -f "/etc/systemd/system/$service.service" || true
+    fi
+  done
+  systemctl daemon-reload 2>/dev/null || true
+
+  # 删除应用目录（根据PURGE参数决定）
+  if [ "$PURGE" -eq 1 ] && [ -d /opt/ccframe ]; then
+    print_step "删除应用目录 /opt/ccframe..."
+    rm -rf /opt/ccframe || true
+  elif [ -d /opt/ccframe ]; then
+    print_info "保留应用目录 /opt/ccframe（使用 --purge 参数可完全删除）"
+  fi
+
+  # 清理Docker镜像（可选）
+  if [ "$PURGE" -eq 1 ]; then
+    print_step "清理相关Docker镜像..."
+    docker images --format "table {{.Repository}}:{{.Tag}}" | grep -E "(ccframe|lonelyrower/ccframe)" | awk '{print $1}' | xargs -r docker rmi 2>/dev/null || true
+  fi
+
+  print_success "卸载完成${PURGE:+（已完全清理）}"
+  if [ "$PURGE" -ne 1 ]; then
+    print_info "提示：使用 'bash install.sh uninstall --purge' 可完全删除所有文件和数据"
+  fi
 }
 
 interactive_menu() {
@@ -871,7 +905,7 @@ interactive_menu() {
     7) read -rp "服务名称（可选）：" svc; cmd_logs "$svc"; exit 0 ;;
     8) cmd_env; exit 0 ;;
     9) cmd_health; exit 0 ;;
-    10) read -rp "需要删除数据卷吗？输入 'yes' 确认删除：" a; if [ "$a" = "yes" ]; then cmd_uninstall --purge; else cmd_uninstall; fi; exit 0 ;;
+    10) read -rp "需要完全删除吗？输入 'yes' 删除所有数据和文件，输入其他保留应用目录：" a; if [ "$a" = "yes" ]; then cmd_uninstall --purge; else cmd_uninstall; fi; exit 0 ;;
     0) exit 0 ;;
     *) echo "请输入有效的数字"; exit 1 ;;
   esac
