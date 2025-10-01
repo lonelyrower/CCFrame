@@ -25,7 +25,7 @@ const overview: AdminSettingsOverviewDto = {
     defaultSeedCount: 12,
   },
   analytics: {
-    logrocketId: null,
+    enabled: false,
   },
   runtime: {
     storage: {

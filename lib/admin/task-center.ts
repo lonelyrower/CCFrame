@@ -24,7 +24,7 @@ interface PendingReviewSource {
 
 interface DraftReviewSource {
   id: string
-  fileKey: string
+  fileKey: string | null
   updatedAt: Date
   albumTitle: string | null
 }
@@ -53,10 +53,10 @@ function createUploadGroup(failedUploads: UploadTaskSource[], stalledUploads: Up
   const failedTasks: AdminTaskItem[] = failedUploads.map((upload) => ({
     id: `upload-failed-${upload.id}`,
     title: '上传失败，等待处理',
-    description: upload.fileKey,
+    description: upload.fileKey ?? undefined,
     href: `/admin/upload?panel=errors&focus=${upload.id}`,
     actionLabel: '查看详情',
-    severity: 'critical',
+    severity: 'critical' as const,
     createdAt: upload.updatedAt,
     meta: [
       { label: '相册', value: formatAlbumTitle(upload.albumTitle) },
@@ -66,10 +66,10 @@ function createUploadGroup(failedUploads: UploadTaskSource[], stalledUploads: Up
   const stalledTasks: AdminTaskItem[] = stalledUploads.map((upload) => ({
     id: `upload-stalled-${upload.id}`,
     title: upload.status === 'UPLOADING' ? '上传卡住，建议重试' : '处理耗时异常',
-    description: upload.fileKey,
+    description: upload.fileKey ?? undefined,
     href: `/admin/upload?panel=queue&focus=${upload.id}`,
     actionLabel: '打开队列',
-    severity: 'warning',
+    severity: 'warning' as const,
     createdAt: upload.updatedAt,
     meta: [
       { label: '状态', value: upload.status },

@@ -63,8 +63,8 @@ export function serializePhoto(
   const mode = opts.mode || 'minimal'
   const base: SerializedPhotoMinimal = {
     id: photo.id,
-    width: photo.width,
-    height: photo.height,
+    width: photo.width ?? 0,
+    height: photo.height ?? 0,
     blurhash: photo.blurhash || null,
   }
 
@@ -72,8 +72,8 @@ export function serializePhoto(
     base.variants = photo.variants.map((v) => ({
       variant: v.variant,
       format: v.format,
-      width: v.width,
-      height: v.height,
+      width: v.width ?? 0,
+      height: v.height ?? 0,
     }))
   }
 
