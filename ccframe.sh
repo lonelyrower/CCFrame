@@ -1184,38 +1184,78 @@ cmd_uninstall() {
     shift
   done
 
-  print_warning "即将卸载 CCFrame，将停止并移除容器${PURGE:+，并删除数据卷和应用目录}。"
+  echo ""
+  echo "${YELLOW}═══════════════════════════════════════════${NC}"
+  echo "${YELLOW}          CCFrame 卸载向导${NC}"
+  echo "${YELLOW}═══════════════════════════════════════════${NC}"
+  echo ""
+  
+  if [ "$PURGE" -eq 1 ]; then
+    print_warning "完全清理模式（--purge）"
+    echo ""
+    echo "将会删除："
+    echo "  ✓ 所有容器"
+    echo "  ✓ 所有数据卷（数据库、文件存储）"
+    echo "  ✓ 应用目录 /opt/ccframe"
+    echo "  ✓ Docker 镜像"
+    echo "  ✓ SSL 证书和配置"
+    echo "  ✓ Cron 任务"
+    echo ""
+    echo "${RED}警告：此操作将永久删除所有数据，无法恢复！${NC}"
+  else
+    print_warning "标准卸载模式"
+    echo ""
+    echo "将会删除："
+    echo "  ✓ 所有容器"
+    echo "  ✓ 应用目录 /opt/ccframe（代码、配置）"
+    echo "  ✓ SSL 证书和配置"
+    echo "  ✓ Cron 任务"
+    echo ""
+    echo "将会保留："
+    echo "  • 数据卷（pgdata, minio）"
+    echo "  • Docker 镜像"
+    echo ""
+    echo "${CYAN}提示：重新安装时可以恢复数据${NC}"
+  fi
+  echo ""
+  
   if [ "$YES" -ne 1 ]; then
     read -rp "请输入 'uninstall' 以确认：" confirm || exit 1
     [ "$confirm" = "uninstall" ] || { print_error "已取消"; exit 1; }
+    echo ""
   fi
 
+  # 1. 停止并删除容器
   if [ -d /opt/ccframe ]; then
     cd /opt/ccframe || true
     if [ -f docker-compose.yml ] || [ -f docker-compose.yaml ] || [ -f compose.yml ] || [ -f compose.yaml ]; then
       if [ "$PURGE" -eq 1 ]; then
-        print_step "正在停止并移除容器，同时删除数据卷..."
+        print_step "停止并删除容器（包括数据卷）..."
         $DOCKER_COMPOSE_CMD down -v || true
       else
-        print_step "正在停止并移除容器..."
+        print_step "停止并删除容器（保留数据卷）..."
         $DOCKER_COMPOSE_CMD down || true
       fi
     fi
   fi
 
-  print_step "清理残留容器..."
-  for c in ccframe-web ccframe-worker ccframe-nginx ccframe-minio ccframe-postgres ccframe-redis; do
+  # 2. 清理残留容器和网络
+  print_step "清理残留容器和网络..."
+  for c in ccframe-web ccframe-worker ccframe-nginx ccframe-minio ccframe-postgres ccframe-redis ccframe-minio-init; do
     docker rm -f "$c" >/dev/null 2>&1 || true
   done
   docker network rm ccframe >/dev/null 2>&1 || true
 
+  # 3. 删除数据卷（仅 --purge 模式）
   if [ "$PURGE" -eq 1 ]; then
     print_step "删除数据卷..."
     docker volume rm pgdata >/dev/null 2>&1 || true
     docker volume rm minio >/dev/null 2>&1 || true
+    docker volume ls | grep ccframe | awk '{print $2}' | xargs -r docker volume rm 2>/dev/null || true
   fi
 
-  print_step "清理systemd服务..."
+  # 4. 清理 systemd 服务
+  print_step "清理 systemd 服务..."
   for service in ccframe-web ccframe-worker; do
     if systemctl is-active --quiet "$service" 2>/dev/null; then
       systemctl stop "$service" || true
@@ -1229,22 +1269,77 @@ cmd_uninstall() {
   done
   systemctl daemon-reload 2>/dev/null || true
 
-  if [ "$PURGE" -eq 1 ] && [ -d /opt/ccframe ]; then
+  # 5. 清理 Certbot cron 任务
+  print_step "清理 SSL 证书自动续期任务..."
+  if crontab -l 2>/dev/null | grep -q "certbot renew"; then
+    crontab -l 2>/dev/null | grep -v "certbot renew" | crontab - 2>/dev/null || true
+    print_success "已删除 Certbot cron 任务"
+  fi
+
+  # 6. 删除应用目录（标准卸载和 --purge 都删除）
+  if [ -d /opt/ccframe ]; then
     print_step "删除应用目录 /opt/ccframe..."
     rm -rf /opt/ccframe || true
-  elif [ -d /opt/ccframe ]; then
-    print_info "保留应用目录 /opt/ccframe（使用 --purge 参数可完全删除）"
+    print_success "应用目录已删除"
   fi
 
+  # 7. 清理 Let's Encrypt 证书（仅 --purge 模式）
   if [ "$PURGE" -eq 1 ]; then
-    print_step "清理相关Docker镜像..."
-    docker images --format "table {{.Repository}}:{{.Tag}}" | grep -E "(ccframe|lonelyrower/ccframe)" | awk '{print $1}' | xargs -r docker rmi 2>/dev/null || true
+    if [ -d /etc/letsencrypt ]; then
+      print_step "清理 Let's Encrypt 证书..."
+      # 只删除 CCFrame 相关的证书
+      if [ -f /opt/ccframe/.env ]; then
+        local domain=$(grep "^APP_DOMAIN=" /opt/ccframe/.env 2>/dev/null | cut -d'=' -f2)
+        if [ -n "$domain" ] && [ -d "/etc/letsencrypt/live/$domain" ]; then
+          rm -rf "/etc/letsencrypt/live/$domain" || true
+          rm -rf "/etc/letsencrypt/archive/$domain" || true
+          rm -rf "/etc/letsencrypt/renewal/$domain.conf" || true
+          print_success "已删除域名 $domain 的证书"
+        fi
+      fi
+    fi
   fi
 
-  print_success "卸载完成${PURGE:+（已完全清理）}"
-  if [ "$PURGE" -ne 1 ]; then
-    print_info "提示：使用 'bash ccframe.sh uninstall --purge' 可完全删除所有文件和数据"
+  # 8. 清理 Docker 镜像（仅 --purge 模式）
+  if [ "$PURGE" -eq 1 ]; then
+    print_step "清理 Docker 镜像..."
+    docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "(ccframe|lonelyrower/ccframe)" | xargs -r docker rmi -f 2>/dev/null || true
+    print_success "Docker 镜像已删除"
   fi
+
+  # 9. 显示卸载结果
+  echo ""
+  echo "${GREEN}═══════════════════════════════════════════${NC}"
+  print_success "卸载完成"
+  echo "${GREEN}═══════════════════════════════════════════${NC}"
+  echo ""
+  
+  if [ "$PURGE" -eq 1 ]; then
+    echo "已完全清理 CCFrame 及其所有数据"
+    echo ""
+    echo "已删除："
+    echo "  ✓ 所有容器和网络"
+    echo "  ✓ 所有数据卷"
+    echo "  ✓ 应用目录"
+    echo "  ✓ Docker 镜像"
+    echo "  ✓ SSL 证书"
+    echo "  ✓ Cron 任务"
+  else
+    echo "已卸载 CCFrame 应用"
+    echo ""
+    echo "已删除："
+    echo "  ✓ 所有容器和网络"
+    echo "  ✓ 应用目录（代码和配置）"
+    echo "  ✓ SSL 证书配置"
+    echo "  ✓ Cron 任务"
+    echo ""
+    echo "已保留："
+    echo "  • 数据卷（可用于重新安装）"
+    echo "  • Docker 镜像（节省下载时间）"
+    echo ""
+    echo "${CYAN}提示：使用 'bash ccframe.sh uninstall --purge' 可完全删除所有数据${NC}"
+  fi
+  echo ""
 }
 
 interactive_menu() {
