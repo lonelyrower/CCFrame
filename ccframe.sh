@@ -900,22 +900,22 @@ cmd_install() {
 
   # 如果没有指定模式，且是交互模式，则询问用户
   if [ "$USE_IMAGE" -eq 0 ] && is_interactive; then
-    print_banner
-    print_step "📦 CCFrame 部署模式选择"
     echo ""
-    echo "请选择部署方式："
+    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo "${CYAN}       CCFrame 部署方式选择${NC}"
+    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo "  ${GREEN}1) 🚀 镜像部署（推荐）${NC}"
-    echo "     ✓ 使用预构建的 Docker 镜像"
-    echo "     ✓ 部署时间：3-5 分钟"
-    echo "     ✓ 内存需求：最低 512MB"
-    echo "     ✓ 适合：生产环境快速部署"
+    echo "${GREEN}1) 镜像部署（推荐）${NC}"
+    echo "   ✓ 使用预构建的 Docker 镜像"
+    echo "   ✓ 部署时间：3-5 分钟"
+    echo "   ✓ 内存需求：最低 512MB"
+    echo "   ✓ 适合：生产环境快速部署"
     echo ""
-    echo "  ${YELLOW}2) 🔧 源码构建${NC}"
-    echo "     • 从 GitHub 克隆源码并本地构建"
-    echo "     ✓ 部署时间：15-30 分钟"
-    echo "     ✓ 内存需求：至少 2GB"
-    echo "     ✓ 适合：需要自定义修改代码"
+    echo "${YELLOW}2) 源码构建${NC}"
+    echo "   • 从 GitHub 克隆源码并本地构建"
+    echo "   ✓ 部署时间：15-30 分钟"
+    echo "   ✓ 内存需求：至少 2GB"
+    echo "   ✓ 适合：需要自定义修改代码"
     echo ""
     read -rp "请选择 [1/2] (默认: 1): " choice
     choice=${choice:-1}
@@ -994,16 +994,49 @@ cmd_update() {
 
   cd /opt/ccframe || { print_error "未找到项目目录，请先执行 install 操作"; exit 1; }
 
+  # 解析命令行参数
   local USE_IMAGE=0
+  local FORCE_FIX_COMPOSE=0
   for arg in "$@"; do
     case "$arg" in
       --from-image) USE_IMAGE=1 ;;
+      --fix-compose) FORCE_FIX_COMPOSE=1 ;;
     esac
   done
 
+  # 如果没有指定模式，且是交互模式，则询问用户
+  if [ "$USE_IMAGE" -eq 0 ] && is_interactive; then
+    echo ""
+    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo "${CYAN}       CCFrame 更新方式选择${NC}"
+    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo "${GREEN}1) 镜像更新（推荐）${NC}"
+    echo "   ✓ 拉取最新镜像并重启"
+    echo "   ✓ 更新时间：1-2 分钟"
+    echo "   ✓ 保留所有数据和配置"
+    echo ""
+    echo "${YELLOW}2) 源码更新${NC}"
+    echo "   • 拉取最新代码并重新构建"
+    echo "   ✓ 更新时间：10-20 分钟"
+    echo "   ✓ 包含最新的代码修改"
+    echo ""
+    read -rp "请选择 [1/2] (默认: 1): " choice
+    choice=${choice:-1}
+    
+    if [ "$choice" = "2" ]; then
+      USE_IMAGE=0
+      print_info "✓ 已选择：源码更新模式"
+    else
+      USE_IMAGE=1
+      print_info "✓ 已选择：镜像更新模式（推荐）"
+    fi
+    echo ""
+  fi
+
   if [ "$USE_IMAGE" -eq 1 ]; then
     DEPLOYMENT_METHOD="image"
-    print_info "使用镜像部署模式更新"
+    print_step "使用镜像模式更新"
 
     # 先生成 docker-compose.yml（后续 ensure_env 会修改它）
     prepare_image_compose
@@ -1027,17 +1060,10 @@ cmd_update() {
     $DOCKER_COMPOSE_CMD up -d
   else
     DEPLOYMENT_METHOD="source"
-    print_info "使用源码构建模式更新"
+    print_step "使用源码模式更新"
 
     clone_project
     ensure_env
-
-    local FORCE_FIX_COMPOSE=0
-    for arg in "$@"; do
-      case "$arg" in
-        --fix-compose) FORCE_FIX_COMPOSE=1 ;;
-      esac
-    done
 
     ensure_compose_integrity "$FORCE_FIX_COMPOSE"
 
@@ -1051,29 +1077,47 @@ cmd_update() {
   show_info
 }
 
-cmd_switch_mode() {
+cmd_switch_https_mode() {
   check_system
   cd /opt/ccframe || { print_error "未找到项目目录，请先执行 install 操作"; exit 1; }
 
-  echo "请选择新的部署方式："
-  echo "  1) 镜像部署（快速，资源占用少）"
-  echo "  2) 源码构建（可自定义修改）"
-  read -rp "请输入选项 [1/2]: " choice
+  echo ""
+  echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo "${CYAN}       切换 HTTPS 访问模式${NC}"
+  echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo ""
+  echo "当前部署模式：$(get_env_value DEPLOYMENT_MODE || echo 'ip')"
+  echo ""
+  echo "请选择新的访问模式："
+  echo "  1) IP 模式（HTTP，仅服务器 IP 访问）"
+  echo "  2) Let's Encrypt（自动申请免费 SSL 证书）"
+  echo "  3) Cloudflare（使用 CDN 提供的 HTTPS）"
+  echo ""
+  read -rp "请输入选项 [1/2/3]: " choice
 
   case "$choice" in
     1)
-      print_info "切换到镜像部署模式..."
-      cmd_update --from-image
+      print_info "切换到 IP 模式（HTTP）..."
+      configure_ip_mode
       ;;
     2)
-      print_info "切换到源码构建模式..."
-      cmd_update
+      print_info "切换到 Let's Encrypt 模式（HTTPS）..."
+      configure_letsencrypt_mode
+      ;;
+    3)
+      print_info "切换到 Cloudflare 模式（HTTPS）..."
+      configure_cloudflare_mode
       ;;
     *)
       print_error "无效选项"
       exit 1
       ;;
   esac
+  
+  print_step "正在重启服务以应用新配置..."
+  $DOCKER_COMPOSE_CMD restart nginx
+  print_success "HTTPS 模式切换完成"
+  show_info
 }
 
 cmd_start() {
@@ -1208,36 +1252,41 @@ interactive_menu() {
     exec </dev/tty
   fi
   echo ""
-  print_info "请选择要执行的操作："
-  echo "  1) 初始化部署（自动选择模式）"
-  echo "  2) 初始化部署（强制镜像模式）"
-  echo "  3) 更新（源码构建）"
-  echo "  4) 更新（镜像部署）"
-  echo "  5) 切换部署模式"
-  echo "  6) 启动"
-  echo "  7) 重启"
-  echo "  8) 停止"
-  echo "  9) 查看状态"
-  echo " 10) 查看日志"
-  echo " 11) 生成或修复 .env"
-  echo " 12) 健康检查"
-  echo " 13) 卸载"
+  print_info "CCFrame 管理菜单"
+  echo ""
+  echo "${CYAN}═══ 部署管理 ═══${NC}"
+  echo "  1) 初始化部署（全新安装）"
+  echo "  2) 更新部署（保留数据）"
+  echo "  3) 切换 HTTPS 模式（IP/域名/Cloudflare）"
+  echo ""
+  echo "${CYAN}═══ 服务管理 ═══${NC}"
+  echo "  4) 启动服务"
+  echo "  5) 停止服务"
+  echo "  6) 重启服务"
+  echo "  7) 查看状态"
+  echo "  8) 查看日志"
+  echo ""
+  echo "${CYAN}═══ 配置管理 ═══${NC}"
+  echo "  9) 修复环境配置 (.env)"
+  echo " 10) 健康检查"
+  echo ""
+  echo "${CYAN}═══ 系统维护 ═══${NC}"
+  echo " 11) 卸载系统"
   echo "  0) 退出"
+  echo ""
   read -rp "请输入数字：" choice || exit 0
   case "$choice" in
     1) cmd_install; exit 0 ;;
-    2) cmd_install --from-image; exit 0 ;;
-    3) cmd_update; exit 0 ;;
-    4) cmd_update --from-image; exit 0 ;;
-    5) cmd_switch_mode; exit 0 ;;
-    6) cmd_start; exit 0 ;;
-    7) cmd_restart; exit 0 ;;
-    8) cmd_stop; exit 0 ;;
-    9) cmd_status; exit 0 ;;
-    10) read -rp "服务名称（可选）：" svc; cmd_logs "$svc"; exit 0 ;;
-    11) cmd_env; exit 0 ;;
-    12) cmd_health; exit 0 ;;
-    13) read -rp "需要完全删除吗？输入 'yes' 删除所有数据和文件，输入其他保留应用目录：" a; if [ "$a" = "yes" ]; then cmd_uninstall --purge; else cmd_uninstall; fi; exit 0 ;;
+    2) cmd_update; exit 0 ;;
+    3) cmd_switch_https_mode; exit 0 ;;
+    4) cmd_start; exit 0 ;;
+    5) cmd_stop; exit 0 ;;
+    6) cmd_restart; exit 0 ;;
+    7) cmd_status; exit 0 ;;
+    8) read -rp "服务名称（可选，直接回车查看全部）：" svc; cmd_logs "$svc"; exit 0 ;;
+    9) cmd_env; exit 0 ;;
+    10) cmd_health; exit 0 ;;
+    11) read -rp "是否完全删除所有数据？ [yes/no] (默认: no): " a; if [ "${a,,}" = "yes" ]; then cmd_uninstall --purge; else cmd_uninstall; fi; exit 0 ;;
     0) exit 0 ;;
     *) echo "请输入有效的数字"; exit 1 ;;
   esac
@@ -1248,7 +1297,7 @@ main() {
   case "${1:-}" in
     install)        shift; cmd_install "$@"; exit 0 ;;
     update)         shift; cmd_update "$@"; exit 0 ;;
-    switch-mode)    shift; cmd_switch_mode "$@"; exit 0 ;;
+    switch-mode|switch-https)    shift; cmd_switch_https_mode "$@"; exit 0 ;;
     start)          shift; cmd_start "$@"; exit 0 ;;
     stop)           shift; cmd_stop "$@"; exit 0 ;;
     restart)        shift; cmd_restart "$@"; exit 0 ;;
