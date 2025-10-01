@@ -36,7 +36,7 @@ const GridItem = React.memo<{
   }
 
   const photo = photos[index]
-  const aspectRatio = photo.height > 0 ? photo.width / photo.height : 1
+  const aspectRatio = (photo.height ?? 0) > 0 ? (photo.width ?? 1) / (photo.height ?? 1) : 1
 
   return (
     <div
@@ -131,8 +131,8 @@ export const VirtualizedGallery: React.FC<VirtualizedGalleryProps> = ({
 
       for (let i = startIndex; i < endIndex; i++) {
         const photo = photos[i]
-        if (photo && photo.height > 0) {
-          const aspectRatio = photo.width / photo.height
+        if (photo && (photo.height ?? 0) > 0 && (photo.width ?? 0) > 0) {
+          const aspectRatio = (photo.width ?? 1) / (photo.height ?? 1)
           const itemHeight = columnWidth / aspectRatio
           maxHeight = Math.max(maxHeight, itemHeight)
         }

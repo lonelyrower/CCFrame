@@ -72,6 +72,7 @@ export async function GET(request: NextRequest, { params }: Params) {
         localPath: true,
         visibility: true,
         status: true,
+        userId: true,
         variants: true,
       },
     })

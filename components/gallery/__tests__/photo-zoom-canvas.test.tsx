@@ -22,6 +22,7 @@ const photo: PhotoWithDetails = {
   createdAt: new Date(),
   updatedAt: new Date(),
   takenAt: null,
+  url: null,
   localPath: null,
   originalFileName: null,
   aspectRatio: null,
