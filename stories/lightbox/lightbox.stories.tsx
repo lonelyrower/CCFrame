@@ -10,9 +10,13 @@ import { PhotoWithDetails } from '@/types'
 
 const SAMPLE_PHOTOS: PhotoWithDetails[] = Array.from({ length: 4 }).map((_, index) => ({
   id: `sample-${index + 1}`,
+  url: null,
   hash: `hash-${index}`,
   contentHash: null,
   fileKey: 'sample.jpg',
+  localPath: null,
+  originalFileName: null,
+  aspectRatio: null,
   width: 3200,
   height: 2133,
   albumId: 'album-1',
@@ -25,19 +29,14 @@ const SAMPLE_PHOTOS: PhotoWithDetails[] = Array.from({ length: 4 }).map((_, inde
   userId: 'user-1',
   visibility: 'PUBLIC',
   status: 'COMPLETED',
+  blurHashDataURL: null,
+  blurhash: null,
+  extractedCoordinates: null,
+  dominantColor: null,
   createdAt: new Date('2024-01-01T00:00:00Z'),
   updatedAt: new Date('2024-01-01T00:00:00Z'),
   takenAt: new Date('2024-01-01T00:00:00Z'),
   location: null,
-  blurhash: null,
-  variants: [],
-  tags: [
-    { tag: { id: 'tag-urban', name: 'urban', color: '#4f46e5' } },
-    { tag: { id: 'tag-night', name: 'night', color: '#06b6d4' } },
-  ] as any,
-  faces: [],
-  albumCovers: [],
-  smartAlbumCovers: [],
   exifJson: {
     camera: 'Fujifilm X-T5',
     lens: 'XF 23mm F1.4',
@@ -46,6 +45,11 @@ const SAMPLE_PHOTOS: PhotoWithDetails[] = Array.from({ length: 4 }).map((_, inde
     shutterSpeed: '1/160',
     iso: 400,
   },
+  variants: [],
+  tags: [
+    { tag: { id: 'tag-urban', name: 'urban', color: '#4f46e5' } },
+    { tag: { id: 'tag-night', name: 'night', color: '#06b6d4' } },
+  ] as any,
 }))
 
 const meta: Meta = {
