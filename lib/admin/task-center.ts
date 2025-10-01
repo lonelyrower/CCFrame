@@ -8,7 +8,7 @@ const STALLED_UPLOAD_THRESHOLD_MINUTES = 30
 
 interface UploadTaskSource {
   id: string
-  fileKey: string
+  fileKey: string | null
   status: string
   createdAt: Date
   updatedAt: Date
@@ -17,7 +17,7 @@ interface UploadTaskSource {
 
 interface PendingReviewSource {
   id: string
-  fileKey: string
+  fileKey: string | null
   createdAt: Date
   albumTitle: string | null
 }

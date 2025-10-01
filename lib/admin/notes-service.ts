@@ -16,13 +16,13 @@ export async function getPhotoNote(userId: string, photoId: string): Promise<Pho
     return null
   }
 
-  const note = await db.photoNote.findUnique({
-    where: { photoId_userId: { photoId, userId } },
+  const note = await db.photoNote.findFirst({
+    where: { photoId, userId },
   })
 
   return {
     photoId,
-    note: note?.note ?? '',
+    note: note?.content ?? '',
     updatedAt: note?.updatedAt ?? photo.updatedAt,
   }
 }
@@ -37,21 +37,26 @@ export async function updatePhotoNote(userId: string, photoId: string, note: str
     throw new Error('UNAUTHORIZED')
   }
 
-  const record = await db.photoNote.upsert({
-    where: { photoId_userId: { photoId, userId } },
-    create: {
-      photoId,
-      userId,
-      note,
-    },
-    update: {
-      note,
-    },
+  const existing = await db.photoNote.findFirst({
+    where: { photoId, userId },
   })
+
+  const record = existing
+    ? await db.photoNote.update({
+        where: { id: existing.id },
+        data: { content: note },
+      })
+    : await db.photoNote.create({
+        data: {
+          photoId,
+          userId,
+          content: note,
+        },
+      })
 
   return {
     photoId: record.photoId,
-    note: record.note,
+    note: record.content,
     updatedAt: record.updatedAt,
   }
 }
