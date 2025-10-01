@@ -45,7 +45,8 @@ print_step()    { echo -e "${PURPLE}[步骤] $1${NC}"; }
 SERVER_IP=""
 ACCESS_BASE_URL=""
 DEPLOYMENT_METHOD="source"  # source | image
-GHCR_IMAGE="ghcr.io/lonelyrower/ccframe:latest"
+IMAGE_TAG="${IMAGE_TAG:-latest}"  # 支持通过环境变量指定版本
+GHCR_IMAGE="ghcr.io/lonelyrower/ccframe:${IMAGE_TAG}"
 
 is_interactive() {
   if [ -t 0 ]; then
@@ -536,10 +537,10 @@ clone_project() {
 prepare_image_compose() {
   print_step "生成镜像部署 docker-compose.yml..."
 
-  cat > docker-compose.yml <<'EOF'
+  cat > docker-compose.yml <<EOF
 services:
   web:
-    image: ghcr.io/lonelyrower/ccframe:latest
+    image: ${GHCR_IMAGE}
     container_name: ccframe-web
     restart: unless-stopped
     ports:
@@ -549,10 +550,16 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      INTERNAL_BASE_URL: ${INTERNAL_BASE_URL:-http://web:3000}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      PIXABAY_API_KEY: ${PIXABAY_API_KEY}
-      DEV_SEED_TOKEN: ${DEV_SEED_TOKEN}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      IMAGE_PUBLIC_VARIANTS: ${IMAGE_PUBLIC_VARIANTS:-false}
+      IMAGE_FORMATS: ${IMAGE_FORMATS:-webp,jpeg}
+      IMAGE_VARIANT_NAMES: ${IMAGE_VARIANT_NAMES:-thumb,small,medium}
+      NEXT_TELEMETRY_DISABLED: 1
+      PIXABAY_API_KEY: ${PIXABAY_API_KEY:-}
+      DEV_SEED_TOKEN: ${DEV_SEED_TOKEN:-}
       REDIS_URL: redis://redis:6379
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-minioadmin}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-minioadmin}"
@@ -560,7 +567,7 @@ services:
       S3_REGION: "${S3_REGION:-us-east-1}"
       S3_ENDPOINT: http://minio:9000
       FORCE_HTTPS: ${FORCE_HTTPS:-true}
-      CDN_BASE_URL: ${CDN_BASE_URL}
+      CDN_BASE_URL: ${CDN_BASE_URL:-}
     depends_on:
       db:
         condition: service_healthy
@@ -574,8 +581,8 @@ services:
       - |
         set -e
         echo 'Applying database migrations...'
-        for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done
-        ./node_modules/.bin/prisma generate
+        for i in $(seq 1 60); do npx prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done
+        npx prisma generate
         node scripts/create-admin.js || true
         echo 'Starting Next.js server on port 3000...'
         npm start
@@ -589,7 +596,7 @@ services:
       - ccframe
 
   worker:
-    image: ghcr.io/lonelyrower/ccframe:latest
+    image: ${GHCR_IMAGE}
     container_name: ccframe-worker
     restart: unless-stopped
     environment:
@@ -617,8 +624,8 @@ services:
       - |
         set -e
         echo 'Applying database migrations for worker...'
-        for i in $(seq 1 30); do ./node_modules/.bin/prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done
-        ./node_modules/.bin/prisma generate
+        for i in $(seq 1 60); do npx prisma migrate deploy && break || (echo 'DB not ready, retry...' && sleep 2); done
+        npx prisma generate
         node scripts/start-worker.js
     networks:
       - ccframe
@@ -678,8 +685,12 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: >-
       set -e;
-      sleep 15;
-      mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}";
+      echo "Waiting for MinIO to be ready...";
+      until mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" 2>/dev/null; do
+        echo "MinIO not ready, waiting...";
+        sleep 2;
+      done;
+      echo "MinIO is ready!";
       SHOULD_CREATE_USER=0;
       if [ -n "$${S3_ACCESS_KEY_ID}" ] && [ -n "$${S3_SECRET_ACCESS_KEY}" ]; then
         if [ "$${S3_ACCESS_KEY_ID}" != "$${MINIO_ROOT_USER}" ] || [ "$${S3_SECRET_ACCESS_KEY}" != "$${MINIO_ROOT_PASSWORD}" ]; then
@@ -900,8 +911,17 @@ cmd_install() {
     prepare_image_compose
     ensure_env
 
-    print_step "拉取最新镜像..."
-    docker pull "$GHCR_IMAGE"
+    print_step "拉取最新镜像: $GHCR_IMAGE"
+    if docker pull "$GHCR_IMAGE"; then
+      print_success "镜像拉取成功"
+    else
+      print_error "镜像拉取失败"
+      print_info "可能的原因："
+      print_info "  1. 网络问题 - 请检查网络连接"
+      print_info "  2. 镜像不存在 - 请确认镜像地址: $GHCR_IMAGE"
+      print_info "  3. 认证问题 - 如果是私有镜像，需要先登录: docker login ghcr.io"
+      exit 1
+    fi
   else
     DEPLOYMENT_METHOD="source"
     print_info "使用源码构建模式"
@@ -957,8 +977,17 @@ cmd_update() {
     prepare_image_compose
     ensure_env
 
-    print_step "拉取最新镜像..."
-    docker pull "$GHCR_IMAGE"
+    print_step "拉取最新镜像: $GHCR_IMAGE"
+    if docker pull "$GHCR_IMAGE"; then
+      print_success "镜像拉取成功"
+    else
+      print_error "镜像拉取失败"
+      print_info "可能的原因："
+      print_info "  1. 网络问题 - 请检查网络连接"
+      print_info "  2. 镜像不存在 - 请确认镜像地址: $GHCR_IMAGE"
+      print_info "  3. 认证问题 - 如果是私有镜像，需要先登录: docker login ghcr.io"
+      exit 1
+    fi
 
     print_step "正在更新容器..."
     $DOCKER_COMPOSE_CMD up -d
@@ -1063,7 +1092,7 @@ cmd_health() {
     base_url="http://$(detect_server_ip)"
   fi
   base_url=${base_url%/}
-  curl -fsSL "$base_url/api/health" || echo '{"ok":false}'
+  curl -fsSL "$base_url/api/health-simple" || echo '{"ok":false}'
 }
 
 cmd_uninstall() {
