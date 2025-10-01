@@ -30,8 +30,7 @@ RUN apt-get update && \
     apt-get clean
 
 # Set npm configuration for better performance and predictable timeouts
-RUN npm config set registry "$NPM_CONFIG_REGISTRY" && \
-    npm config set fetch-retries 2 && \
+RUN npm config set fetch-retries 2 && \
     npm config set fetch-retry-maxtimeout 60000 && \
     npm config set fetch-retry-mintimeout 5000 && \
     npm config set fetch-timeout 120000 && \

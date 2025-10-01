@@ -9,6 +9,7 @@ jest.mock('../lightbox-context', () => ({
 jest.mock('../../../lib/utils', () => ({
   getImageUrl: jest.fn(() => '/image/mock'),
   toBase64: jest.fn(() => 'ZHVtbXk='),
+  generateSrcSet: jest.fn(() => '/image/mock 1x'),
 }))
 
 jest.mock('next/image', () => {
