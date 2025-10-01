@@ -100,13 +100,22 @@ ensure_certbot_webroot() {
 }
 
 ensure_compose_https_mode() {
+  # 检查文件是否存在
+  if [ ! -f docker-compose.yml ]; then
+    print_warning "docker-compose.yml 不存在，跳过 HTTPS 模式配置"
+    return
+  fi
+  
   if ! command -v python3 >/dev/null 2>&1; then
     print_warning "python3 未找到，跳过 docker-compose.yml 自动更新，请手动添加 443 端口和证书挂载"
     return
   fi
+  
   python3 <<'PY2'
 from pathlib import Path
 path = Path("docker-compose.yml")
+if not path.exists():
+    exit(0)
 text = path.read_text()
 if '      - "443:443"' not in text:
     text = text.replace('      - "80:80"\n', '      - "80:80"\n      - "443:443"\n', 1)
@@ -119,13 +128,22 @@ PY2
 }
 
 ensure_compose_http_mode() {
+  # 检查文件是否存在
+  if [ ! -f docker-compose.yml ]; then
+    print_warning "docker-compose.yml 不存在，跳过 HTTP 模式配置"
+    return
+  fi
+  
   if ! command -v python3 >/dev/null 2>&1; then
     print_warning "python3 未找到，跳过 docker-compose.yml 自动修正，请手动移除 443 端口和证书挂载"
     return
   fi
+  
   python3 <<'PY3'
 from pathlib import Path
 path = Path("docker-compose.yml")
+if not path.exists():
+    exit(0)
 lines = path.read_text().splitlines()
 filtered = [line for line in lines if line.strip() not in {'- "443:443"', '- /etc/letsencrypt:/etc/letsencrypt:ro', '- ./certbot:/var/www/certbot'}]
 if filtered and filtered[-1] != '':
@@ -987,7 +1005,10 @@ cmd_update() {
     DEPLOYMENT_METHOD="image"
     print_info "使用镜像部署模式更新"
 
+    # 先生成 docker-compose.yml（后续 ensure_env 会修改它）
     prepare_image_compose
+    
+    # 配置环境（生成 .env + nginx.conf + 修改 docker-compose.yml）
     ensure_env
 
     print_step "拉取最新镜像: $GHCR_IMAGE"
