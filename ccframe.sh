@@ -870,24 +870,62 @@ show_info() {
 cmd_install() {
   check_system
 
+  # 解析命令行参数
   local USE_IMAGE=0
+  local FORCE_FIX_COMPOSE=0
   for arg in "$@"; do
     case "$arg" in
       --from-image) USE_IMAGE=1 ;;
+      --fix-compose) FORCE_FIX_COMPOSE=1 ;;
     esac
   done
 
+  # 如果没有指定模式，且是交互模式，则询问用户
+  if [ "$USE_IMAGE" -eq 0 ] && is_interactive; then
+    print_banner
+    print_step "📦 CCFrame 部署模式选择"
+    echo ""
+    echo "请选择部署方式："
+    echo ""
+    echo "  ${GREEN}1) 🚀 镜像部署（推荐）${NC}"
+    echo "     ✓ 使用预构建的 Docker 镜像"
+    echo "     ✓ 部署时间：3-5 分钟"
+    echo "     ✓ 内存需求：最低 512MB"
+    echo "     ✓ 适合：生产环境快速部署"
+    echo ""
+    echo "  ${YELLOW}2) 🔧 源码构建${NC}"
+    echo "     • 从 GitHub 克隆源码并本地构建"
+    echo "     ✓ 部署时间：15-30 分钟"
+    echo "     ✓ 内存需求：至少 2GB"
+    echo "     ✓ 适合：需要自定义修改代码"
+    echo ""
+    read -rp "请选择 [1/2] (默认: 1): " choice
+    choice=${choice:-1}
+    
+    if [ "$choice" = "2" ]; then
+      USE_IMAGE=0
+      print_info "✓ 已选择：源码构建模式"
+    else
+      USE_IMAGE=1
+      print_info "✓ 已选择：镜像部署模式（推荐）"
+    fi
+    echo ""
+  fi
+
+  # === 阶段1：准备工作目录和基础配置 ===
+  PROJECT_DIR="/opt/ccframe"
+  mkdir -p "$PROJECT_DIR"
+  cd "$PROJECT_DIR" || { print_error "无法进入目录 $PROJECT_DIR"; exit 1; }
+
+  # === 阶段2：根据选择的模式准备 docker-compose.yml ===
   if [ "$USE_IMAGE" -eq 1 ]; then
     DEPLOYMENT_METHOD="image"
-    print_info "使用镜像部署模式"
+    print_step "准备镜像部署..."
 
-    PROJECT_DIR="/opt/ccframe"
-    mkdir -p "$PROJECT_DIR"
-    cd "$PROJECT_DIR" || { print_error "无法进入目录 $PROJECT_DIR"; exit 1; }
-
+    # 先生成镜像模式的 docker-compose.yml（后续配置会修改它）
     prepare_image_compose
-    ensure_env
 
+    # 拉取镜像
     print_step "拉取最新镜像: $GHCR_IMAGE"
     if docker pull "$GHCR_IMAGE"; then
       print_success "镜像拉取成功"
@@ -901,20 +939,18 @@ cmd_install() {
     fi
   else
     DEPLOYMENT_METHOD="source"
-    print_info "使用源码构建模式"
+    print_step "准备源码构建..."
 
+    # 先克隆项目代码（包含 docker-compose.yml）
     clone_project
-    ensure_env
 
-    local FORCE_FIX_COMPOSE=0
-    for arg in "$@"; do
-      case "$arg" in
-        --fix-compose) FORCE_FIX_COMPOSE=1 ;;
-      esac
-    done
-
+    # 确保 docker-compose.yml 完整性
     ensure_compose_integrity "$FORCE_FIX_COMPOSE"
   fi
+
+  # === 阶段3：配置部署环境（生成 .env 和 nginx.conf，修改 docker-compose.yml）===
+  print_step "配置部署环境..."
+  ensure_env
 
   print_step "正在清理旧容器与缓存..."
   $DOCKER_COMPOSE_CMD down --remove-orphans 2>/dev/null || true
@@ -1152,8 +1188,8 @@ interactive_menu() {
   fi
   echo ""
   print_info "请选择要执行的操作："
-  echo "  1) 初始化安装（源码构建）"
-  echo "  2) 初始化安装（镜像部署）"
+  echo "  1) 初始化部署（自动选择模式）"
+  echo "  2) 初始化部署（强制镜像模式）"
   echo "  3) 更新（源码构建）"
   echo "  4) 更新（镜像部署）"
   echo "  5) 切换部署模式"
