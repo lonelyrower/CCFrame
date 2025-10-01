@@ -502,7 +502,7 @@ clone_project() {
   mkdir -p "$PROJECT_DIR"
 
   if [ -d "$PROJECT_DIR/.git" ]; then
-    cd "$PROJECT_DIR"
+    cd "$PROJECT_DIR" || { print_error "无法进入目录 $PROJECT_DIR"; exit 1; }
     print_info "正在更新已有仓库..."
 
     if git pull --rebase --autostash; then
@@ -525,7 +525,7 @@ clone_project() {
 
   print_info "正在克隆仓库：$REPO_URL -> $PROJECT_DIR"
   if git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR"; then
-    cd "$PROJECT_DIR"
+    cd "$PROJECT_DIR" || { print_error "无法进入目录 $PROJECT_DIR"; exit 1; }
     print_success "仓库克隆成功：$PROJECT_DIR"
     return
   fi
@@ -883,7 +883,7 @@ cmd_install() {
 
     PROJECT_DIR="/opt/ccframe"
     mkdir -p "$PROJECT_DIR"
-    cd "$PROJECT_DIR"
+    cd "$PROJECT_DIR" || { print_error "无法进入目录 $PROJECT_DIR"; exit 1; }
 
     prepare_image_compose
     ensure_env
