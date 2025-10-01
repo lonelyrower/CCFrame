@@ -537,37 +537,19 @@ clone_project() {
 prepare_image_compose() {
   print_step "生成镜像部署 docker-compose.yml..."
 
-  cat > docker-compose.yml <<EOF
+  cat > docker-compose.yml <<'EOF'
 services:
   web:
-    image: ${GHCR_IMAGE}
+    image: ghcr.io/lonelyrower/ccframe:${IMAGE_TAG:-latest}
     container_name: ccframe-web
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      INTERNAL_BASE_URL: ${INTERNAL_BASE_URL:-http://web:3000}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
-      IMAGE_PUBLIC_VARIANTS: ${IMAGE_PUBLIC_VARIANTS:-false}
-      IMAGE_FORMATS: ${IMAGE_FORMATS:-webp,jpeg}
-      IMAGE_VARIANT_NAMES: ${IMAGE_VARIANT_NAMES:-thumb,small,medium}
       NEXT_TELEMETRY_DISABLED: 1
-      PIXABAY_API_KEY: ${PIXABAY_API_KEY:-}
-      DEV_SEED_TOKEN: ${DEV_SEED_TOKEN:-}
-      REDIS_URL: redis://redis:6379
-      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-minioadmin}"
-      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-minioadmin}"
-      S3_BUCKET_NAME: "${S3_BUCKET_NAME:-ccframe}"
-      S3_REGION: "${S3_REGION:-us-east-1}"
-      S3_ENDPOINT: http://minio:9000
-      FORCE_HTTPS: ${FORCE_HTTPS:-true}
-      CDN_BASE_URL: ${CDN_BASE_URL:-}
     depends_on:
       db:
         condition: service_healthy
@@ -596,21 +578,16 @@ services:
       - ccframe
 
   worker:
-    image: ${GHCR_IMAGE}
+    image: ghcr.io/lonelyrower/ccframe:${IMAGE_TAG:-latest}
     container_name: ccframe-worker
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      REDIS_URL: redis://redis:6379
-      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-minioadmin}"
-      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-minioadmin}"
-      S3_BUCKET_NAME: "${S3_BUCKET_NAME:-ccframe}"
-      S3_REGION: "${S3_REGION:-us-east-1}"
-      S3_ENDPOINT: http://minio:9000
-      FORCE_HTTPS: ${FORCE_HTTPS:-true}
       START_WORKERS: 'true'
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
     depends_on:
       db:
         condition: service_healthy
@@ -1175,8 +1152,8 @@ interactive_menu() {
   fi
   echo ""
   print_info "请选择要执行的操作："
-  echo "  1) 安装（源码构建）"
-  echo "  2) 安装（镜像部署）"
+  echo "  1) 初始化安装（源码构建）"
+  echo "  2) 初始化安装（镜像部署）"
   echo "  3) 更新（源码构建）"
   echo "  4) 更新（镜像部署）"
   echo "  5) 切换部署模式"
