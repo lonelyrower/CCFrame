@@ -20,7 +20,7 @@ async function getSiteUrl() {
 
   if (process.env.NODE_ENV === 'production') {
     try {
-      const headersList = headers()
+      const headersList = await headers()
       const host = headersList.get('host')
       const proto = headersList.get('x-forwarded-proto') || 'https'
       if (host) {
@@ -69,7 +69,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   noStore()
-  const nonce = headers().get(CSP_NONCE_HEADER) ?? undefined
+  const nonce = (await headers()).get(CSP_NONCE_HEADER) ?? undefined
 
   try {
     const snapshot = await getLandingSnapshot()

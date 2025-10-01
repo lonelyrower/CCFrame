@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            photos: {
+            photoTags: {
               where: {
                 photo: {
                   visibility: 'PUBLIC',
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         }
       },
       where: {
-        photos: {
+        photoTags: {
           some: {
             photo: {
               visibility: 'PUBLIC',
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        photos: {
+        photoTags: {
           _count: 'desc'
         }
       }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       include: {
         _count: {
           select: {
-            photos: true
+            photoTags: true
           }
         }
       }

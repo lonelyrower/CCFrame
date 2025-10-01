@@ -30,11 +30,9 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        continue-on-error: true
 
       - name: Run TypeScript type check
         run: npm run type-check
-        continue-on-error: true
 
   test:
     name: Run Tests
@@ -55,7 +53,6 @@ jobs:
 
       - name: Run tests
         run: npm test
-        continue-on-error: true
 
   build:
     name: Build Check
@@ -82,7 +79,6 @@ jobs:
         env:
           NODE_ENV: production
           SKIP_ENV_VALIDATION: true
-        continue-on-error: true
 
   security-audit:
     name: Security Audit

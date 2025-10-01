@@ -11,8 +11,7 @@ const metricsAllowedIps = (process.env.METRICS_ALLOWED_IPS || '')
   .filter(Boolean)
 
 function extractClientIp(request: NextRequest): string | null {
-  return request.ip
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     || request.headers.get('x-real-ip')?.trim()
     || null
 }

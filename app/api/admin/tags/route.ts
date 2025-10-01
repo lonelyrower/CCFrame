@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       where,
       orderBy: { name: 'asc' },
       include: {
-        _count: { select: { photos: true } },
+        _count: { select: { photoTags: true } },
       },
       take: limit,
     })

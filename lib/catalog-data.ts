@@ -199,7 +199,7 @@ export async function getCatalogFilterOptions(): Promise<CatalogFilterOptions> {
         color: true,
         _count: {
           select: {
-            photos: {
+            photoTags: {
               where: {
                 photo: {
                   visibility: 'PUBLIC',
@@ -211,7 +211,7 @@ export async function getCatalogFilterOptions(): Promise<CatalogFilterOptions> {
         },
       },
       where: {
-        photos: {
+        photoTags: {
           some: {
             photo: {
               visibility: 'PUBLIC',
@@ -220,7 +220,7 @@ export async function getCatalogFilterOptions(): Promise<CatalogFilterOptions> {
           },
         },
       },
-      orderBy: { photos: { _count: 'desc' } },
+      orderBy: { photoTags: { _count: 'desc' } },
       take: 120,
     }),
   ])
@@ -235,7 +235,7 @@ export async function getCatalogFilterOptions(): Promise<CatalogFilterOptions> {
     id: tag.id,
     name: tag.name,
     color: tag.color,
-    count: tag._count.photos,
+    count: tag._count.photoTags,
   }))
 
   const colorMap = new Map<string, CatalogColorOption>()
