@@ -10,6 +10,7 @@ jest.mock('../../../lib/utils', () => ({
   getImageUrl: jest.fn(() => '/image/mock'),
   toBase64: jest.fn(() => 'ZHVtbXk='),
   generateSrcSet: jest.fn(() => '/image/mock 1x'),
+  cn: jest.fn((...args) => args.filter(Boolean).join(' ')),
 }))
 
 jest.mock('next/image', () => {

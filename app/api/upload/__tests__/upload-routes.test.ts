@@ -1,3 +1,6 @@
+// Set NEXTAUTH_SECRET before tests run
+process.env.NEXTAUTH_SECRET = 'test-secret-for-upload-tests'
+
 const photoStore = new Map<string, any>()
 const mockStorage = { getPresignedUploadUrl: jest.fn() }
 const queueAdd = jest.fn()

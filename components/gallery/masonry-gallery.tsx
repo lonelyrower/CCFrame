@@ -261,7 +261,7 @@ export function MasonryGallery({ photos, loading = false, renderOverlay }: Mason
               }}
               tabIndex={0}
               role="button"
-              aria-label={photo.album?.title || photo.tags?.[0]?.tag?.name || "查看照片"}
+              aria-label={photo.album?.title || photo.tags?.[0]?.tag?.name || "Open photo"}
               onClick={() => handleSelect(photo)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {

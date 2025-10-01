@@ -158,7 +158,7 @@ function PhotoCard({
   // 进入视口时增加轻微浮动感
   const y = useTransform(scrollY, [0, 1000], [0, -50])
   const rotateX = useTransform(scrollY, [0, 1000], [0, 2])
-  const accessibleLabel = photo.album?.title || photo.tags[0]?.tag?.name || "查看照片"
+  const accessibleLabel = photo.album?.title || photo.tags[0]?.tag?.name || "Open photo"
 
   return (
     <motion.button

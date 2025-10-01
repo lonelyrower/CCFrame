@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server'
 import { CSRFProtection, withCSRFProtection } from '../csrf'
 
+// Set NEXTAUTH_SECRET before tests run
+process.env.NEXTAUTH_SECRET = 'test-secret-for-csrf-tests'
+
 // Mock dependencies
 jest.mock('next-auth')
 jest.mock('../auth')
