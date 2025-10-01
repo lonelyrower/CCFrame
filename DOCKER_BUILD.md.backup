@@ -1,0 +1,80 @@
+# Docker Build Guide
+
+## 🛠️ 内存优化构建
+
+这个项目现在包含了智能内存检测和优化功能，可以根据系统可用内存自动调整构建参数。
+
+### 🚀 快速开始
+
+#### 自动检测内存（推荐）
+```bash
+./build-docker.sh
+```
+
+#### 手动指定内存限制
+```bash
+# 适用于低内存系统 (512MB)
+./build-docker.sh -m 512
+
+# 适用于中等内存系统 (1GB)
+./build-docker.sh -m 1024
+
+# 适用于高内存系统 (2GB+)
+./build-docker.sh -m 2048
+```
+
+### 💾 内存要求
+
+| 可用内存 | 构建策略 | 预期时间 |
+|---------|---------|----------|
+| < 512MB | 极简模式，可能失败 | 很慢 |
+| 512MB - 1GB | 保守模式 | 较慢 |
+| 1GB - 2GB | 平衡模式 | 正常 |
+| > 2GB | 优化模式 | 快速 |
+
+### 🔧 手动构建
+
+如果脚本不可用，可以直接使用 Docker 命令：
+
+```bash
+# 自动检测
+docker build -t ccframe .
+
+# 手动指定内存
+docker build --build-arg MANUAL_MEMORY_MB=1024 -t ccframe .
+```
+
+### ⚠️ 故障排除
+
+#### 构建失败的常见原因：
+1. **内存不足**: 系统可用内存 < 512MB
+2. **Node.js 内存限制**: 默认堆大小太小
+3. **npm 缓存问题**: 缓存文件损坏
+
+#### 解决方案：
+1. **增加系统内存**或启用 swap
+2. **使用更小的内存限制**: `./build-docker.sh -m 256`
+3. **清理 Docker 缓存**: `docker system prune`
+4. **分阶段构建**: 先在本地构建，再复制到容器
+
+### 📊 内存检测输出示例
+
+构建时会显示如下信息：
+```
+=== Memory Detection ===
+Total Memory: 2048MB
+Available Memory: 1536MB
+✓ Moderate memory available (1536MB)
+Node Options: --max-old-space-size=1024
+NPM Flags: --prefer-offline --no-audit --progress=false
+========================
+```
+
+### 🏃‍♂️ 运行容器
+
+构建成功后：
+```bash
+docker run -p 3000:3000 ccframe
+```
+
+浏览器访问: http://localhost:3000
