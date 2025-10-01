@@ -29,17 +29,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-# Set npm configuration for better performance and predictable timeouts
-RUN npm config set fetch-retries 2 && \
-    npm config set fetch-retry-maxtimeout 60000 && \
-    npm config set fetch-retry-mintimeout 5000 && \
-    npm config set fetch-timeout 120000 && \
-    npm config set network-timeout 120000 && \
-    npm config set prefer-online true && \
-    npm config set progress false && \
-    npm config set audit false && \
-    npm config set fund false
-
 # Build stage
 FROM base AS build
 
