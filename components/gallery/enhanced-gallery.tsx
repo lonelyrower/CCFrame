@@ -25,8 +25,8 @@ function useSmartMasonryLayout(photos: PhotoWithDetails[], columns: number, colu
 
     return photos.map((photo, index) => {
       const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights))
-      const hasValidSize = photo.width > 0 && photo.height > 0
-      const aspectRatio = hasValidSize ? photo.height / photo.width : 1
+      const hasValidSize = (photo.width ?? 0) > 0 && (photo.height ?? 0) > 0
+      const aspectRatio = hasValidSize ? (photo.height ?? 1) / (photo.width ?? 1) : 1
       const scaledHeight = aspectRatio * effectiveWidth
 
       columnHeights[shortestColumn] += scaledHeight + GRID_GAP

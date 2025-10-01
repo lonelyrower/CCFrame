@@ -66,7 +66,14 @@ export async function GET(request: NextRequest, { params }: Params) {
   try {
     const photo = await db.photo.findUnique({
       where: { id: photoId },
-      include: { variants: true },
+      select: {
+        id: true,
+        fileKey: true,
+        localPath: true,
+        visibility: true,
+        status: true,
+        variants: true,
+      },
     })
 
     if (!photo) {
@@ -123,8 +130,12 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
 
     try {
-      const fallbackContentType = inferContentTypeFromKey(photo.fileKey, `image/${requestedFormat}`)
-      return await streamVariant(photo.fileKey, fallbackContentType)
+      const fileKey = photo.fileKey || photo.localPath
+      if (!fileKey) {
+        return NextResponse.json({ error: 'Image not found' }, { status: 404 })
+      }
+      const fallbackContentType = inferContentTypeFromKey(fileKey, `image/${requestedFormat}`)
+      return await streamVariant(fileKey, fallbackContentType)
     } catch (origErr) {
       console.error(`Failed to stream original image for ${photoId}: ${formatError(origErr)}`)
       return NextResponse.json({ error: 'Failed to stream image' }, { status: 500 })

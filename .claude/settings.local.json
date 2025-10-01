@@ -89,7 +89,9 @@
       "Bash(sudo npm i -g @anthropic-ai/claude-code)",
       "Bash(docker-compose config:*)",
       "Bash(grep:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(dir:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

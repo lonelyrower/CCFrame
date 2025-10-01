@@ -61,8 +61,8 @@ function ensureLogRocket() {
     LogRocket.init(appId, {
       release: process.env.NEXT_PUBLIC_COMMIT_SHA,
       dom: {
-        textContent: false,
-        inputContent: false
+        inputSanitizer: true,
+        textSanitizer: true
       },
       network: {
         requestSanitizer: request => {

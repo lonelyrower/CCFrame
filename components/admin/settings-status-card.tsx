@@ -31,6 +31,11 @@ const targetMeta: Record<SettingsValidationTarget, { title: string; description:
     description: '确认嵌入服务与模型配置。',
     icon: Sparkles,
   },
+  analytics: {
+    title: '数据分析',
+    description: '检查分析服务配置。',
+    icon: AlertCircle,
+  },
 }
 
 export function SettingsStatusCard({ results, onValidate, validatingTarget }: SettingsStatusCardProps) {

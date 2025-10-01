@@ -24,6 +24,9 @@ const overview: AdminSettingsOverviewDto = {
     pixabayApiKey: 'demo-key',
     defaultSeedCount: 12,
   },
+  analytics: {
+    logrocketId: null,
+  },
   runtime: {
     storage: {
       provider: 'minio',
