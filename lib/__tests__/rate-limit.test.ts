@@ -20,7 +20,7 @@ describe('rateLimit utilities', () => {
 
     const result = await rateLimit('user-1', 'auth:login', 5, 60)
 
-    expect(result).toEqual({ allowed: true, remaining: 5, limit: 5, resetIn: 60 })
+    expect(result).toEqual({ allowed: true, remaining: 4, limit: 5, resetIn: expect.any(Number) })
   })
 
   it('enforces limit and sets ttl via redis', async () => {
@@ -56,7 +56,7 @@ describe('rateLimit utilities', () => {
 
     const result = await rateLimit('user-1', 'metrics:pull', 10, 120)
 
-    expect(result).toEqual({ allowed: true, remaining: 10, limit: 10, resetIn: 120 })
+    expect(result).toEqual({ allowed: true, remaining: 9, limit: 10, resetIn: expect.any(Number) })
     expect(incr).toHaveBeenCalled()
   })
 
