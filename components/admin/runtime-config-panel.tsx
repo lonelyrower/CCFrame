@@ -474,6 +474,7 @@ export default function RuntimeConfigPanel() {
                     ...prev,
                     dim: Number(e.target.value) || prev.dim
                   }))}
+                  onWheel={(e) => e.currentTarget.blur()}
                   disabled={saving.semantic}
                   min={32}
                   className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"

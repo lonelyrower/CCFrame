@@ -24,8 +24,8 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
-  title: 'CC Frame - �ҵ���Ӱʱ��',
-  description: 'CC Frame ��һ��������ŵĸ�����ᣬ��¼�����е�����˲�䣬������Ӱ·�ϵĵ��εΡ�',
+  title: 'CC Frame - 我的摄影时光',
+  description: 'CC Frame 是一个优雅易用的个人相册，记录生活中的美好瞬间，珍藏摄影路上的点点滴滴。',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
