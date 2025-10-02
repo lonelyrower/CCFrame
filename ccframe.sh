@@ -901,17 +901,17 @@ cmd_install() {
   # 如果没有指定模式，且是交互模式，则询问用户
   if [ "$USE_IMAGE" -eq 0 ] && is_interactive; then
     echo ""
-    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo "${CYAN}       CCFrame 部署方式选择${NC}"
-    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}       CCFrame 部署方式选择${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo "${GREEN}1) 镜像部署（推荐）${NC}"
+    echo -e "${GREEN}1) 镜像部署（推荐）${NC}"
     echo "   ✓ 使用预构建的 Docker 镜像"
     echo "   ✓ 部署时间：3-5 分钟"
     echo "   ✓ 内存需求：最低 512MB"
     echo "   ✓ 适合：生产环境快速部署"
     echo ""
-    echo "${YELLOW}2) 源码构建${NC}"
+    echo -e "${YELLOW}2) 源码构建${NC}"
     echo "   • 从 GitHub 克隆源码并本地构建"
     echo "   ✓ 部署时间：15-30 分钟"
     echo "   ✓ 内存需求：至少 2GB"
@@ -1007,16 +1007,16 @@ cmd_update() {
   # 如果没有指定模式，且是交互模式，则询问用户
   if [ "$USE_IMAGE" -eq 0 ] && is_interactive; then
     echo ""
-    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo "${CYAN}       CCFrame 更新方式选择${NC}"
-    echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}       CCFrame 更新方式选择${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo "${GREEN}1) 镜像更新（推荐）${NC}"
+    echo -e "${GREEN}1) 镜像更新（推荐）${NC}"
     echo "   ✓ 拉取最新镜像并重启"
     echo "   ✓ 更新时间：1-2 分钟"
     echo "   ✓ 保留所有数据和配置"
     echo ""
-    echo "${YELLOW}2) 源码更新${NC}"
+    echo -e "${YELLOW}2) 源码更新${NC}"
     echo "   • 拉取最新代码并重新构建"
     echo "   ✓ 更新时间：10-20 分钟"
     echo "   ✓ 包含最新的代码修改"
@@ -1082,9 +1082,9 @@ cmd_switch_https_mode() {
   cd /opt/ccframe || { print_error "未找到项目目录，请先执行 install 操作"; exit 1; }
 
   echo ""
-  echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo "${CYAN}       切换 HTTPS 访问模式${NC}"
-  echo "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${CYAN}       切换 HTTPS 访问模式${NC}"
+  echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo ""
   echo "当前部署模式：$(get_env_value DEPLOYMENT_MODE || echo 'ip')"
   echo ""
@@ -1185,9 +1185,9 @@ cmd_uninstall() {
   done
 
   echo ""
-  echo "${YELLOW}═══════════════════════════════════════════${NC}"
-  echo "${YELLOW}          CCFrame 卸载向导${NC}"
-  echo "${YELLOW}═══════════════════════════════════════════${NC}"
+  echo -e "${YELLOW}═══════════════════════════════════════════${NC}"
+  echo -e "${YELLOW}          CCFrame 卸载向导${NC}"
+  echo -e "${YELLOW}═══════════════════════════════════════════${NC}"
   echo ""
   
   if [ "$PURGE" -eq 1 ]; then
@@ -1201,7 +1201,7 @@ cmd_uninstall() {
     echo "  ✓ SSL 证书和配置"
     echo "  ✓ Cron 任务"
     echo ""
-    echo "${RED}警告：此操作将永久删除所有数据，无法恢复！${NC}"
+    echo -e "${RED}警告：此操作将永久删除所有数据，无法恢复！${NC}"
   else
     print_warning "标准卸载模式"
     echo ""
