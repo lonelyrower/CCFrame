@@ -94,7 +94,10 @@ export function LibraryControls({ initialFilter = '', initialViewMode = 'grid' }
               <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
                 照片状态
               </label>
-              <select className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted">
+              <select 
+                aria-label="照片状态筛选"
+                className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
+              >
                 <option value="">全部</option>
                 <option value="COMPLETED">已完成</option>
                 <option value="PROCESSING">处理中</option>
@@ -106,7 +109,10 @@ export function LibraryControls({ initialFilter = '', initialViewMode = 'grid' }
               <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
                 可见性
               </label>
-              <select className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted">
+              <select 
+                aria-label="可见性筛选"
+                className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
+              >
                 <option value="">全部</option>
                 <option value="PUBLIC">公开</option>
                 <option value="PRIVATE">私有</option>
@@ -117,7 +123,10 @@ export function LibraryControls({ initialFilter = '', initialViewMode = 'grid' }
               <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">
                 排序方式
               </label>
-              <select className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted">
+              <select 
+                aria-label="排序方式选择"
+                className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
+              >
                 <option value="createdAt_desc">最新上传</option>
                 <option value="createdAt_asc">最早上传</option>
                 <option value="title_asc">标题 A-Z</option>

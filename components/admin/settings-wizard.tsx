@@ -257,15 +257,18 @@ function SiteSettingsStep({ value, onSaved }: SiteSettingsStepProps) {
             value={form.title}
             onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
             className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+            aria-label="站点名称"
             required
           />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-text-primary">默认可见性</label>
           <select
+            id="default-visibility"
             value={form.defaultVisibility}
             onChange={(event) => setForm((prev) => ({ ...prev, defaultVisibility: event.target.value as 'PUBLIC' | 'PRIVATE' }))}
             className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+            aria-label="默认可见性"
           >
             <option value="PUBLIC">公开</option>
             <option value="PRIVATE">私密</option>
@@ -278,6 +281,8 @@ function SiteSettingsStep({ value, onSaved }: SiteSettingsStepProps) {
           value={form.description}
           onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
           className="min-h-[120px] w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+          placeholder="请输入站点描述"
+          aria-label="站点描述"
         />
       </div>
       <label className="flex items-center gap-2 text-sm text-text-secondary">
@@ -348,6 +353,37 @@ function StorageSettingsStep({ value, onSaved }: StorageSettingsStepProps) {
         }
         const next = await res.json()
         onSaved(next.storage ?? {})
+        
+        // 如果配置了 CDN，询问是否立即重启
+        if (cdnUrl && cdnUrl.trim()) {
+          const shouldRestart = window.confirm(
+            '存储配置已保存！\n\n检测到 CDN 配置，是否立即重启服务使配置生效？\n（如果选择"否"，配置将在下次重启时生效）'
+          )
+          
+          if (shouldRestart) {
+            const restartToast = toast.loading('正在重启服务...')
+            try {
+              const restartRes = await fetch('/api/admin/restart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'auto' }),
+              })
+              const restartResult = await restartRes.json()
+              
+              if (restartRes.ok && restartResult.success) {
+                toast.success('服务重启成功！配置已生效 🎉', { id: restartToast })
+                setTimeout(() => window.location.reload(), 3000)
+              } else {
+                toast.error(
+                  restartResult.error || '重启失败，请手动执行 pm2 restart ccframe',
+                  { id: restartToast, duration: 8000 }
+                )
+              }
+            } catch (err) {
+              toast.error('重启失败，请手动执行 pm2 restart ccframe', { id: restartToast })
+            }
+          }
+        }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : '更新失败')
       }
@@ -357,11 +393,13 @@ function StorageSettingsStep({ value, onSaved }: StorageSettingsStepProps) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-text-primary">存储提供商</label>
+        <label htmlFor="storage-provider" className="text-sm font-medium text-text-primary">存储提供商</label>
         <select
+          id="storage-provider"
           value={provider}
           onChange={(event) => setProvider(event.target.value)}
           className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+          aria-label="存储提供商选择"
         >
           <option value="minio">MinIO / 兼容 S3</option>
           <option value="aws">AWS S3</option>
@@ -392,15 +430,32 @@ function StorageSettingsStep({ value, onSaved }: StorageSettingsStepProps) {
               value={bucket}
               onChange={(event) => setBucket(event.target.value)}
               className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+              placeholder="my-bucket"
+              aria-label="存储桶名称"
             />
           </Field>
-          <Field label="CDN 域名">
-            <input
-              value={cdnUrl}
-              onChange={(event) => setCdnUrl(event.target.value)}
-              className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
-              placeholder="https://cdn.example.com"
-            />
+          <Field label="CDN 域名 (可选)">
+            <div className="space-y-2">
+              <input
+                value={cdnUrl}
+                onChange={(event) => setCdnUrl(event.target.value)}
+                className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+                placeholder="https://cdn.example.com"
+                type="url"
+                aria-label="CDN 域名"
+              />
+              <Text size="xs" tone="muted">
+                配置 CDN 后，所有图片将通过 CDN 访问，加速全球访问速度。
+                <a
+                  href="/docs/CLOUDFLARE_CDN_QUICK_ANSWER.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 text-primary hover:underline"
+                >
+                  查看配置指南 →
+                </a>
+              </Text>
+            </div>
           </Field>
           <Field label="Access Key">
             <input
@@ -498,6 +553,8 @@ function IntegrationSettingsStep({ value, onSaved }: IntegrationSettingsStepProp
           className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
           min={1}
           max={99}
+          placeholder="10"
+          aria-label="默认示例图数量"
         />
       </Field>
       <div className="flex justify-end">
@@ -571,6 +628,7 @@ function SemanticSettingsStep({ value, onSaved }: SemanticSettingsStepProps) {
             value={mode}
             onChange={(event) => setMode(event.target.value)}
             className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+            aria-label="语义检索模式选择"
           >
             <option value="off">关闭</option>
             <option value="shadow">灰度（Shadow）</option>
@@ -582,6 +640,7 @@ function SemanticSettingsStep({ value, onSaved }: SemanticSettingsStepProps) {
             value={provider}
             onChange={(event) => setProvider(event.target.value)}
             className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+            aria-label="语义检索提供商选择"
           >
             <option value="openai">OpenAI</option>
             <option value="local">自建服务</option>
@@ -603,6 +662,8 @@ function SemanticSettingsStep({ value, onSaved }: SemanticSettingsStepProps) {
             className="w-full rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
             min={32}
             max={4096}
+            placeholder="1536"
+            aria-label="向量维度"
           />
         </Field>
         <Field label="OpenAI Key（可选）">

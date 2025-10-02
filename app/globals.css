@@ -224,9 +224,10 @@
     text-wrap: balance;
   }
 
+  /* 滚动条隐藏 - 兼容多浏览器 */
   .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: none; /* IE 10+ */
+    scrollbar-width: none; /* Firefox 64+ */
   }
 
   .scrollbar-hide::-webkit-scrollbar {
@@ -269,8 +270,8 @@
 
   /* 改进的毛玻璃效果 */
   .glass-enhanced {
-    backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
@@ -654,6 +655,7 @@
 
   .home-section {
     position: relative;
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
   }
 

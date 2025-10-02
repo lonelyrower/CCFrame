@@ -276,12 +276,14 @@ export default function RuntimeConfigPanel() {
             <div>
               <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">存储模式</label>
               <select
+                id="storage-provider"
                 value={config.storage.provider}
                 onChange={(e) => handleStorageChange((prev) => ({
                   ...prev,
                   provider: e.target.value as StorageProviderOption
                 }))}
                 disabled={saving.storage}
+                aria-label="存储模式"
                 className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
               >
                 {STORAGE_OPTIONS.map((option) => (
@@ -328,6 +330,7 @@ export default function RuntimeConfigPanel() {
                       }))}
                       disabled={saving.storage}
                       placeholder={field.placeholder}
+                      aria-label={field.label}
                       className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                     />
                   </div>
@@ -412,12 +415,14 @@ export default function RuntimeConfigPanel() {
               <div>
                 <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">运行模式</label>
                 <select
+                  id="semantic-mode"
                   value={config.semantic.mode}
                   onChange={(e) => handleSemanticChange((prev) => ({
                     ...prev,
                     mode: e.target.value as SemanticModeOption
                   }))}
                   disabled={saving.semantic || !config.semantic.enabled}
+                  aria-label="运行模式"
                   className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 >
                   <option value="off">关闭</option>
@@ -428,12 +433,14 @@ export default function RuntimeConfigPanel() {
               <div>
                 <label className="block text-sm font-medium text-text-secondary dark:text-text-muted mb-2">嵌入提供方</label>
                 <select
+                  id="semantic-provider"
                   value={config.semantic.provider}
                   onChange={(e) => handleSemanticChange((prev) => ({
                     ...prev,
                     provider: e.target.value
                   }))}
                   disabled={saving.semantic}
+                  aria-label="嵌入提供方"
                   className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 >
                   {SEMANTIC_PROVIDER_OPTIONS.map((option) => (
@@ -462,6 +469,8 @@ export default function RuntimeConfigPanel() {
                     model: e.target.value
                   }))}
                   disabled={saving.semantic}
+                  placeholder="例如：text-embedding-3-small"
+                  aria-label="模型名称"
                   className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />
               </div>
@@ -476,6 +485,7 @@ export default function RuntimeConfigPanel() {
                   }))}
                   onWheel={(e) => e.currentTarget.blur()}
                   disabled={saving.semantic}
+                  aria-label="向量维度"
                   min={32}
                   className="w-full px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
                 />

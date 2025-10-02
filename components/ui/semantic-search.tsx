@@ -229,6 +229,7 @@ export function SemanticSearch({
             <button
               onClick={onClose}
               className="ml-auto p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="关闭搜索面板"
             >
               <X className="h-4 w-4" />
             </button>

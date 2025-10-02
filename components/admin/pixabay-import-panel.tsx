@@ -123,14 +123,16 @@ export function PixabayImportPanel() {
           <div className="relative space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-text-secondary">
+                <label htmlFor="import-count" className="block text-sm font-medium text-text-secondary">
                   导入数量
                 </label>
                 <select
+                  id="import-count"
                   value={importCount}
                   onChange={(e) => setImportCount(Number(e.target.value))}
                   disabled={importing}
                   className="px-3 py-2 border border-surface-outline/60 dark:border-surface-outline/70 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-surface-panel dark:bg-surface-panel text-text-primary dark:text-text-inverted"
+                  aria-label="导入图片数量"
                 >
                   <option value={10}>10 张图片</option>
                   <option value={20}>20 张图片</option>
@@ -138,7 +140,7 @@ export function PixabayImportPanel() {
                   <option value={100}>100 张图片</option>
                 </select>
                 <p className="text-xs text-text-muted">
-                  将从 Pixabay 随机导入优质摄影作品
+                  将从 Pixabay 随机导入优质摄影作品。首次导入建议选择 20-50 张测试前端表现。
                 </p>
               </div>
 

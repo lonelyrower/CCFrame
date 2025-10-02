@@ -308,6 +308,7 @@ export function UploadInterface() {
               value={selectedAlbum}
               onChange={(event) => setSelectedAlbum(event.target.value)}
               className="rounded-lg border border-surface-outline/40 bg-surface-panel/80 px-3 py-2 text-sm"
+              aria-label="选择相册"
             >
               <option value="">默认相册</option>
               <option value="editorial">Editorial</option>
