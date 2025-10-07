@@ -30,6 +30,14 @@ GITHUB_REPO="https://github.com/lonelyrower/CCFrame.git"
 # 工具函数
 #==============================================================================
 
+# 当脚本通过管道 (curl ... | bash) 运行时，stdin 不是终端，
+# 交互式 read 会失败。尝试将 stdin 重新绑定到 /dev/tty 以允许交互输入。
+ensure_tty_stdin() {
+    if [ ! -t 0 ] && [ -e /dev/tty ]; then
+        exec </dev/tty
+    fi
+}
+
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -1074,6 +1082,9 @@ show_menu() {
 #==============================================================================
 
 main() {
+    # 确保交互式输入可用（即便通过管道运行）
+    ensure_tty_stdin
+
     # 如果有参数，直接执行对应功能
     if [ $# -gt 0 ]; then
         case $1 in
