@@ -137,7 +137,18 @@ run_migrations_and_seed_image_mode() {
             print_warning "容器内种子失败，尝试回退方案..."
         fi
     else
-        print_warning "容器内迁移失败，尝试回退方案..."
+        print_warning "容器内迁移失败，检查数据库是否为全新实例..."
+        # 检查是否为全新数据库（public schema 下用户表数量）
+        local table_count
+        table_count=$(docker compose exec -T postgres psql -U ccframe -d ccframe -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" 2>/dev/null | tr -d '[:space:]')
+        if [ -z "$table_count" ]; then
+            table_count=0
+        fi
+        if [ "$table_count" -gt 0 ]; then
+            print_error "检测到数据库已有表，出于安全考虑不使用回退方案（db push）。"
+            return 1
+        fi
+        print_info "数据库为空，使用回退方案初始化..."
     fi
 
     # 回退：使用 Debian 临时容器完成迁移与种子
