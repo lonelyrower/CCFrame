@@ -66,14 +66,24 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      photos: photos.map((photo) => ({
+      photos: photos.map((photo: {
+        id: string;
+        title: string | null;
+        fileKey: string;
+        width: number;
+        height: number;
+        isPublic: boolean;
+        tags: { tag: { name: string } }[];
+        album: unknown;
+        createdAt: Date;
+      }) => ({
         id: photo.id,
         title: photo.title,
         fileKey: photo.fileKey,
         width: photo.width,
         height: photo.height,
         isPublic: photo.isPublic,
-        tags: photo.tags.map((pt) => pt.tag.name),
+        tags: photo.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
         album: photo.album,
         createdAt: photo.createdAt,
       })),

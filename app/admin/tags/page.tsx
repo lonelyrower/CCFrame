@@ -123,10 +123,11 @@ export default function TagsManagementPage() {
             <h2 className="text-2xl font-bold mb-6">合并标签</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label htmlFor="from-tag-select" className="block text-sm font-medium mb-2">
                   源标签（将被删除）
                 </label>
                 <select
+                  id="from-tag-select"
                   value={fromTag}
                   onChange={(e) => setFromTag(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
@@ -141,10 +142,11 @@ export default function TagsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label htmlFor="to-tag-input" className="block text-sm font-medium mb-2">
                   目标标签（保留）
                 </label>
                 <input
+                  id="to-tag-input"
                   type="text"
                   value={toTag}
                   onChange={(e) => setToTag(e.target.value)}

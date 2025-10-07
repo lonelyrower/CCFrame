@@ -55,6 +55,7 @@ export default function AnalyticsPage() {
         <select
           value={range}
           onChange={(e) => setRange(parseInt(e.target.value))}
+          aria-label="选择时间范围"
           className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
         >
           <option value={7}>近 7 天</option>
