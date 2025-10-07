@@ -1300,10 +1300,11 @@ do_uninstall() {
         systemctl daemon-reload
     fi
 
-    # 删除 Nginx 配置
-    rm -f /etc/nginx/sites-enabled/${PROJECT_NAME}
-    rm -f /etc/nginx/sites-available/${PROJECT_NAME}
-    systemctl reload nginx
+    # 删除 Nginx 配置（兼容 Debian/Ubuntu 与 RHEL/Fedora）
+    rm -f "/etc/nginx/sites-enabled/${PROJECT_NAME}" 2>/dev/null || true
+    rm -f "/etc/nginx/sites-available/${PROJECT_NAME}" 2>/dev/null || true
+    rm -f "/etc/nginx/conf.d/${PROJECT_NAME}.conf" 2>/dev/null || true
+    systemctl reload nginx 2>/dev/null || true
 
     # 删除文件
     print_warning "是否删除数据目录? (包含上传的照片) [y/N]: "
@@ -1318,6 +1319,8 @@ do_uninstall() {
     fi
 
     print_success "卸载完成"
+    # 明确退出，避免在某些运行环境中返回菜单等待输入
+    exit 0
 }
 
 #==============================================================================
