@@ -257,6 +257,11 @@ print_header() {
     echo ""
 }
 
+pause_for_menu() {
+    echo ""
+    read -p "按 Enter 返回主菜单..." _
+}
+
 check_root() {
     if [[ $EUID -ne 0 ]]; then
         print_error "此脚本需要 root 权限运行"
@@ -704,10 +709,52 @@ install_from_source() {
         esac
     fi
 
-    # 克隆仓库
-    print_info "克隆代码仓库..."
-    rm -rf "$INSTALL_DIR"
-    git clone "$GITHUB_REPO" "$INSTALL_DIR"
+    # 准备源码目录
+    local temp_repo=""
+    if [ -d "$INSTALL_DIR/.git" ]; then
+        print_warning "检测到安装目录已存在 Git 仓库，将重置为远程 main 分支。"
+        read -p "是否继续覆盖现有源码? [y/N]: " source_reset_confirm
+        if [[ ! "$source_reset_confirm" =~ ^[Yy]$ ]]; then
+            print_error "已取消源码安装"
+            return
+        fi
+        print_info "同步远程源码..."
+        git -C "$INSTALL_DIR" fetch origin
+        git -C "$INSTALL_DIR" reset --hard origin/main
+    else
+        if [ -d "$INSTALL_DIR" ] && [ "$(ls -A "$INSTALL_DIR" 2>/dev/null)" ]; then
+            print_warning "检测到安装目录已存在内容，将保留 data/ 与 backups/ 目录，其余文件会被覆盖。"
+            read -p "确认继续? [y/N]: " wipe_confirm
+            if [[ ! "$wipe_confirm" =~ ^[Yy]$ ]]; then
+                print_error "已取消源码安装"
+                return
+            fi
+        fi
+
+        print_info "克隆代码仓库..."
+        temp_repo=$(mktemp -d)
+        if ! git clone "$GITHUB_REPO" "$temp_repo/repo"; then
+            print_error "克隆仓库失败，请检查网络或仓库地址"
+            rm -rf "$temp_repo"
+            return
+        fi
+
+        mkdir -p "$INSTALL_DIR"
+        local item base
+        shopt -s dotglob nullglob
+        for item in "$INSTALL_DIR"/*; do
+            base=$(basename "$item")
+            if [ "$base" = "data" ] || [ "$base" = "backups" ]; then
+                continue
+            fi
+            rm -rf "$item"
+        done
+        shopt -u dotglob nullglob
+
+        cp -a "$temp_repo/repo"/. "$INSTALL_DIR"/
+        rm -rf "$temp_repo"
+    fi
+
     cd "$INSTALL_DIR"
 
     # 创建必要目录（源码模式保留本地上传目录在项目内）
@@ -814,7 +861,8 @@ do_install() {
     echo "2. Cloudflare部署 (域名 + Cloudflare SSL + HTTPS)"
     echo "3. 简单部署 (仅IP访问，无SSL)"
     echo ""
-    read -p "请输入选项 [1-3]: " deploy_mode
+    read -p "请输入选项 [1-3, 默认1]: " deploy_mode
+    deploy_mode=${deploy_mode:-1}
 
     case $deploy_mode in
         1)
@@ -855,9 +903,14 @@ do_install() {
     read -p "管理员邮箱 [admin@example.com]: " ADMIN_EMAIL
     ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
 
-    read -sp "管理员密码: " ADMIN_PASSWORD
+    local admin_password_auto=false
+    read -sp "管理员密码 (留空自动生成): " ADMIN_PASSWORD
     echo ""
-    ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123456}
+    if [ -z "$ADMIN_PASSWORD" ]; then
+        ADMIN_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-18)
+        admin_password_auto=true
+        print_warning "已为您自动生成随机管理员密码。"
+    fi
 
     # 生成随机密钥
     DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
@@ -931,6 +984,9 @@ do_install() {
     echo "管理后台: $BASE_URL/admin/login"
     echo ""
     print_warning "请妥善保管您的登录凭据！"
+    if [ "$admin_password_auto" = true ]; then
+        print_warning "管理员密码为系统随机生成，建议首次登录后及时修改。"
+    fi
     echo ""
 }
 
@@ -1000,6 +1056,11 @@ do_update() {
             fi
             ;;
         2)
+            if [ ! -d "$INSTALL_DIR/.git" ]; then
+                print_error "未检测到源码安装目录 (.git)，无法执行源码更新。"
+                print_info "请使用镜像更新，或先通过源码安装重新部署。"
+                return
+            fi
             print_info "拉取最新代码..."
             git pull origin main
 
@@ -1307,8 +1368,8 @@ do_uninstall() {
     systemctl reload nginx 2>/dev/null || true
 
     # 删除文件
-    print_warning "是否删除数据目录? (包含上传的照片) [y/N]: "
-    read delete_data
+    print_warning "是否删除数据目录? (包含上传的照片)"
+    read -p "选择 [y/N, 默认N]: " delete_data
 
     if [[ "$delete_data" =~ ^[Yy]$ ]]; then
         rm -rf "$INSTALL_DIR"
@@ -1377,51 +1438,60 @@ do_update_script() {
 #==============================================================================
 
 show_menu() {
-    print_header
+    local choice
+    while true; do
+        print_header
 
-    echo "请选择操作："
-    echo ""
-    echo "  安装和更新:"
-    echo "    1) 安装 CCFrame"
-    echo "    2) 更新 CCFrame"
-    echo "    3) 更新脚本"
-    echo ""
-    echo "  服务管理:"
-    echo "    4) 查看状态"
-    echo "    5) 启动服务"
-    echo "    6) 停止服务"
-    echo "    7) 重启服务"
-    echo "    8) 查看日志"
-    echo ""
-    echo "  数据管理:"
-    echo "    9) 备份数据"
-    echo "   10) 恢复数据"
-    echo ""
-    echo "  其他:"
-    echo "   11) 卸载 CCFrame"
-    echo "    0) 退出"
-    echo ""
-    read -p "请输入选项 [0-11]: " choice
+        echo "请选择操作："
+        echo ""
+        echo "  安装和更新:"
+        echo "    1) 安装 CCFrame"
+        echo "    2) 更新 CCFrame"
+        echo "    3) 更新脚本"
+        echo ""
+        echo "  服务管理:"
+        echo "    4) 查看状态"
+        echo "    5) 启动服务"
+        echo "    6) 停止服务"
+        echo "    7) 重启服务"
+        echo "    8) 查看日志"
+        echo ""
+        echo "  数据管理:"
+        echo "    9) 备份数据"
+        echo "   10) 恢复数据"
+        echo ""
+        echo "  其他:"
+        echo "   11) 卸载 CCFrame"
+        echo "    0) 退出"
+        echo ""
+        read -p "请输入选项 [0-11, 默认0]: " choice
+        choice=${choice:-0}
 
-    case $choice in
-        1) do_install ;;
-        2) do_update ;;
-        3) do_update_script ;;
-        4) do_status ;;
-        5) do_start ;;
-        6) do_stop ;;
-        7) do_restart ;;
-        8) do_logs ;;
-        9) do_backup ;;
-        10) do_restore ;;
-        11) do_uninstall ;;
-        0) exit 0 ;;
-        *)
-            print_error "无效选项"
-            sleep 2
-            show_menu
-            ;;
-    esac
+        case $choice in
+            1) do_install ;;
+            2) do_update ;;
+            3) do_update_script ;;
+            4) do_status ;;
+            5) do_start ;;
+            6) do_stop ;;
+            7) do_restart ;;
+            8) do_logs ;;
+            9) do_backup ;;
+            10) do_restore ;;
+            11) do_uninstall ;;
+            0)
+                print_info "已退出脚本"
+                exit 0
+                ;;
+            *)
+                print_error "无效选项"
+                sleep 2
+                continue
+                ;;
+        esac
+
+        pause_for_menu
+    done
 }
 
 #==============================================================================
