@@ -3,7 +3,8 @@ FROM node:18-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Ensure compatibility libraries and openssl are present during install
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Copy package files
@@ -54,6 +55,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/
 # Create uploads directory structure for public/private separation
 RUN mkdir -p ./uploads/original ./public/uploads ./private/uploads && \
     chown -R nextjs:nodejs ./uploads ./public/uploads ./private/uploads
+
+# Install runtime dependencies needed by Prisma on Alpine
+USER root
+RUN apk add --no-cache openssl libc6-compat
 
 USER nextjs
 
