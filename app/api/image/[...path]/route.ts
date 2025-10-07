@@ -65,12 +65,13 @@ export async function GET(
       'heic': 'image/heic',
     }[ext || 'jpg'] || 'image/jpeg';
 
-    // Convert Buffer (Uint8Array) into an exact ArrayBuffer slice (BodyInit)
-    const arrayBuffer = fileBuffer.buffer.slice(
+    // Convert Buffer to an ArrayBufferView (Uint8Array) to satisfy BodyInit without SharedArrayBuffer union
+    const uint8 = new Uint8Array(
+      fileBuffer.buffer as ArrayBuffer,
       fileBuffer.byteOffset,
-      fileBuffer.byteOffset + fileBuffer.byteLength
+      fileBuffer.byteLength
     );
-    return new NextResponse(arrayBuffer, {
+    return new NextResponse(uint8, {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
