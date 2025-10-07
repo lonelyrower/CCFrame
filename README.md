@@ -64,15 +64,15 @@ sudo ./ccframe.sh
 
 ---
 
-### 💻 本地开发
+## 💻 本地开发
 
-#### Prerequisites
+### Prerequisites
 
 - Node.js 18+
 - PostgreSQL 16+
 - Docker & Docker Compose (optional)
 
-#### Local Development
+### Local Development
 
 1. **Clone the repository**
 

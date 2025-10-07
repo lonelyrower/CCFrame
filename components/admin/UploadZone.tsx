@@ -266,6 +266,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
                         style={{ width: `${file.progress}%` }}
+                        aria-label={`上传进度 ${file.progress}%`}
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">{file.progress}%</p>
