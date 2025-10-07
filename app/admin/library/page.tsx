@@ -26,6 +26,7 @@ export default function LibraryPage() {
 
   useEffect(() => {
     loadPhotos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const loadPhotos = async () => {

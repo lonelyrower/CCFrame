@@ -52,3 +52,15 @@ next-env.d.ts
 
 # Sensitive files - NEVER commit
 ccframe开发需求.md
+
+# Development logs and documentation (keep README.md, CONTRIBUTING.md, DEPLOYMENT.md, QUICKSTART.md)
+CCFrame开发需求.md
+CHECKLIST.md
+FINAL_COMPLETE.md
+M1_COMPLETE.md
+M2_M3_M4_SUMMARY.md
+PROJECT_COMPLETE.md
+PROJECT_SUMMARY.md
+SETUP_COMPLETE.md
+*_COMPLETE.md
+*_SUMMARY.md

@@ -37,6 +37,7 @@ export default function AlbumDetailPage() {
 
   useEffect(() => {
     loadAlbum();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [albumId]);
 
   const loadAlbum = async () => {

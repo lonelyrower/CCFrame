@@ -51,6 +51,7 @@ export default function PhotosPage() {
 
   useEffect(() => {
     loadPhotos(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function PhotosPage() {
     if (page > 1) {
       loadPhotos(page);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const handlePhotoClick = (photo: Photo) => {

@@ -26,6 +26,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     loadAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range]);
 
   const loadAnalytics = async () => {

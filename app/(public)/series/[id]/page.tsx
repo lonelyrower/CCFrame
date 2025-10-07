@@ -10,8 +10,14 @@ interface Album {
   title: string;
   summary: string | null;
   coverId: string | null;
-  photos: any[];
+  photos: Photo[];
   _count: { photos: number };
+}
+
+interface Photo {
+  id: string;
+  fileKey: string;
+  title: string | null;
 }
 
 interface Series {
@@ -31,6 +37,7 @@ export default function SeriesDetailPage() {
 
   useEffect(() => {
     loadSeries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seriesId]);
 
   const loadSeries = async () => {

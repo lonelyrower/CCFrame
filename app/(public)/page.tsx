@@ -15,7 +15,6 @@ interface HeroPhoto {
 export default function HomePage() {
   const [heroPhoto, setHeroPhoto] = useState<HeroPhoto | null>(null);
   const [homeCopy, setHomeCopy] = useState<string>(DEFAULT_HOME_COPY_SELECTED);
-  const [themeColor, setThemeColor] = useState<string>('200, 10%, 50%');
 
   useEffect(() => {
     loadHomePage();
@@ -31,12 +30,10 @@ export default function HomePage() {
         const photo = photosData.photos[0];
         setHeroPhoto(photo);
 
-        // Extract dominant color
+        // Extract dominant color (for future use)
         const imageUrl = cfImage(`/${photo.fileKey}`, { width: 800 });
         try {
-          const color = await extractDominantColor(imageUrl);
-          // Convert rgb(r, g, b) to HSL-like format for CSS variables
-          setThemeColor(color);
+          await extractDominantColor(imageUrl);
         } catch (error) {
           console.error('Color extraction failed:', error);
         }

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const seriesId = searchParams.get('seriesId');
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (seriesId) {
       where.seriesId = seriesId;
     }
@@ -26,7 +26,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      albums: albums.map((album) => ({
+      albums: albums.map((album: {
+        id: string;
+        title: string;
+        summary: string | null;
+        coverId: string | null;
+        series: unknown;
+        _count: { photos: number };
+        createdAt: Date;
+      }) => ({
         id: album.id,
         title: album.title,
         summary: album.summary,

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const isPublic = searchParams.get('isPublic');
 
     // Build where clause
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (isPublic !== null) {
       where.isPublic = isPublic === 'true';

@@ -59,21 +59,21 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     setFiles((prev) => [...prev, ...uploadFiles]);
   };
 
-  const uploadFile = async (uploadFile: UploadFile, retryCount = 0): Promise<void> => {
+  const uploadFile = async (fileToUpload: UploadFile, retryCount = 0): Promise<void> => {
     const MAX_RETRIES = 2;
 
     try {
       // Update status
       setFiles((prev) =>
         prev.map((f) =>
-          f.id === uploadFile.id ? { ...f, status: 'uploading' as const, progress: 0 } : f
+          f.id === fileToUpload.id ? { ...f, status: 'uploading' as const, progress: 0 } : f
         )
       );
 
       // Create form data
       const formData = new FormData();
-      formData.append('file', uploadFile.file);
-      formData.append('title', uploadFile.file.name);
+      formData.append('file', fileToUpload.file);
+      formData.append('title', fileToUpload.file.name);
       formData.append('isPublic', 'true');
 
       // Upload with progress
@@ -83,12 +83,12 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         if (e.lengthComputable) {
           const progress = Math.round((e.loaded / e.total) * 100);
           setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, progress } : f))
+            prev.map((f) => (f.id === fileToUpload.id ? { ...f, progress } : f))
           );
         }
       });
 
-      const response = await new Promise<any>((resolve, reject) => {
+      const response = await new Promise<{ photo: { id: string; fileKey: string } }>((resolve, reject) => {
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             resolve(JSON.parse(xhr.responseText));
@@ -104,7 +104,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       // Success
       setFiles((prev) =>
         prev.map((f) =>
-          f.id === uploadFile.id
+          f.id === fileToUpload.id
             ? { ...f, status: 'success' as const, progress: 100, photoId: response.photo.id }
             : f
         )
@@ -112,15 +112,15 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     } catch (error) {
       // Retry on failure
       if (retryCount < MAX_RETRIES) {
-        console.log(`Retrying upload for ${uploadFile.file.name} (${retryCount + 1}/${MAX_RETRIES})`);
+        console.log(`Retrying upload for ${fileToUpload.file.name} (${retryCount + 1}/${MAX_RETRIES})`);
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        return uploadFile(uploadFile, retryCount + 1);
+        return uploadFile(fileToUpload, retryCount + 1);
       }
 
       // Failed after retries
       setFiles((prev) =>
         prev.map((f) =>
-          f.id === uploadFile.id
+          f.id === fileToUpload.id
             ? {
                 ...f,
                 status: 'error' as const,

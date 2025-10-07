@@ -42,7 +42,7 @@ export async function GET(
         height: photo.height,
         takenAt: photo.takenAt,
         isPublic: photo.isPublic,
-        tags: photo.tags.map((pt) => pt.tag.name),
+        tags: photo.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
         album: photo.album,
         createdAt: photo.createdAt,
       },
@@ -72,7 +72,7 @@ export async function PUT(
     if (isPublic !== undefined) updateData.isPublic = isPublic;
     if (albumId !== undefined) updateData.albumId = albumId || null;
 
-    const photo = await prisma.photo.update({
+    const _photo = await prisma.photo.update({
       where: { id: params.id },
       data: updateData,
       include: {
@@ -104,7 +104,7 @@ export async function PUT(
         );
 
         await prisma.photoTag.createMany({
-          data: tagRecords.map((tag) => ({
+          data: tagRecords.map((tag: { id: string }) => ({
             photoId: params.id,
             tagId: tag.id,
           })),
@@ -132,7 +132,7 @@ export async function PUT(
         title: updatedPhoto!.title,
         fileKey: updatedPhoto!.fileKey,
         isPublic: updatedPhoto!.isPublic,
-        tags: updatedPhoto!.tags.map((pt) => pt.tag.name),
+        tags: updatedPhoto!.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
         album: updatedPhoto!.album,
       },
     });

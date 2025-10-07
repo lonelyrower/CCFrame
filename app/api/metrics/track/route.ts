@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     // Get or create today's metrics
-    const metrics = await prisma.metricsDaily.upsert({
+    const _metrics = await prisma.metricsDaily.upsert({
       where: { day: today },
       update: {
         pv: { increment: 1 },

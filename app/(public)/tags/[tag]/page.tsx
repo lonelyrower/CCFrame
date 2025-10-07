@@ -26,6 +26,7 @@ export default function TagDetailPage() {
 
   useEffect(() => {
     loadPhotos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagName]);
 
   const loadPhotos = async () => {

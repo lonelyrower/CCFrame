@@ -140,6 +140,7 @@ export function Header() {
             系列
           </Link>
         </div>
+        </div>
       </nav>
 
       {/* Search Panel */}
