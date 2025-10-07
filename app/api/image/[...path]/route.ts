@@ -65,8 +65,12 @@ export async function GET(
       'heic': 'image/heic',
     }[ext || 'jpg'] || 'image/jpeg';
 
-    // Wrap Buffer into a Blob to satisfy BodyInit and avoid TS incompatibility
-    return new NextResponse(new Blob([fileBuffer]), {
+    // Convert Buffer (Uint8Array) into an exact ArrayBuffer slice (BodyInit)
+    const arrayBuffer = fileBuffer.buffer.slice(
+      fileBuffer.byteOffset,
+      fileBuffer.byteOffset + fileBuffer.byteLength
+    );
+    return new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
