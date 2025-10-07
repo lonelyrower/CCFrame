@@ -1002,26 +1002,42 @@ do_update_script() {
     print_header
     print_info "更新脚本到最新版本..."
 
-    # 下载最新脚本
+    # 下载最新脚本到临时文件
     temp_script="/tmp/ccframe-new.sh"
-
-    if curl -fsSL "$SCRIPT_URL" -o "$temp_script"; then
-        chmod +x "$temp_script"
-
-        # 备份当前脚本
-        cp "$0" "$0.bak"
-
-        # 替换脚本
-        mv "$temp_script" "$0"
-
-        print_success "脚本更新完成！"
-        print_info "旧版本已备份到: $0.bak"
-
-        # 重新运行新脚本
-        exec "$0" "$@"
-    else
+    if ! curl -fsSL "$SCRIPT_URL" -o "$temp_script"; then
         print_error "下载失败，请检查网络连接"
         exit 1
+    fi
+    chmod +x "$temp_script"
+
+    # 尝试检测当前脚本真实路径（处理 curl | bash 情况）
+    local source_path="${BASH_SOURCE[0]}"
+    if [ -z "$source_path" ] || [ "$source_path" = "stdin" ]; then
+        source_path=""
+    fi
+
+    if [ -n "$source_path" ] && [ -f "$source_path" ] && [ -w "$source_path" ]; then
+        # 以文件方式执行，直接就地更新
+        cp "$source_path" "${source_path}.bak"
+        install -m 0755 "$temp_script" "$source_path"
+        print_success "脚本更新完成！"
+        print_info "旧版本已备份到: ${source_path}.bak"
+        exec "$source_path" "$@"
+    else
+        # 通过管道或不可写路径执行：安装到稳定位置
+        local target="/usr/local/bin/ccframe"
+        if ! (touch "$target.tmp" 2>/dev/null && rm -f "$target.tmp"); then
+            # /usr/local/bin 不可写，退回安装目录
+            mkdir -p "$INSTALL_DIR"
+            target="$INSTALL_DIR/ccframe.sh"
+        fi
+        install -m 0755 "$temp_script" "$target"
+        print_success "已安装最新脚本到: $target"
+        if [ "$target" = "/usr/local/bin/ccframe" ]; then
+            print_info "下次可直接运行: ccframe"
+        else
+            print_info "下次可运行: bash $target"
+        fi
     fi
 }
 
