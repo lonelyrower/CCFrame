@@ -112,6 +112,16 @@ compose_network_name() {
     echo "${project_name}_ccframe-network"
 }
 
+ensure_prisma_binaries_image_mode() {
+    print_info "刷新 Prisma Client 二进制 (容器内)..."
+    if docker compose exec -T app npx prisma generate \
+        --schema prisma/schema.prisma \
+        --binary-targets native linux-musl linux-musl-openssl-3.0.x >/dev/null; then
+        return 0
+    fi
+    return 1
+}
+
 # 在镜像容器内尝试运行迁移
 run_migrations_image_mode() {
     print_info "运行数据库迁移 (容器内)..."
@@ -139,7 +149,7 @@ run_migrations_ephemeral() {
 
     # 若无 migrations，则使用 db push 直接按 schema 同步
     local schema_path="/work/prisma/schema.prisma"
-    local cmd_db_push="npx -y prisma@5.18.0 db push --schema=${schema_path} --skip-generate --accept-data-loss"
+    local cmd_db_push="npx -y prisma@5.22.0 db push --schema=${schema_path} --skip-generate --accept-data-loss"
 
     if ! docker run --rm \
         --network "$network" \
@@ -175,8 +185,8 @@ run_seed_ephemeral() {
 set -e; \
 cd /work; \
 npm -y init >/dev/null 2>&1; \
-npm i -y prisma@5.18.0 @prisma/client@5.18.0 bcryptjs >/dev/null 2>&1; \
-npx prisma generate --schema=${schema_path} >/dev/null 2>&1; \
+npm i -y prisma@5.22.0 @prisma/client@5.22.0 bcryptjs >/dev/null 2>&1; \
+npx prisma generate --schema=${schema_path} --binary-targets native linux-musl linux-musl-openssl-3.0.x >/dev/null 2>&1; \
 node ${seed_path}"
 
     if ! docker run --rm \
@@ -198,6 +208,11 @@ run_migrations_and_seed_image_mode() {
     # 优先尝试在应用容器内完成
     if run_migrations_image_mode; then
         print_info "迁移成功，创建管理员账户..."
+        local prisma_refreshed=true
+        if ! ensure_prisma_binaries_image_mode; then
+            print_warning "容器内刷新 Prisma Client 失败，可能存在缺失的二进制，将尝试回退方案..."
+            prisma_refreshed=false
+        fi
         if docker compose exec -T \
             -e ADMIN_EMAIL="$ADMIN_EMAIL" \
             -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
@@ -205,6 +220,9 @@ run_migrations_and_seed_image_mode() {
             return 0
         else
             print_warning "容器内种子失败，尝试回退方案..."
+        fi
+        if [ "$prisma_refreshed" = false ]; then
+            print_warning "由于 Prisma Client 未成功刷新，回退方案可能仍会失败。"
         fi
     else
         print_warning "容器内迁移失败，检查数据库是否为全新实例..."
@@ -535,6 +553,9 @@ EOF
     if [ "$use_sites" = true ]; then
         mkdir -p /etc/nginx/sites-enabled
         ln -sf "$target_conf" /etc/nginx/sites-enabled/
+        rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+    else
+        rm -f /etc/nginx/conf.d/default.conf 2>/dev/null || true
     fi
 
     # 测试配置
@@ -578,7 +599,7 @@ configure_nginx_simple() {
 
     cat > "$target_conf" <<EOF
 server {
-    listen 80;
+    listen 80 default_server;
     server_name _;
 
     client_max_body_size 100M;
@@ -600,6 +621,9 @@ EOF
     if [ "$use_sites" = true ]; then
         mkdir -p /etc/nginx/sites-enabled
         ln -sf "$target_conf" /etc/nginx/sites-enabled/
+        rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+    else
+        rm -f /etc/nginx/conf.d/default.conf 2>/dev/null || true
     fi
     nginx -t
     systemctl restart nginx
