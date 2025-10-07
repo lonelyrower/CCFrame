@@ -51,8 +51,25 @@ echo "✓ Database backup created: ccframe_${DATE}.sql.gz"
 DAY_OF_WEEK=$(date +%u)
 if [ "$DAY_OF_WEEK" -eq 1 ]; then  # Monday
   echo "📦 Creating weekly uploads backup..."
-  tar -czf "$UPLOADS_BACKUP_DIR/uploads_${WEEK}.tar.gz" uploads/
-  echo "✓ Uploads backup created: uploads_${WEEK}.tar.gz"
+
+  # Determine which directories to include (new + legacy)
+  INCLUDE_PATHS=()
+  if [ -d "public/uploads" ]; then
+    INCLUDE_PATHS+=("public/uploads")
+  fi
+  if [ -d "private/uploads" ]; then
+    INCLUDE_PATHS+=("private/uploads")
+  fi
+  if [ -d "uploads" ]; then
+    INCLUDE_PATHS+=("uploads") # legacy
+  fi
+
+  if [ ${#INCLUDE_PATHS[@]} -eq 0 ]; then
+    echo "⚠️  No uploads directories found to back up (public/uploads | private/uploads | uploads). Skipping."
+  else
+    tar -czf "$UPLOADS_BACKUP_DIR/uploads_${WEEK}.tar.gz" "${INCLUDE_PATHS[@]}"
+    echo "✓ Uploads backup created: uploads_${WEEK}.tar.gz (includes: ${INCLUDE_PATHS[*]})"
+  fi
 fi
 
 # Cleanup old backups

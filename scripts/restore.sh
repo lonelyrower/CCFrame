@@ -110,15 +110,37 @@ if [ "$WITH_UPLOADS" = true ]; then
   echo ""
   echo "🔄 Restoring uploads..."
 
-  # Backup current uploads
+  BACKUP_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+  BACKUP_DIR_NAME="uploads_backup_$BACKUP_TIMESTAMP"
+  mkdir -p "$BACKUP_DIR_NAME"
+
+  # Backup current public/private uploads if present
+  if [ -d "public/uploads" ]; then
+    mkdir -p "$BACKUP_DIR_NAME/public"
+    mv public/uploads "$BACKUP_DIR_NAME/public/"
+    echo "  Current public/uploads backed up to: $BACKUP_DIR_NAME/public/uploads"
+  fi
+  if [ -d "private/uploads" ]; then
+    mkdir -p "$BACKUP_DIR_NAME/private"
+    mv private/uploads "$BACKUP_DIR_NAME/private/"
+    echo "  Current private/uploads backed up to: $BACKUP_DIR_NAME/private/uploads"
+  fi
+  # Legacy uploads dir
   if [ -d "uploads" ]; then
-    BACKUP_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    mv uploads "uploads_backup_$BACKUP_TIMESTAMP"
-    echo "  Current uploads backed up to: uploads_backup_$BACKUP_TIMESTAMP"
+    mv uploads "$BACKUP_DIR_NAME/"
+    echo "  Legacy uploads backed up to: $BACKUP_DIR_NAME/uploads"
   fi
 
-  # Extract backup
+  # Extract backup (may contain public/uploads, private/uploads, or legacy uploads/)
   tar -xzf "$UPLOADS_BACKUP_FILE"
+
+  # If legacy uploads/ extracted but public/uploads missing, migrate to new layout
+  if [ -d "uploads" ] && [ ! -d "public/uploads" ]; then
+    mkdir -p public
+    mv uploads public/uploads
+    echo "  Migrated legacy uploads/ to public/uploads"
+  fi
+
   echo "✓ Uploads restored successfully"
 fi
 

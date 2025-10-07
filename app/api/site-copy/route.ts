@@ -11,6 +11,7 @@ export async function GET() {
 
     return NextResponse.json({
       homeCopy: siteCopy?.homeCopy || DEFAULT_HOME_COPY_SELECTED,
+      themeColor: siteCopy?.themeColor || null,
     });
   } catch (error) {
     console.error('Error fetching site copy:', error);
@@ -24,17 +25,22 @@ export async function GET() {
 // PUT update site copy (admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const { homeCopy } = await request.json();
+    const { homeCopy, themeColor } = await request.json();
+
+    const updateData: { homeCopy?: string; themeColor?: string | null } = {};
+    if (homeCopy !== undefined) updateData.homeCopy = homeCopy;
+    if (themeColor !== undefined) updateData.themeColor = themeColor || null;
 
     const siteCopy = await prisma.siteCopy.upsert({
       where: { id: 1 },
-      update: { homeCopy },
-      create: { id: 1, homeCopy },
+      update: updateData,
+      create: { id: 1, homeCopy: homeCopy || '', themeColor: themeColor || null },
     });
 
     return NextResponse.json({
       message: 'Site copy updated successfully',
       homeCopy: siteCopy.homeCopy,
+      themeColor: siteCopy.themeColor,
     });
   } catch (error) {
     console.error('Error updating site copy:', error);

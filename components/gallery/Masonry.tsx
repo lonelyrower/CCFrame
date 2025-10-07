@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { cfImage } from '@/lib/cf-image';
+import { getImageUrl } from '@/lib/image/utils';
 
 interface Photo {
   id: string;
@@ -9,6 +9,7 @@ interface Photo {
   fileKey: string;
   width: number | null;
   height: number | null;
+  isPublic: boolean;
   tags: string[];
 }
 
@@ -124,7 +125,7 @@ function PhotoCard({
       {isVisible && (
         <>
           <img
-            src={cfImage(`/${photo.fileKey}`, { width: 600, quality: 85 })}
+            src={getImageUrl(photo.fileKey, photo.isPublic, { width: 600, quality: 85 })}
             alt={photo.title || 'Photo'}
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isLoaded ? 'opacity-100' : 'opacity-0'

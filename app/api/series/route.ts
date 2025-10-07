@@ -7,17 +7,22 @@ export async function GET() {
     const series = await prisma.series.findMany({
       include: {
         albums: {
-          include: {
-            _count: {
-              select: { photos: { where: { isPublic: true } } },
-            },
-          },
+          select: { id: true },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // 统计所有专辑的公开照片数量
+    const allAlbumIds = series.flatMap((s) => s.albums.map((a) => a.id));
+    const counts = allAlbumIds.length
+      ? await prisma.photo.groupBy({
+          by: ['albumId'],
+          where: { albumId: { in: allAlbumIds }, isPublic: true },
+          _count: { _all: true },
+        })
+      : [];
+    const map = new Map<string, number>(counts.map((c) => [c.albumId as string, c._count._all]));
 
     return NextResponse.json({
       series: series.map((s) => ({
@@ -25,9 +30,10 @@ export async function GET() {
         slug: s.slug,
         title: s.title,
         summary: s.summary,
+        brand: s.brand,
         coverId: s.coverId,
         albumCount: s.albums.length,
-        photoCount: s.albums.reduce((sum, album) => sum + album._count.photos, 0),
+        photoCount: s.albums.reduce((sum, album) => sum + (map.get(album.id) || 0), 0),
         createdAt: s.createdAt,
       })),
     });
@@ -43,13 +49,14 @@ export async function GET() {
 // POST create series (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const { slug, title, summary, coverId } = await request.json();
+    const { slug, title, summary, brand, coverId } = await request.json();
 
     const series = await prisma.series.create({
       data: {
         slug,
         title,
         summary,
+        brand: brand || null,
         coverId: coverId || null,
       },
     });

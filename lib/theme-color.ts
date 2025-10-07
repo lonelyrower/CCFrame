@@ -40,7 +40,9 @@ export async function extractDominantColor(imageUrl: string): Promise<string> {
         g = Math.floor(g / pixelCount);
         b = Math.floor(b / pixelCount);
 
-        resolve(`rgb(${r}, ${g}, ${b})`);
+        // Return hex format for easier storage and usage
+        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        resolve(hex);
       } catch (error) {
         reject(error);
       }

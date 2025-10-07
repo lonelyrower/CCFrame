@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/image/utils';
 import { cfImage } from '@/lib/cf-image';
 import { extractDominantColor } from '@/lib/theme-color';
 import { DEFAULT_HOME_COPY_SELECTED } from '@/lib/constants';
@@ -10,11 +11,14 @@ interface HeroPhoto {
   id: string;
   fileKey: string;
   title: string | null;
+  isPublic: boolean;
+  dominantColor: string | null;
 }
 
 export default function HomePage() {
   const [heroPhoto, setHeroPhoto] = useState<HeroPhoto | null>(null);
   const [homeCopy, setHomeCopy] = useState<string>(DEFAULT_HOME_COPY_SELECTED);
+  const [themeColor, setThemeColor] = useState<string | null>(null);
 
   useEffect(() => {
     loadHomePage();
@@ -24,26 +28,44 @@ export default function HomePage() {
     try {
       // Load hero photo (first public photo)
       const photosRes = await fetch('/api/photos?isPublic=true&limit=1');
-      const photosData = await photosRes.json();
+      let currentPhoto: HeroPhoto | null = null;
 
-      if (photosData.photos && photosData.photos.length > 0) {
-        const photo = photosData.photos[0];
-        setHeroPhoto(photo);
+      if (photosRes.ok) {
+        const photosData = await photosRes.json();
 
-        // Extract dominant color (for future use)
-        const imageUrl = cfImage(`/${photo.fileKey}`, { width: 800 });
-        try {
-          await extractDominantColor(imageUrl);
-        } catch (error) {
-          console.error('Color extraction failed:', error);
+        if (photosData.photos && photosData.photos.length > 0) {
+          const photo = photosData.photos[0];
+          currentPhoto = photo;
+          setHeroPhoto(photo);
+
+          // Extract and save dominant color if not already saved
+          if (!photo.dominantColor) {
+            const imageUrl = cfImage(`/${photo.fileKey}`, { width: 800 });
+            try {
+              const dominantColor = await extractDominantColor(imageUrl);
+              // 仅在前端应用主题色；持久化由服务端懒加载/上传时完成
+              photo.dominantColor = dominantColor;
+              currentPhoto = photo;
+            } catch (error) {
+              console.error('Color extraction failed:', error);
+            }
+          }
         }
       }
 
-      // Load site copy
+      // Load site copy and theme color
       const copyRes = await fetch('/api/site-copy');
-      const copyData = await copyRes.json();
-      if (copyData.homeCopy) {
-        setHomeCopy(copyData.homeCopy);
+      if (copyRes.ok) {
+        const copyData = await copyRes.json();
+        if (copyData.homeCopy) {
+          setHomeCopy(copyData.homeCopy);
+        }
+        // Apply theme color: priority is themeColor override > photo dominantColor
+        if (copyData.themeColor) {
+          setThemeColor(copyData.themeColor);
+        } else if (currentPhoto?.dominantColor) {
+          setThemeColor(currentPhoto.dominantColor);
+        }
       }
     } catch (error) {
       console.error('Error loading homepage:', error);
@@ -58,7 +80,7 @@ export default function HomePage() {
         {heroPhoto && (
           <div className="absolute inset-0">
             <img
-              src={cfImage(`/${heroPhoto.fileKey}`, { width: 1920, quality: 90 })}
+              src={getImageUrl(heroPhoto.fileKey, heroPhoto.isPublic, { width: 1920, quality: 90 })}
               alt="Hero"
               className="w-full h-full object-cover"
             />
@@ -78,6 +100,7 @@ export default function HomePage() {
             <Link
               href="/photos"
               className="px-8 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              style={themeColor ? { backgroundColor: themeColor, color: 'white' } : {}}
             >
               进入相册
             </Link>

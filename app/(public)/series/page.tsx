@@ -25,8 +25,14 @@ export default function SeriesPage() {
   const loadSeries = async () => {
     try {
       const response = await fetch('/api/series');
+
+      if (!response.ok) {
+        console.error('Failed to fetch series:', response.status);
+        return;
+      }
+
       const data = await response.json();
-      setSeriesList(data.series);
+      setSeriesList(data.series || []);
     } catch (error) {
       console.error('Error loading series:', error);
     } finally {

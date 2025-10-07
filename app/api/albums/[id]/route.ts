@@ -7,12 +7,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check if user is authenticated (admin)
+    const isAdmin = request.headers.get('x-user-id');
+
     const album = await prisma.album.findUnique({
       where: { id: params.id },
       include: {
         series: true,
         photos: {
-          where: { isPublic: true },
+          // Only filter by isPublic for non-admin users
+          where: isAdmin ? {} : { isPublic: true },
           include: {
             tags: {
               include: {

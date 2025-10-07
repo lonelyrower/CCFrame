@@ -12,6 +12,7 @@ interface Photo {
   fileKey: string;
   width: number | null;
   height: number | null;
+  isPublic: boolean;
   tags: string[];
 }
 
@@ -44,8 +45,14 @@ export default function AlbumDetailPage() {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/albums/${albumId}`);
+
+      if (!response.ok) {
+        console.error('Failed to fetch album:', response.status);
+        return;
+      }
+
       const data = await response.json();
-      setAlbum(data.album);
+      setAlbum(data.album || null);
     } catch (error) {
       console.error('Error loading album:', error);
     } finally {

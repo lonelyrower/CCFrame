@@ -37,6 +37,8 @@ services:
       BASE_URL: ${BASE_URL:-http://localhost:3000}
       NODE_ENV: production
     volumes:
+      - ./public/uploads:/app/public/uploads
+      - ./private/uploads:/app/private/uploads
       - ./uploads:/app/uploads
       - ./backups:/app/backups
     depends_on:

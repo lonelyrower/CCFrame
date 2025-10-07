@@ -20,8 +20,14 @@ export default function TagsPage() {
   const loadTags = async () => {
     try {
       const response = await fetch('/api/tags');
+
+      if (!response.ok) {
+        console.error('Failed to fetch tags:', response.status);
+        return;
+      }
+
       const data = await response.json();
-      setTags(data.tags);
+      setTags(data.tags || []);
     } catch (error) {
       console.error('Error loading tags:', error);
     } finally {

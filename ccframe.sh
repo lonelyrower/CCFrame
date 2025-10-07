@@ -349,8 +349,8 @@ EOF
 install_from_image() {
     print_info "从 Docker 镜像安装..."
 
-    # 创建必要目录
-    mkdir -p "$DATA_DIR"/{uploads,backups}
+    # 创建必要目录（新结构：public/private 分离）
+    mkdir -p "$DATA_DIR"/{public_uploads,private_uploads,backups}
     mkdir -p "$INSTALL_DIR"
 
     # 创建 .env 文件
@@ -395,7 +395,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ${DATA_DIR}/uploads:/app/uploads
+      - ${DATA_DIR}/public_uploads:/app/public/uploads
+      - ${DATA_DIR}/private_uploads:/app/private/uploads
       - ${DATA_DIR}/backups:/app/backups
     depends_on:
       postgres:
@@ -422,11 +423,19 @@ EOF
 
     # 运行数据库迁移
     print_info "运行数据库迁移..."
-    docker compose exec -T app npx prisma migrate deploy || true
+    if ! docker compose exec -T app npx prisma migrate deploy; then
+        print_error "数据库迁移失败"
+        print_info "请检查日志: docker compose logs app"
+        exit 1
+    fi
 
     # 创建管理员账户
     print_info "创建管理员账户..."
-    docker compose exec -T app npm run seed || true
+    if ! docker compose exec -T app npm run seed; then
+        print_error "管理员账户创建失败"
+        print_info "请检查日志: docker compose logs app"
+        exit 1
+    fi
 
     print_success "从镜像安装完成"
 }
@@ -704,7 +713,11 @@ do_update() {
             sleep 5
 
             print_info "运行数据库迁移..."
-            docker compose exec -T app npx prisma migrate deploy || true
+            if ! docker compose exec -T app npx prisma migrate deploy; then
+                print_error "数据库迁移失败"
+                print_info "请检查日志: docker compose logs app"
+                exit 1
+            fi
             ;;
         2)
             print_info "拉取最新代码..."

@@ -9,6 +9,7 @@ interface Series {
   slug: string;
   title: string;
   summary: string | null;
+  brand: string | null;
   albumCount: number;
   photoCount: number;
 }
@@ -22,6 +23,7 @@ export default function SeriesManagementPage() {
   const [slug, setSlug] = useState('');
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
+  const [brand, setBrand] = useState('');
 
   useEffect(() => {
     loadSeries();
@@ -44,7 +46,7 @@ export default function SeriesManagementPage() {
       const response = await fetch('/api/series', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, title, summary: summary || null }),
+        body: JSON.stringify({ slug, title, summary: summary || null, brand: brand || null }),
       });
 
       if (response.ok) {
@@ -64,7 +66,7 @@ export default function SeriesManagementPage() {
       const response = await fetch(`/api/series/${editingSeries.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, title, summary: summary || null }),
+        body: JSON.stringify({ slug, title, summary: summary || null, brand: brand || null }),
       });
 
       if (response.ok) {
@@ -93,12 +95,14 @@ export default function SeriesManagementPage() {
     setSlug(series.slug);
     setTitle(series.title);
     setSummary(series.summary || '');
+    setBrand(series.brand || '');
   };
 
   const resetForm = () => {
     setSlug('');
     setTitle('');
     setSummary('');
+    setBrand('');
   };
 
   return (
@@ -133,6 +137,11 @@ export default function SeriesManagementPage() {
             >
               <h3 className="text-xl font-bold mb-2">{series.title}</h3>
               <p className="text-sm text-gray-500 mb-3">Slug: {series.slug}</p>
+              {series.brand && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <span className="font-medium">品牌：</span>{series.brand}
+                </p>
+              )}
               {series.summary && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   {series.summary}
@@ -186,12 +195,19 @@ export default function SeriesManagementPage() {
                 placeholder="我的系列"
                 required
               />
+              <Input
+                label="品牌"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="品牌名称（可选）"
+              />
               <div>
                 <label className="block text-sm font-medium mb-1">简介</label>
                 <textarea
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={3}
+                  placeholder="系列简介（可选）"
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
                 />
               </div>

@@ -12,6 +12,7 @@ interface Photo {
   fileKey: string;
   width: number | null;
   height: number | null;
+  isPublic: boolean;
   tags: string[];
 }
 
@@ -35,8 +36,14 @@ export default function TagDetailPage() {
       const response = await fetch(
         `/api/photos?isPublic=true&tag=${encodeURIComponent(tagName)}&limit=100`
       );
+
+      if (!response.ok) {
+        console.error('Failed to fetch photos:', response.status);
+        return;
+      }
+
       const data = await response.json();
-      setPhotos(data.photos);
+      setPhotos(data.photos || []);
     } catch (error) {
       console.error('Error loading photos:', error);
     } finally {

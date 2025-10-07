@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { cfImage } from '@/lib/cf-image';
+import { BulkEditDialog } from '@/components/admin/BulkEditDialog';
+import { getImageUrl } from '@/lib/image/utils';
 
 interface Photo {
   id: string;
@@ -23,6 +24,7 @@ export default function LibraryPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
 
   useEffect(() => {
     loadPhotos();
@@ -111,6 +113,20 @@ export default function LibraryPage() {
     setSelectedPhotos(new Set());
   };
 
+  const handleBulkEdit = async (data: { tags?: string[]; albumId?: string | null }) => {
+    const promises = Array.from(selectedPhotos).map((photoId) =>
+      fetch(`/api/photos/${photoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+    );
+
+    await Promise.all(promises);
+    await loadPhotos();
+    setSelectedPhotos(new Set());
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -132,10 +148,17 @@ export default function LibraryPage() {
 
           {/* Batch Actions */}
           {selectedPhotos.size > 0 && (
-            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex-wrap">
               <span className="text-sm font-medium">
                 {selectedPhotos.size} selected
               </span>
+              <Button
+                onClick={() => setShowBulkEdit(true)}
+                variant="primary"
+                size="sm"
+              >
+                Edit Tags/Album
+              </Button>
               <Button
                 onClick={() => batchTogglePublic(true)}
                 variant="secondary"
@@ -198,7 +221,7 @@ export default function LibraryPage() {
               >
                 {/* Photo */}
                 <img
-                  src={cfImage(`/${photo.fileKey}`, { width: 400, quality: 85 })}
+                  src={getImageUrl(photo.fileKey, photo.isPublic, { width: 400, quality: 85 })}
                   alt={photo.title || 'Photo'}
                   className="w-full h-full object-cover"
                 />
@@ -297,6 +320,15 @@ export default function LibraryPage() {
               Next
             </Button>
           </div>
+        )}
+
+        {/* Bulk Edit Dialog */}
+        {showBulkEdit && (
+          <BulkEditDialog
+            selectedCount={selectedPhotos.size}
+            onClose={() => setShowBulkEdit(false)}
+            onSave={handleBulkEdit}
+          />
         )}
       </div>
     </div>

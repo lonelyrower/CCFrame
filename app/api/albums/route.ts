@@ -16,14 +16,21 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         series: true,
-        _count: {
-          select: { photos: { where: { isPublic: true } } },
-        },
+        _count: { select: { photos: true } },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // 计算公开照片数量（Prisma _count 不支持 where 过滤）
+    const albumIds = albums.map((a) => a.id);
+    const publicCounts = albumIds.length
+      ? await prisma.photo.groupBy({
+          by: ['albumId'],
+          where: { albumId: { in: albumIds }, isPublic: true },
+          _count: { _all: true },
+        })
+      : [];
+    const publicMap = new Map<string, number>(publicCounts.map((c) => [c.albumId as string, c._count._all]));
 
     return NextResponse.json({
       albums: albums.map((album: {
@@ -40,7 +47,7 @@ export async function GET(request: NextRequest) {
         summary: album.summary,
         coverId: album.coverId,
         series: album.series,
-        photoCount: album._count.photos,
+        photoCount: publicMap.get(album.id) ?? 0,
         createdAt: album.createdAt,
       })),
     });

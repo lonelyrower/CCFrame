@@ -20,9 +20,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Track unique visitor (simplified - in production use proper UV tracking)
+    // Track unique visitor
     const visitorCookie = request.cookies.get('visitor_id');
+    const response = NextResponse.json({ success: true });
+
     if (!visitorCookie) {
+      // Generate a unique visitor ID and set cookie
+      const visitorId = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+      response.cookies.set('visitor_id', visitorId, {
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+      });
+
+      // Increment UV count
       await prisma.metricsDaily.update({
         where: { day: today },
         data: {
@@ -31,7 +43,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    return response;
   } catch (error) {
     console.error('Error tracking metrics:', error);
     return NextResponse.json(

@@ -21,6 +21,7 @@ model Series {
   slug      String   @unique
   title     String
   summary   String?
+  brand     String?  // Brand information
   coverId   String?
   albums    Album[]
   createdAt DateTime @default(now())
@@ -38,18 +39,19 @@ model Album {
 }
 
 model Photo {
-  id        String     @id @default(cuid())
-  title     String?
-  fileKey   String
-  ext       String
-  width     Int?
-  height    Int?
-  takenAt   DateTime?
-  isPublic  Boolean    @default(true)
-  albumId   String?
-  album     Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
-  tags      PhotoTag[]
-  createdAt DateTime   @default(now())
+  id            String     @id @default(cuid())
+  title         String?
+  fileKey       String
+  ext           String
+  width         Int?
+  height        Int?
+  takenAt       DateTime?
+  isPublic      Boolean    @default(true)
+  dominantColor String?    // Extracted dominant color
+  albumId       String?
+  album         Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  tags          PhotoTag[]
+  createdAt     DateTime   @default(now())
 }
 
 model Tag {
@@ -68,9 +70,10 @@ model PhotoTag {
 }
 
 model SiteCopy {
-  id        Int      @id @default(1)
-  homeCopy  String?
-  updatedAt DateTime @updatedAt
+  id               Int      @id @default(1)
+  homeCopy         String?
+  themeColor       String?  // Theme override color (hex format)
+  updatedAt        DateTime @updatedAt
 }
 
 model MetricsDaily {

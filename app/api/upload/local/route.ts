@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     const tagsString = formData.get('tags') as string | null;
     const isPublic = formData.get('isPublic') === 'true';
     const albumId = formData.get('albumId') as string | null;
+    const dominantColor = formData.get('dominantColor') as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -32,13 +33,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Save file to disk
-    const uploadResult = await saveUploadedFile(file, file.name);
+    // Save file to disk (with isPublic flag)
+    const uploadResult = await saveUploadedFile(file, file.name, isPublic);
 
     // Parse tags
-    const tags = tagsString
-      ? tagsString.split(',').map((tag) => tag.trim()).filter(Boolean)
-      : [];
+    let tags: string[] = [];
+    if (tagsString) {
+      try {
+        tags = JSON.parse(tagsString);
+      } catch {
+        // Fallback to comma-separated parsing
+        tags = tagsString.split(',').map((tag) => tag.trim()).filter(Boolean);
+      }
+    }
 
     // Create or find tags in database
     const tagRecords = await Promise.all(
@@ -60,6 +67,8 @@ export async function POST(request: NextRequest) {
         width: uploadResult.width,
         height: uploadResult.height,
         isPublic,
+        // 优先使用外部传入（如前端已计算），否则使用服务器提取的 dominantColor
+        dominantColor: dominantColor || uploadResult.dominantColor || null,
         albumId: albumId || undefined,
         tags: {
           create: tagRecords.map((tag: { id: string }) => ({

@@ -7,18 +7,21 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check if user is authenticated (admin)
+    const isAdmin = request.headers.get('x-user-id');
+
     const series = await prisma.series.findUnique({
       where: { id: params.id },
       include: {
         albums: {
           include: {
             photos: {
-              where: { isPublic: true },
+              // 非管理员仅预览公开照片
+              where: isAdmin ? {} : { isPublic: true },
               take: 1,
             },
-            _count: {
-              select: { photos: { where: { isPublic: true } } },
-            },
+            // Prisma 不支持在 _count 中使用 where 过滤，这里仅取总数
+            _count: { select: { photos: true } },
           },
         },
       },
@@ -29,6 +32,27 @@ export async function GET(
         { error: 'Series not found' },
         { status: 404 }
       );
+    }
+
+    // 非管理员需要将 _count.photos 替换为“公开照片数量”
+    if (series && !isAdmin) {
+      const albumIds = series.albums.map((a) => a.id);
+      if (albumIds.length > 0) {
+        const counts = await prisma.photo.groupBy({
+          by: ['albumId'],
+          where: { albumId: { in: albumIds }, isPublic: true },
+          _count: { _all: true },
+        });
+        const map = new Map<string, number>(counts.map((c) => [c.albumId as string, c._count._all]));
+        const seriesSanitized = {
+          ...series,
+          albums: series.albums.map((a) => ({
+            ...a,
+            _count: { ...a._count, photos: map.get(a.id) || 0 },
+          })),
+        };
+        return NextResponse.json({ series: seriesSanitized });
+      }
     }
 
     return NextResponse.json({ series });
@@ -47,7 +71,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { slug, title, summary, coverId } = await request.json();
+    const { slug, title, summary, brand, coverId } = await request.json();
 
     const series = await prisma.series.update({
       where: { id: params.id },
@@ -55,6 +79,7 @@ export async function PUT(
         slug,
         title,
         summary,
+        brand: brand || null,
         coverId: coverId || null,
       },
     });

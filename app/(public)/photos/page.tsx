@@ -11,6 +11,7 @@ interface Photo {
   fileKey: string;
   width: number | null;
   height: number | null;
+  isPublic: boolean;
   tags: string[];
 }
 
@@ -33,17 +34,25 @@ export default function PhotosPage() {
       const response = await fetch(
         `/api/photos?isPublic=true&page=${pageNum}&limit=${PHOTOS_PER_PAGE}`
       );
+
+      if (!response.ok) {
+        console.error('Failed to fetch photos:', response.status);
+        setHasMore(false);
+        return;
+      }
+
       const data = await response.json();
 
-      if (data.photos.length === 0) {
+      if (!data.photos || data.photos.length === 0) {
         setHasMore(false);
         return;
       }
 
       setPhotos((prev) => (pageNum === 1 ? data.photos : [...prev, ...data.photos]));
-      setHasMore(data.pagination.page < data.pagination.totalPages);
+      setHasMore(data.pagination?.page < data.pagination?.totalPages);
     } catch (error) {
       console.error('Error loading photos:', error);
+      setHasMore(false);
     } finally {
       setIsLoading(false);
     }

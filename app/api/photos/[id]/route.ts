@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { unlink, rename, mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
+import { existsSync } from 'fs';
+import { getSession } from '@/lib/session';
 
 // GET single photo
 export async function GET(
@@ -9,6 +11,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getSession();
     const photo = await prisma.photo.findUnique({
       where: { id: params.id },
       include: {
@@ -26,6 +29,14 @@ export async function GET(
     });
 
     if (!photo) {
+      return NextResponse.json(
+        { error: 'Photo not found' },
+        { status: 404 }
+      );
+    }
+
+    // 未登录用户不可访问私密照片（避免枚举，返回404）
+    if (!photo.isPublic && !session) {
       return NextResponse.json(
         { error: 'Photo not found' },
         { status: 404 }
@@ -63,14 +74,84 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { title, isPublic, albumId, tags } = body;
+    const { title, isPublic, albumId, tags, dominantColor } = body;
+
+    // Get current photo to check if isPublic is changing
+    const currentPhoto = await prisma.photo.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!currentPhoto) {
+      return NextResponse.json(
+        { error: 'Photo not found' },
+        { status: 404 }
+      );
+    }
 
     // Update photo
-    const updateData: any = {};
+    const updateData: {
+      title?: string;
+      isPublic?: boolean;
+      albumId?: string | null;
+      dominantColor?: string;
+      fileKey?: string;
+    } = {};
 
     if (title !== undefined) updateData.title = title;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
     if (albumId !== undefined) updateData.albumId = albumId || null;
+    if (dominantColor !== undefined) updateData.dominantColor = dominantColor;
+
+    // Handle file movement if isPublic is changing
+    if (isPublic !== undefined && isPublic !== currentPhoto.isPublic) {
+      // Helpers to resolve FS paths and normalize fileKey
+      const resolveFsPathFromFileKey = (fileKey: string) => {
+        if (fileKey.startsWith('private/')) return join(process.cwd(), fileKey);
+        if (fileKey.startsWith('public/')) return join(process.cwd(), fileKey);
+        if (fileKey.startsWith('uploads/')) return join(process.cwd(), 'public', fileKey);
+        return join(process.cwd(), fileKey);
+      };
+      const toPublicFileKey = (fileKey: string) => {
+        if (fileKey.startsWith('private/')) return fileKey.replace(/^private\//, '');
+        if (fileKey.startsWith('public/')) return fileKey.replace(/^public\//, '');
+        return fileKey;
+      };
+      const toPrivateFileKey = (fileKey: string) => {
+        if (fileKey.startsWith('private/')) return fileKey;
+        if (fileKey.startsWith('public/')) return fileKey.replace(/^public\//, 'private/');
+        if (fileKey.startsWith('uploads/')) return `private/${fileKey}`;
+        return `private/${fileKey}`;
+      };
+
+      const oldPath = resolveFsPathFromFileKey(currentPhoto.fileKey);
+      const oldThumbPath = oldPath.replace('/original/', '/thumbs/');
+
+      const newFileKey = isPublic
+        ? toPublicFileKey(currentPhoto.fileKey)
+        : toPrivateFileKey(currentPhoto.fileKey);
+
+      const newPath = isPublic
+        ? join(process.cwd(), 'public', newFileKey)
+        : join(process.cwd(), newFileKey);
+      const newThumbPath = newPath.replace('/original/', '/thumbs/');
+
+      // Ensure new directories exist
+      const newDir = dirname(newPath);
+      const newThumbDir = dirname(newThumbPath);
+
+      if (!existsSync(newDir)) await mkdir(newDir, { recursive: true });
+      if (!existsSync(newThumbDir)) await mkdir(newThumbDir, { recursive: true });
+
+      // Move files
+      try {
+        if (existsSync(oldPath)) await rename(oldPath, newPath);
+        if (existsSync(oldThumbPath)) await rename(oldThumbPath, newThumbPath);
+        updateData.fileKey = newFileKey;
+      } catch (error) {
+        console.error('Error moving files:', error);
+        // Continue with update even if file move fails
+      }
+    }
 
     const _photo = await prisma.photo.update({
       where: { id: params.id },
@@ -170,8 +251,14 @@ export async function DELETE(
 
     // Delete files from disk
     try {
-      const filePath = join(process.cwd(), photo.fileKey);
-      await unlink(filePath);
+      const resolveFsPathFromFileKey = (fileKey: string) => {
+        if (fileKey.startsWith('private/')) return join(process.cwd(), fileKey);
+        if (fileKey.startsWith('public/')) return join(process.cwd(), fileKey);
+        if (fileKey.startsWith('uploads/')) return join(process.cwd(), 'public', fileKey);
+        return join(process.cwd(), fileKey);
+      };
+      const filePath = resolveFsPathFromFileKey(photo.fileKey);
+      await unlink(filePath).catch(() => {});
 
       // Also try to delete thumbnail
       const thumbPath = filePath.replace('/original/', '/thumbs/');

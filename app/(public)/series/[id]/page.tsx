@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { cfImage } from '@/lib/cf-image';
+import { getImageUrl } from '@/lib/image/utils';
 
 interface Album {
   id: string;
@@ -44,8 +44,14 @@ export default function SeriesDetailPage() {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/series/${seriesId}`);
+
+      if (!response.ok) {
+        console.error('Failed to fetch series:', response.status);
+        return;
+      }
+
       const data = await response.json();
-      setSeries(data.series);
+      setSeries(data.series || null);
     } catch (error) {
       console.error('Error loading series:', error);
     } finally {
@@ -55,10 +61,11 @@ export default function SeriesDetailPage() {
 
   const getCoverImage = (album: Album) => {
     if (album.coverId) {
-      return cfImage(`/uploads/cover/${album.coverId}`, { width: 600 });
+      return getImageUrl(`uploads/cover/${album.coverId}`);
     }
     if (album.photos && album.photos.length > 0) {
-      return cfImage(`/${album.photos[0].fileKey}`, { width: 600 });
+      // 相册封面取第一张照片；若为私密则走受保护 API
+      return getImageUrl(album.photos[0].fileKey, undefined, { width: 600 });
     }
     return null;
   };

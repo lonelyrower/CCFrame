@@ -9,6 +9,7 @@ export interface UploadResult {
   width: number;
   height: number;
   size: number;
+  dominantColor?: string;
 }
 
 /**
@@ -16,7 +17,8 @@ export interface UploadResult {
  */
 export async function saveUploadedFile(
   file: File,
-  fileName: string
+  fileName: string,
+  isPublic: boolean = true
 ): Promise<UploadResult> {
   // Get file buffer
   const bytes = await file.arrayBuffer();
@@ -27,8 +29,11 @@ export async function saveUploadedFile(
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
 
-  // Create upload directory path
-  const uploadDir = join(process.cwd(), 'uploads', 'original', String(year), month);
+  // Create upload directory path based on isPublic
+  // Public files: public/uploads/... (accessible via CDN)
+  // Private files: private/uploads/... (accessible only via API)
+  const baseDir = isPublic ? 'public' : 'private';
+  const uploadDir = join(process.cwd(), baseDir, 'uploads', 'original', String(year), month);
 
   // Ensure directory exists
   if (!existsSync(uploadDir)) {
@@ -49,7 +54,7 @@ export async function saveUploadedFile(
   await writeFile(filePath, buffer);
 
   // Generate thumbnail (optional, for future use)
-  const thumbDir = join(process.cwd(), 'uploads', 'thumbs', String(year), month);
+  const thumbDir = join(process.cwd(), baseDir, 'uploads', 'thumbs', String(year), month);
   if (!existsSync(thumbDir)) {
     await mkdir(thumbDir, { recursive: true });
   }
@@ -63,8 +68,36 @@ export async function saveUploadedFile(
     .jpeg({ quality: 85 })
     .toFile(thumbPath);
 
+  // Compute dominant color on server (best-effort)
+  let dominantColor: string | undefined;
+  try {
+    const stats = await sharp(buffer).stats();
+    // Prefer sharp's dominant swatch if available
+    if ((stats as any).dominant) {
+      const { r, g, b } = (stats as any).dominant as { r: number; g: number; b: number };
+      dominantColor = `#${r.toString(16).padStart(2, '0')}${g
+        .toString(16)
+        .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    } else if (stats.channels && stats.channels.length >= 3) {
+      // Fallback: average across channels
+      const [red, green, blue] = stats.channels;
+      const r = Math.round(red.mean);
+      const g = Math.round(green.mean);
+      const b = Math.round(blue.mean);
+      dominantColor = `#${r.toString(16).padStart(2, '0')}${g
+        .toString(16)
+        .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+  } catch {
+    // Ignore color extraction errors; continue without blocking upload
+  }
+
   // Return file info
-  const fileKey = `uploads/original/${year}/${month}/${uniqueName}`;
+  // For public files, omit the 'public/' prefix since Next.js serves them from root
+  // For private files, keep the full path for API routing
+  const fileKey = isPublic
+    ? `uploads/original/${year}/${month}/${uniqueName}`
+    : `${baseDir}/uploads/original/${year}/${month}/${uniqueName}`;
 
   return {
     fileKey,
@@ -72,6 +105,7 @@ export async function saveUploadedFile(
     width: metadata.width || 0,
     height: metadata.height || 0,
     size: buffer.length,
+    dominantColor,
   };
 }
 

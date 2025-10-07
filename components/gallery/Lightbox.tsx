@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { cfImage } from '@/lib/cf-image';
+import { getImageUrl } from '@/lib/image/utils';
 
 interface Photo {
   id: string;
@@ -9,6 +9,7 @@ interface Photo {
   fileKey: string;
   width: number | null;
   height: number | null;
+  isPublic: boolean;
   tags: string[];
 }
 
@@ -93,7 +94,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
       {/* Image */}
       <div className="max-w-7xl max-h-[90vh] mx-auto px-4">
         <img
-          src={cfImage(`/${photo.fileKey}`, { width: 1920, quality: 95 })}
+          src={getImageUrl(photo.fileKey, photo.isPublic, { width: 1920, quality: 95 })}
           alt={photo.title || 'Photo'}
           className="max-w-full max-h-[80vh] object-contain mx-auto"
         />

@@ -41,8 +41,19 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
-# Create uploads directory
-RUN mkdir -p ./uploads/original && chown -R nextjs:nodejs ./uploads
+# Copy Prisma CLI and seed script dependencies
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Copy .bin directory for npx commands
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
+
+# Create uploads directory structure for public/private separation
+RUN mkdir -p ./uploads/original ./public/uploads ./private/uploads && \
+    chown -R nextjs:nodejs ./uploads ./public/uploads ./private/uploads
 
 USER nextjs
 

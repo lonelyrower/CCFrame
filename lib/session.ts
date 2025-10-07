@@ -1,9 +1,14 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'default-secret-key-change-in-production'
-);
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    'NEXTAUTH_SECRET environment variable is required for session security. ' +
+    'Generate a strong secret with: openssl rand -base64 32'
+  );
+}
+
+const SECRET_KEY = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 export interface SessionData {
   userId: string;

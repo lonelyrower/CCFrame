@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, DragEvent } from 'react';
+import { useState, useCallback, DragEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 
 interface UploadFile {
@@ -12,6 +12,11 @@ interface UploadFile {
   photoId?: string;
 }
 
+interface Album {
+  id: string;
+  title: string;
+}
+
 interface UploadZoneProps {
   onUploadComplete?: (photoIds: string[]) => void;
 }
@@ -20,6 +25,47 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Upload settings
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string>('');
+  const [tagInput, setTagInput] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadAlbums();
+  }, []);
+
+  const loadAlbums = async () => {
+    try {
+      const response = await fetch('/api/albums');
+      if (response.ok) {
+        const data = await response.json();
+        setAlbums(data.albums || []);
+      }
+    } catch (error) {
+      console.error('Error loading albums:', error);
+    }
+  };
+
+  const addTag = (tag: string) => {
+    const trimmed = tag.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags([...tags, trimmed]);
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag(tagInput);
+    }
+  };
 
   const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -75,6 +121,16 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       formData.append('file', fileToUpload.file);
       formData.append('title', fileToUpload.file.name);
       formData.append('isPublic', 'true');
+
+      // Add album if selected
+      if (selectedAlbumId) {
+        formData.append('albumId', selectedAlbumId);
+      }
+
+      // Add tags if any
+      if (tags.length > 0) {
+        formData.append('tags', JSON.stringify(tags));
+      }
 
       // Upload with progress
       const xhr = new XMLHttpRequest();
@@ -146,14 +202,18 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
     setIsUploading(false);
 
-    // Call completion callback
-    const successfulUploads = files
-      .filter((f) => f.status === 'success' && f.photoId)
-      .map((f) => f.photoId!);
+    // Call completion callback - use setFiles to get latest state
+    setFiles((currentFiles) => {
+      const successfulUploads = currentFiles
+        .filter((f) => f.status === 'success' && f.photoId)
+        .map((f) => f.photoId!);
 
-    if (successfulUploads.length > 0 && onUploadComplete) {
-      onUploadComplete(successfulUploads);
-    }
+      if (successfulUploads.length > 0 && onUploadComplete) {
+        onUploadComplete(successfulUploads);
+      }
+
+      return currentFiles; // Return unchanged
+    });
   };
 
   const clearCompleted = () => {
@@ -179,6 +239,64 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
   return (
     <div className="space-y-6">
+      {/* Upload Settings */}
+      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg space-y-4">
+        <h3 className="font-medium text-gray-900 dark:text-gray-100">Upload Settings</h3>
+
+        {/* Album Selection */}
+        <div>
+          <label htmlFor="album-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Album (Optional)
+          </label>
+          <select
+            id="album-select"
+            value={selectedAlbumId}
+            onChange={(e) => setSelectedAlbumId(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          >
+            <option value="">No Album</option>
+            {albums.map((album) => (
+              <option key={album.id} value={album.id}>
+                {album.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Tags (Optional)
+          </label>
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleTagKeyDown}
+            placeholder="Type tag and press Enter"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="hover:text-blue-600 dark:hover:text-blue-400"
+                  aria-label={`Remove tag ${tag}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Drop Zone */}
       <div
         onDragOver={handleDragOver}
@@ -266,7 +384,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
                         style={{ width: `${file.progress}%` }}
-                        aria-label={`上传进度 ${file.progress}%`}
+                        aria-label={`Upload progress ${file.progress}%`}
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">{file.progress}%</p>

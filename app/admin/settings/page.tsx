@@ -6,6 +6,7 @@ import { DEFAULT_HOME_COPY } from '@/lib/constants';
 
 export default function SettingsPage() {
   const [homeCopy, setHomeCopy] = useState('');
+  const [themeColor, setThemeColor] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -18,6 +19,7 @@ export default function SettingsPage() {
       const response = await fetch('/api/site-copy');
       const data = await response.json();
       setHomeCopy(data.homeCopy);
+      setThemeColor(data.themeColor || '');
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -31,7 +33,7 @@ export default function SettingsPage() {
       await fetch('/api/site-copy', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ homeCopy }),
+        body: JSON.stringify({ homeCopy, themeColor: themeColor || null }),
       });
       alert('保存成功！');
     } catch (error) {
@@ -134,6 +136,45 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-xl font-bold mb-4">主题设置</h2>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  主题色覆盖 (可选)
+                </label>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  设置自定义主题色，留空则使用自动提取的主题色
+                </p>
+                <div className="flex gap-3 items-center">
+                  <label htmlFor="theme-color-picker" className="sr-only">选择主题色</label>
+                  <input
+                    id="theme-color-picker"
+                    type="color"
+                    value={themeColor || '#3b82f6'}
+                    onChange={(e) => setThemeColor(e.target.value)}
+                    title="选择主题色"
+                    className="h-10 w-20 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                  />
+                  <label htmlFor="theme-color-text" className="sr-only">输入主题色代码</label>
+                  <input
+                    id="theme-color-text"
+                    type="text"
+                    value={themeColor}
+                    onChange={(e) => setThemeColor(e.target.value)}
+                    placeholder="#3b82f6"
+                    className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  />
+                  {themeColor && (
+                    <Button
+                      type="button"
+                      onClick={() => setThemeColor('')}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      清除
+                    </Button>
+                  )}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div>
                   <p className="font-medium">自动主题色</p>

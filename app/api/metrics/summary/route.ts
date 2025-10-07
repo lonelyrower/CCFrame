@@ -76,8 +76,8 @@ export async function GET(request: NextRequest) {
       take: 10,
     });
 
-    // Get top series
-    const series = await prisma.series.findMany({
+    // Get all series with photo counts, then sort and take top 10
+    const allSeries = await prisma.series.findMany({
       include: {
         albums: {
           include: {
@@ -87,13 +87,15 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      take: 10,
     });
 
-    const seriesWithCounts = series.map((s) => ({
-      ...s,
-      photoCount: s.albums.reduce((sum, album) => sum + album._count.photos, 0),
-    })).sort((a, b) => b.photoCount - a.photoCount);
+    const seriesWithCounts = allSeries
+      .map((s) => ({
+        ...s,
+        photoCount: s.albums.reduce((sum, album) => sum + album._count.photos, 0),
+      }))
+      .sort((a, b) => b.photoCount - a.photoCount)
+      .slice(0, 10);
 
     return NextResponse.json({
       traffic: {
