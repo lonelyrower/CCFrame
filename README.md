@@ -23,13 +23,53 @@ A fast, elegant personal photography portfolio built with Next.js, PostgreSQL, a
 
 ## 📦 Quick Start
 
-### Prerequisites
+### 🚀 一键部署到服务器（推荐）
+
+在任何 Linux 服务器上（Ubuntu/Debian/CentOS）运行以下命令：
+
+```bash
+wget -O ccframe.sh https://raw.githubusercontent.com/lonelyrower/CCFrame/main/ccframe.sh
+chmod +x ccframe.sh
+sudo ./ccframe.sh
+```
+
+脚本支持三种部署模式：
+
+1. **完整部署** - 域名 + Let's Encrypt SSL + HTTPS
+2. **Cloudflare部署** - 域名 + Cloudflare SSL + HTTPS
+3. **简单部署** - 仅IP访问，无SSL
+
+**功能特性：**
+
+- ✅ 自动安装 Docker、Nginx 等依赖
+- ✅ 支持镜像部署（快速）和源码部署（开发）
+- ✅ 自动配置 SSL 证书（Let's Encrypt）
+- ✅ 一键更新、备份、恢复
+- ✅ 服务管理（启动/停止/重启/日志）
+- ✅ 自动更新脚本本身
+
+**命令行快捷方式：**
+
+```bash
+./ccframe.sh install    # 安装
+./ccframe.sh update     # 更新
+./ccframe.sh status     # 查看状态
+./ccframe.sh logs       # 查看日志
+./ccframe.sh backup     # 备份数据
+./ccframe.sh restart    # 重启服务
+```
+
+---
+
+### 💻 本地开发
+
+#### Prerequisites
 
 - Node.js 18+
 - PostgreSQL 16+
 - Docker & Docker Compose (optional)
 
-### Local Development
+#### Local Development
 
 1. **Clone the repository**
 

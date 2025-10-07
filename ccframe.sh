@@ -1,0 +1,1090 @@
+#!/bin/bash
+
+#==============================================================================
+# CCFrame 一键部署管理脚本
+# 用于快速部署、更新和管理 CCFrame 摄影展示项目
+#==============================================================================
+
+set -e
+
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# 脚本版本
+SCRIPT_VERSION="1.0.0"
+SCRIPT_URL="https://raw.githubusercontent.com/lonelyrower/CCFrame/main/ccframe.sh"
+
+# 默认配置
+PROJECT_NAME="ccframe"
+INSTALL_DIR="/opt/${PROJECT_NAME}"
+DATA_DIR="${INSTALL_DIR}/data"
+BACKUP_DIR="${INSTALL_DIR}/backups"
+DOCKER_IMAGE="ghcr.io/lonelyrower/ccframe:latest"
+GITHUB_REPO="https://github.com/lonelyrower/CCFrame.git"
+
+#==============================================================================
+# 工具函数
+#==============================================================================
+
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_header() {
+    echo ""
+    echo -e "${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║${NC}  CCFrame 摄影展示项目 - 部署管理脚本 v${SCRIPT_VERSION}            ${GREEN}║${NC}"
+    echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+}
+
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        print_error "此脚本需要 root 权限运行"
+        echo "请使用: sudo bash $0"
+        exit 1
+    fi
+}
+
+check_os() {
+    if [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        OS=$ID
+        OS_VERSION=$VERSION_ID
+    else
+        print_error "无法检测操作系统"
+        exit 1
+    fi
+
+    print_info "检测到操作系统: $OS $OS_VERSION"
+}
+
+#==============================================================================
+# 系统依赖安装
+#==============================================================================
+
+install_docker() {
+    if command -v docker &> /dev/null; then
+        print_success "Docker 已安装: $(docker --version)"
+        return
+    fi
+
+    print_info "开始安装 Docker..."
+
+    case $OS in
+        ubuntu|debian)
+            apt-get update
+            apt-get install -y ca-certificates curl gnupg lsb-release
+
+            # 添加 Docker 官方 GPG key
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/$OS/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+            # 设置仓库
+            echo \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS \
+              $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            # 安装 Docker
+            apt-get update
+            apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            ;;
+
+        centos|rhel|fedora)
+            yum install -y yum-utils
+            yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+            yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            systemctl start docker
+            systemctl enable docker
+            ;;
+
+        *)
+            print_error "不支持的操作系统: $OS"
+            exit 1
+            ;;
+    esac
+
+    print_success "Docker 安装完成"
+}
+
+install_dependencies() {
+    print_info "安装系统依赖..."
+
+    case $OS in
+        ubuntu|debian)
+            apt-get update
+            apt-get install -y curl git wget nano vim
+            ;;
+        centos|rhel|fedora)
+            yum install -y curl git wget nano vim
+            ;;
+    esac
+
+    print_success "系统依赖安装完成"
+}
+
+#==============================================================================
+# SSL 证书管理
+#==============================================================================
+
+install_nginx() {
+    if command -v nginx &> /dev/null; then
+        print_success "Nginx 已安装"
+        return
+    fi
+
+    print_info "安装 Nginx..."
+
+    case $OS in
+        ubuntu|debian)
+            apt-get install -y nginx
+            ;;
+        centos|rhel|fedora)
+            yum install -y nginx
+            ;;
+    esac
+
+    systemctl enable nginx
+    print_success "Nginx 安装完成"
+}
+
+install_certbot() {
+    if command -v certbot &> /dev/null; then
+        print_success "Certbot 已安装"
+        return
+    fi
+
+    print_info "安装 Certbot..."
+
+    case $OS in
+        ubuntu|debian)
+            apt-get install -y certbot python3-certbot-nginx
+            ;;
+        centos|rhel|fedora)
+            yum install -y certbot python3-certbot-nginx
+            ;;
+    esac
+
+    print_success "Certbot 安装完成"
+}
+
+setup_letsencrypt() {
+    local domain=$1
+    local email=$2
+
+    print_info "为域名 $domain 申请 Let's Encrypt SSL 证书..."
+
+    # 停止 Nginx 以释放 80 端口
+    systemctl stop nginx 2>/dev/null || true
+
+    certbot certonly --standalone \
+        --non-interactive \
+        --agree-tos \
+        --email "$email" \
+        -d "$domain"
+
+    if [ $? -eq 0 ]; then
+        print_success "SSL 证书申请成功"
+
+        # 设置自动续期
+        (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --post-hook 'systemctl reload nginx'") | crontab -
+        print_info "已设置证书自动续期（每天凌晨3点检查）"
+    else
+        print_error "SSL 证书申请失败"
+        exit 1
+    fi
+}
+
+#==============================================================================
+# Nginx 配置
+#==============================================================================
+
+configure_nginx_ssl() {
+    local domain=$1
+    local mode=$2  # letsencrypt 或 cloudflare
+
+    print_info "配置 Nginx SSL..."
+
+    if [ "$mode" == "letsencrypt" ]; then
+        cat > /etc/nginx/sites-available/${PROJECT_NAME} <<EOF
+server {
+    listen 80;
+    server_name ${domain};
+    return 301 https://\$server_name\$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ${domain};
+
+    ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    else
+        # Cloudflare 模式：不需要 SSL 证书文件，Cloudflare 会处理
+        cat > /etc/nginx/sites-available/${PROJECT_NAME} <<EOF
+server {
+    listen 80;
+    server_name ${domain};
+
+    # Cloudflare Real IP
+    set_real_ip_from 103.21.244.0/22;
+    set_real_ip_from 103.22.200.0/22;
+    set_real_ip_from 103.31.4.0/22;
+    set_real_ip_from 104.16.0.0/13;
+    set_real_ip_from 104.24.0.0/14;
+    set_real_ip_from 108.162.192.0/18;
+    set_real_ip_from 131.0.72.0/22;
+    set_real_ip_from 141.101.64.0/18;
+    set_real_ip_from 162.158.0.0/15;
+    set_real_ip_from 172.64.0.0/13;
+    set_real_ip_from 173.245.48.0/20;
+    set_real_ip_from 188.114.96.0/20;
+    set_real_ip_from 190.93.240.0/20;
+    set_real_ip_from 197.234.240.0/22;
+    set_real_ip_from 198.41.128.0/17;
+    real_ip_header CF-Connecting-IP;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    fi
+
+    # 创建软链接
+    ln -sf /etc/nginx/sites-available/${PROJECT_NAME} /etc/nginx/sites-enabled/
+
+    # 测试配置
+    nginx -t
+
+    # 重启 Nginx
+    systemctl restart nginx
+    systemctl enable nginx
+
+    print_success "Nginx 配置完成"
+}
+
+configure_nginx_simple() {
+    print_info "配置 Nginx (无 SSL)..."
+
+    cat > /etc/nginx/sites-available/${PROJECT_NAME} <<EOF
+server {
+    listen 80;
+    server_name _;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+
+    ln -sf /etc/nginx/sites-available/${PROJECT_NAME} /etc/nginx/sites-enabled/
+    nginx -t
+    systemctl restart nginx
+    systemctl enable nginx
+
+    print_success "Nginx 配置完成"
+}
+
+#==============================================================================
+# Docker 部署
+#==============================================================================
+
+install_from_image() {
+    print_info "从 Docker 镜像安装..."
+
+    # 创建必要目录
+    mkdir -p "$DATA_DIR"/{uploads,backups}
+    mkdir -p "$INSTALL_DIR"
+
+    # 创建 .env 文件
+    cat > "$INSTALL_DIR/.env" <<EOF
+DATABASE_URL=postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+NEXTAUTH_URL=${BASE_URL}
+ADMIN_EMAIL=${ADMIN_EMAIL}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
+BASE_URL=${BASE_URL}
+EOF
+
+    # 创建 docker-compose.yml
+    cat > "$INSTALL_DIR/docker-compose.yml" <<EOF
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${PROJECT_NAME}-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ccframe
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ccframe
+    volumes:
+      - ${DATA_DIR}/postgres:/var/lib/postgresql/data
+    networks:
+      - ccframe-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ccframe"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ${DOCKER_IMAGE}
+    container_name: ${PROJECT_NAME}-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ${DATA_DIR}/uploads:/app/uploads
+      - ${DATA_DIR}/backups:/app/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ccframe-network
+
+networks:
+  ccframe-network:
+    driver: bridge
+EOF
+
+    # 拉取镜像
+    print_info "拉取 Docker 镜像..."
+    docker pull "$DOCKER_IMAGE"
+
+    # 启动服务
+    cd "$INSTALL_DIR"
+    docker compose up -d
+
+    # 等待服务启动
+    print_info "等待服务启动..."
+    sleep 10
+
+    # 运行数据库迁移
+    print_info "运行数据库迁移..."
+    docker compose exec -T app npx prisma migrate deploy || true
+
+    # 创建管理员账户
+    print_info "创建管理员账户..."
+    docker compose exec -T app npm run seed || true
+
+    print_success "从镜像安装完成"
+}
+
+install_from_source() {
+    print_info "从源码安装..."
+
+    # 安装 Node.js 18
+    if ! command -v node &> /dev/null; then
+        print_info "安装 Node.js 18..."
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        case $OS in
+            ubuntu|debian)
+                apt-get install -y nodejs
+                ;;
+            centos|rhel|fedora)
+                yum install -y nodejs
+                ;;
+        esac
+    fi
+
+    # 克隆仓库
+    print_info "克隆代码仓库..."
+    rm -rf "$INSTALL_DIR"
+    git clone "$GITHUB_REPO" "$INSTALL_DIR"
+    cd "$INSTALL_DIR"
+
+    # 创建必要目录
+    mkdir -p "$DATA_DIR"/{uploads,backups,postgres}
+
+    # 创建 .env 文件
+    cat > "$INSTALL_DIR/.env" <<EOF
+DATABASE_URL=postgresql://ccframe:${DB_PASSWORD}@localhost:5432/ccframe
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+NEXTAUTH_URL=${BASE_URL}
+ADMIN_EMAIL=${ADMIN_EMAIL}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
+BASE_URL=${BASE_URL}
+EOF
+
+    # 启动 PostgreSQL
+    cat > "$INSTALL_DIR/docker-compose.yml" <<EOF
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${PROJECT_NAME}-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ccframe
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ccframe
+    volumes:
+      - ${DATA_DIR}/postgres:/var/lib/postgresql/data
+EOF
+
+    docker compose up -d
+    sleep 5
+
+    # 安装依赖
+    print_info "安装 NPM 依赖..."
+    npm ci
+
+    # 生成 Prisma Client
+    print_info "生成 Prisma Client..."
+    npx prisma generate
+
+    # 运行数据库迁移
+    print_info "运行数据库迁移..."
+    npx prisma migrate deploy
+
+    # 创建管理员
+    print_info "创建管理员账户..."
+    npm run seed
+
+    # 构建应用
+    print_info "构建应用..."
+    npm run build
+
+    # 创建 systemd 服务
+    cat > /etc/systemd/system/${PROJECT_NAME}.service <<EOF
+[Unit]
+Description=CCFrame Photography Showcase
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=${INSTALL_DIR}
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable ${PROJECT_NAME}
+    systemctl start ${PROJECT_NAME}
+
+    print_success "从源码安装完成"
+}
+
+#==============================================================================
+# 安装主流程
+#==============================================================================
+
+do_install() {
+    print_header
+
+    echo "请选择部署模式："
+    echo "1. 完整部署 (域名 + Let's Encrypt SSL + HTTPS)"
+    echo "2. Cloudflare部署 (域名 + Cloudflare SSL + HTTPS)"
+    echo "3. 简单部署 (仅IP访问，无SSL)"
+    echo ""
+    read -p "请输入选项 [1-3]: " deploy_mode
+
+    case $deploy_mode in
+        1)
+            DEPLOY_MODE="letsencrypt"
+            read -p "请输入您的域名: " DOMAIN
+            read -p "请输入您的邮箱 (用于SSL证书): " EMAIL
+            BASE_URL="https://${DOMAIN}"
+            ;;
+        2)
+            DEPLOY_MODE="cloudflare"
+            read -p "请输入您的域名: " DOMAIN
+            BASE_URL="https://${DOMAIN}"
+            print_warning "请确保已在 Cloudflare 中设置 SSL 为 Full 模式"
+            ;;
+        3)
+            DEPLOY_MODE="simple"
+            SERVER_IP=$(curl -s ifconfig.me)
+            DOMAIN=""
+            BASE_URL="http://${SERVER_IP}"
+            print_info "检测到服务器IP: $SERVER_IP"
+            ;;
+        *)
+            print_error "无效选项"
+            exit 1
+            ;;
+    esac
+
+    # 配置参数
+    read -p "管理员邮箱 [admin@example.com]: " ADMIN_EMAIL
+    ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
+
+    read -sp "管理员密码: " ADMIN_PASSWORD
+    echo ""
+    ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123456}
+
+    # 生成随机密钥
+    DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+    NEXTAUTH_SECRET=$(openssl rand -base64 32)
+
+    print_info "配置总结:"
+    echo "  部署模式: $DEPLOY_MODE"
+    echo "  访问地址: $BASE_URL"
+    echo "  管理员邮箱: $ADMIN_EMAIL"
+    echo ""
+
+    read -p "确认安装? [y/N]: " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        print_error "安装已取消"
+        exit 0
+    fi
+
+    # 检查系统
+    check_root
+    check_os
+
+    # 安装依赖
+    install_dependencies
+    install_docker
+
+    # 配置 Nginx 和 SSL
+    if [ "$DEPLOY_MODE" != "simple" ]; then
+        install_nginx
+        if [ "$DEPLOY_MODE" == "letsencrypt" ]; then
+            install_certbot
+            setup_letsencrypt "$DOMAIN" "$EMAIL"
+            configure_nginx_ssl "$DOMAIN" "letsencrypt"
+        else
+            configure_nginx_ssl "$DOMAIN" "cloudflare"
+        fi
+    else
+        install_nginx
+        configure_nginx_simple
+    fi
+
+    # 选择安装方式
+    echo ""
+    echo "请选择安装方式："
+    echo "1. 镜像安装 (推荐，速度快)"
+    echo "2. 源码安装 (适合开发)"
+    echo ""
+    read -p "请输入选项 [1-2, 默认1]: " install_type
+    install_type=${install_type:-1}
+
+    case $install_type in
+        1)
+            install_from_image
+            ;;
+        2)
+            install_from_source
+            ;;
+        *)
+            print_error "无效选项"
+            exit 1
+            ;;
+    esac
+
+    print_success "========================================"
+    print_success "CCFrame 安装完成！"
+    print_success "========================================"
+    echo ""
+    echo "访问地址: $BASE_URL"
+    echo "管理员邮箱: $ADMIN_EMAIL"
+    echo "管理员密码: $ADMIN_PASSWORD"
+    echo ""
+    echo "管理后台: $BASE_URL/admin/login"
+    echo ""
+    print_warning "请妥善保管您的登录凭据！"
+    echo ""
+}
+
+#==============================================================================
+# 更新功能
+#==============================================================================
+
+do_update() {
+    print_header
+    print_info "开始更新 CCFrame..."
+
+    if [ ! -d "$INSTALL_DIR" ]; then
+        print_error "未检测到安装，请先运行安装"
+        exit 1
+    fi
+
+    cd "$INSTALL_DIR"
+
+    echo "请选择更新方式："
+    echo "1. 镜像更新 (推荐，速度快)"
+    echo "2. 源码更新"
+    echo ""
+    read -p "请输入选项 [1-2, 默认1]: " update_type
+    update_type=${update_type:-1}
+
+    # 备份数据
+    print_info "备份当前数据..."
+    backup_name="backup-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$BACKUP_DIR/$backup_name"
+
+    if [ -f "docker-compose.yml" ]; then
+        docker compose exec -T postgres pg_dump -U ccframe ccframe > "$BACKUP_DIR/$backup_name/database.sql"
+    fi
+
+    cp -r "$DATA_DIR/uploads" "$BACKUP_DIR/$backup_name/" 2>/dev/null || true
+
+    print_success "数据备份完成: $BACKUP_DIR/$backup_name"
+
+    case $update_type in
+        1)
+            print_info "拉取最新镜像..."
+            docker pull "$DOCKER_IMAGE"
+
+            print_info "重启服务..."
+            docker compose up -d --force-recreate
+
+            sleep 5
+
+            print_info "运行数据库迁移..."
+            docker compose exec -T app npx prisma migrate deploy || true
+            ;;
+        2)
+            print_info "拉取最新代码..."
+            git pull origin main
+
+            print_info "安装依赖..."
+            npm ci
+
+            print_info "生成 Prisma Client..."
+            npx prisma generate
+
+            print_info "运行数据库迁移..."
+            npx prisma migrate deploy
+
+            print_info "重新构建..."
+            npm run build
+
+            print_info "重启服务..."
+            if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+                systemctl restart ${PROJECT_NAME}
+            else
+                docker compose up -d --force-recreate
+            fi
+            ;;
+        *)
+            print_error "无效选项"
+            exit 1
+            ;;
+    esac
+
+    print_success "更新完成！"
+}
+
+#==============================================================================
+# 管理功能
+#==============================================================================
+
+do_status() {
+    print_header
+    print_info "CCFrame 服务状态："
+    echo ""
+
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        docker compose ps
+    fi
+
+    if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+        echo ""
+        systemctl status ${PROJECT_NAME} --no-pager
+    fi
+
+    echo ""
+    print_info "Nginx 状态:"
+    systemctl status nginx --no-pager | head -5
+}
+
+do_logs() {
+    print_header
+
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        echo "Docker 服务日志 (按 Ctrl+C 退出):"
+        echo ""
+        docker compose logs -f --tail=100
+    elif [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+        echo "系统服务日志 (按 Ctrl+C 退出):"
+        echo ""
+        journalctl -u ${PROJECT_NAME} -f -n 100
+    else
+        print_error "未找到服务"
+    fi
+}
+
+do_restart() {
+    print_header
+    print_info "重启 CCFrame 服务..."
+
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        docker compose restart
+    fi
+
+    if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+        systemctl restart ${PROJECT_NAME}
+    fi
+
+    print_info "重启 Nginx..."
+    systemctl restart nginx
+
+    print_success "服务重启完成"
+}
+
+do_stop() {
+    print_header
+    print_info "停止 CCFrame 服务..."
+
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        docker compose stop
+    fi
+
+    if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+        systemctl stop ${PROJECT_NAME}
+    fi
+
+    print_success "服务已停止"
+}
+
+do_start() {
+    print_header
+    print_info "启动 CCFrame 服务..."
+
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        docker compose start
+    fi
+
+    if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+        systemctl start ${PROJECT_NAME}
+    fi
+
+    print_success "服务已启动"
+}
+
+#==============================================================================
+# 备份和恢复
+#==============================================================================
+
+do_backup() {
+    print_header
+    print_info "创建备份..."
+
+    backup_name="manual-backup-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$BACKUP_DIR/$backup_name"
+
+    # 备份数据库
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        print_info "备份数据库..."
+        docker compose exec -T postgres pg_dump -U ccframe ccframe > "$BACKUP_DIR/$backup_name/database.sql"
+    fi
+
+    # 备份上传文件
+    print_info "备份上传文件..."
+    cp -r "$DATA_DIR/uploads" "$BACKUP_DIR/$backup_name/" 2>/dev/null || true
+
+    # 备份配置
+    print_info "备份配置文件..."
+    cp "$INSTALL_DIR/.env" "$BACKUP_DIR/$backup_name/" 2>/dev/null || true
+
+    # 创建压缩包
+    cd "$BACKUP_DIR"
+    tar -czf "${backup_name}.tar.gz" "$backup_name"
+    rm -rf "$backup_name"
+
+    print_success "备份完成: $BACKUP_DIR/${backup_name}.tar.gz"
+}
+
+do_restore() {
+    print_header
+
+    echo "可用的备份:"
+    echo ""
+    ls -lh "$BACKUP_DIR"/*.tar.gz 2>/dev/null || echo "  (无备份文件)"
+    echo ""
+
+    read -p "请输入备份文件名 (不含路径): " backup_file
+
+    if [ ! -f "$BACKUP_DIR/$backup_file" ]; then
+        print_error "备份文件不存在"
+        exit 1
+    fi
+
+    read -p "确认恢复备份? 这将覆盖当前数据! [y/N]: " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        print_error "恢复已取消"
+        exit 0
+    fi
+
+    # 解压备份
+    cd "$BACKUP_DIR"
+    tar -xzf "$backup_file"
+    backup_dir="${backup_file%.tar.gz}"
+
+    # 恢复数据库
+    if [ -f "$backup_dir/database.sql" ]; then
+        print_info "恢复数据库..."
+        cd "$INSTALL_DIR"
+        docker compose exec -T postgres psql -U ccframe -d ccframe < "$BACKUP_DIR/$backup_dir/database.sql"
+    fi
+
+    # 恢复上传文件
+    if [ -d "$backup_dir/uploads" ]; then
+        print_info "恢复上传文件..."
+        rm -rf "$DATA_DIR/uploads"
+        cp -r "$backup_dir/uploads" "$DATA_DIR/"
+    fi
+
+    # 恢复配置
+    if [ -f "$backup_dir/.env" ]; then
+        print_info "恢复配置文件..."
+        cp "$backup_dir/.env" "$INSTALL_DIR/"
+    fi
+
+    # 清理
+    rm -rf "$BACKUP_DIR/$backup_dir"
+
+    print_success "恢复完成，请重启服务"
+}
+
+#==============================================================================
+# 卸载
+#==============================================================================
+
+do_uninstall() {
+    print_header
+    print_warning "警告: 这将完全删除 CCFrame 及其所有数据！"
+    echo ""
+    read -p "是否在卸载前创建备份? [Y/n]: " backup_confirm
+
+    if [[ ! "$backup_confirm" =~ ^[Nn]$ ]]; then
+        do_backup
+    fi
+
+    echo ""
+    read -p "确认卸载? 输入 'YES' 继续: " confirm
+
+    if [ "$confirm" != "YES" ]; then
+        print_error "卸载已取消"
+        exit 0
+    fi
+
+    print_info "开始卸载..."
+
+    # 停止服务
+    if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+        cd "$INSTALL_DIR"
+        docker compose down -v
+    fi
+
+    if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
+        systemctl stop ${PROJECT_NAME}
+        systemctl disable ${PROJECT_NAME}
+        rm -f "/etc/systemd/system/${PROJECT_NAME}.service"
+        systemctl daemon-reload
+    fi
+
+    # 删除 Nginx 配置
+    rm -f /etc/nginx/sites-enabled/${PROJECT_NAME}
+    rm -f /etc/nginx/sites-available/${PROJECT_NAME}
+    systemctl reload nginx
+
+    # 删除文件
+    print_warning "是否删除数据目录? (包含上传的照片) [y/N]: "
+    read delete_data
+
+    if [[ "$delete_data" =~ ^[Yy]$ ]]; then
+        rm -rf "$INSTALL_DIR"
+        print_info "已删除所有数据"
+    else
+        rm -rf "$INSTALL_DIR"/{app,docker-compose.yml,.env}
+        print_info "已保留数据目录: $DATA_DIR 和 $BACKUP_DIR"
+    fi
+
+    print_success "卸载完成"
+}
+
+#==============================================================================
+# 更新脚本
+#==============================================================================
+
+do_update_script() {
+    print_header
+    print_info "更新脚本到最新版本..."
+
+    # 下载最新脚本
+    temp_script="/tmp/ccframe-new.sh"
+
+    if curl -fsSL "$SCRIPT_URL" -o "$temp_script"; then
+        chmod +x "$temp_script"
+
+        # 备份当前脚本
+        cp "$0" "$0.bak"
+
+        # 替换脚本
+        mv "$temp_script" "$0"
+
+        print_success "脚本更新完成！"
+        print_info "旧版本已备份到: $0.bak"
+
+        # 重新运行新脚本
+        exec "$0" "$@"
+    else
+        print_error "下载失败，请检查网络连接"
+        exit 1
+    fi
+}
+
+#==============================================================================
+# 主菜单
+#==============================================================================
+
+show_menu() {
+    print_header
+
+    echo "请选择操作："
+    echo ""
+    echo "  安装和更新:"
+    echo "    1) 安装 CCFrame"
+    echo "    2) 更新 CCFrame"
+    echo "    3) 更新脚本"
+    echo ""
+    echo "  服务管理:"
+    echo "    4) 查看状态"
+    echo "    5) 启动服务"
+    echo "    6) 停止服务"
+    echo "    7) 重启服务"
+    echo "    8) 查看日志"
+    echo ""
+    echo "  数据管理:"
+    echo "    9) 备份数据"
+    echo "   10) 恢复数据"
+    echo ""
+    echo "  其他:"
+    echo "   11) 卸载 CCFrame"
+    echo "    0) 退出"
+    echo ""
+    read -p "请输入选项 [0-11]: " choice
+
+    case $choice in
+        1) do_install ;;
+        2) do_update ;;
+        3) do_update_script ;;
+        4) do_status ;;
+        5) do_start ;;
+        6) do_stop ;;
+        7) do_restart ;;
+        8) do_logs ;;
+        9) do_backup ;;
+        10) do_restore ;;
+        11) do_uninstall ;;
+        0) exit 0 ;;
+        *)
+            print_error "无效选项"
+            sleep 2
+            show_menu
+            ;;
+    esac
+}
+
+#==============================================================================
+# 主程序入口
+#==============================================================================
+
+main() {
+    # 如果有参数，直接执行对应功能
+    if [ $# -gt 0 ]; then
+        case $1 in
+            install) do_install ;;
+            update) do_update ;;
+            status) do_status ;;
+            logs) do_logs ;;
+            restart) do_restart ;;
+            start) do_start ;;
+            stop) do_stop ;;
+            backup) do_backup ;;
+            restore) do_restore ;;
+            uninstall) do_uninstall ;;
+            update-script) do_update_script ;;
+            *)
+                echo "用法: $0 {install|update|status|logs|restart|start|stop|backup|restore|uninstall|update-script}"
+                exit 1
+                ;;
+        esac
+    else
+        # 无参数，显示菜单
+        show_menu
+    fi
+}
+
+# 运行主程序
+main "$@"
