@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const contentType = contentTypes[photo.ext.toLowerCase()] || 'application/octet-stream';
 
     // Return image with no-store cache control for private images
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': photo.isPublic
