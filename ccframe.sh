@@ -823,12 +823,10 @@ do_update() {
 
             print_info "运行数据库迁移..."
             if ! run_migrations_image_mode; then
-                print_warning "容器内迁移失败，尝试回退方案..."
-                if ! run_migrations_ephemeral; then
-                    print_error "数据库迁移失败"
-                    print_info "请检查日志: docker compose logs app"
-                    exit 1
-                fi
+                print_error "数据库迁移失败"
+                print_info "请检查日志: docker compose logs app"
+                print_info "如为全新安装，建议使用安装菜单的 镜像安装 或 源码安装；如为升级，建议先修复应用镜像中的 Prisma 引擎后再更新。"
+                exit 1
             fi
             ;;
         2)
