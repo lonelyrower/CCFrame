@@ -147,6 +147,8 @@ run_migrations_and_seed_image_mode() {
     if ! run_seed_ephemeral; then
         return 1
     fi
+    # 清理临时目录
+    rm -rf "$INSTALL_DIR/tmp-prisma" "$INSTALL_DIR/tmp-scripts" 2>/dev/null || true
     return 0
 }
 
@@ -341,8 +343,34 @@ configure_nginx_ssl() {
 
     print_info "配置 Nginx SSL..."
 
+    # 选择配置目录（Debian系使用 sites-available，RHEL系使用 conf.d）
+    local nginx_conf_dir
+    local use_sites=true
+    case $OS in
+        ubuntu|debian)
+            nginx_conf_dir="/etc/nginx/sites-available"
+            ;;
+        centos|rhel|fedora)
+            nginx_conf_dir="/etc/nginx/conf.d"
+            use_sites=false
+            ;;
+        *)
+            nginx_conf_dir="/etc/nginx/conf.d"
+            use_sites=false
+            ;;
+    esac
+
+    mkdir -p "$nginx_conf_dir"
+
+    local target_conf
+    if [ "$use_sites" = true ]; then
+        target_conf="/etc/nginx/sites-available/${PROJECT_NAME}"
+    else
+        target_conf="${nginx_conf_dir}/${PROJECT_NAME}.conf"
+    fi
+
     if [ "$mode" == "letsencrypt" ]; then
-        cat > /etc/nginx/sites-available/${PROJECT_NAME} <<EOF
+        cat > "$target_conf" <<EOF
 server {
     listen 80;
     server_name ${domain};
@@ -377,7 +405,7 @@ server {
 EOF
     else
         # Cloudflare 模式：不需要 SSL 证书文件，Cloudflare 会处理
-        cat > /etc/nginx/sites-available/${PROJECT_NAME} <<EOF
+        cat > "$target_conf" <<EOF
 server {
     listen 80;
     server_name ${domain};
@@ -417,8 +445,11 @@ server {
 EOF
     fi
 
-    # 创建软链接
-    ln -sf /etc/nginx/sites-available/${PROJECT_NAME} /etc/nginx/sites-enabled/
+    # Debian/Ubuntu: 启用站点配置
+    if [ "$use_sites" = true ]; then
+        mkdir -p /etc/nginx/sites-enabled
+        ln -sf "$target_conf" /etc/nginx/sites-enabled/
+    fi
 
     # 测试配置
     nginx -t
@@ -433,7 +464,33 @@ EOF
 configure_nginx_simple() {
     print_info "配置 Nginx (无 SSL)..."
 
-    cat > /etc/nginx/sites-available/${PROJECT_NAME} <<EOF
+    # 选择配置目录（Debian系使用 sites-available，RHEL系使用 conf.d）
+    local nginx_conf_dir
+    local use_sites=true
+    case $OS in
+        ubuntu|debian)
+            nginx_conf_dir="/etc/nginx/sites-available"
+            ;;
+        centos|rhel|fedora)
+            nginx_conf_dir="/etc/nginx/conf.d"
+            use_sites=false
+            ;;
+        *)
+            nginx_conf_dir="/etc/nginx/conf.d"
+            use_sites=false
+            ;;
+    esac
+
+    mkdir -p "$nginx_conf_dir"
+
+    local target_conf
+    if [ "$use_sites" = true ]; then
+        target_conf="/etc/nginx/sites-available/${PROJECT_NAME}"
+    else
+        target_conf="${nginx_conf_dir}/${PROJECT_NAME}.conf"
+    fi
+
+    cat > "$target_conf" <<EOF
 server {
     listen 80;
     server_name _;
@@ -454,7 +511,10 @@ server {
 }
 EOF
 
-    ln -sf /etc/nginx/sites-available/${PROJECT_NAME} /etc/nginx/sites-enabled/
+    if [ "$use_sites" = true ]; then
+        mkdir -p /etc/nginx/sites-enabled
+        ln -sf "$target_conf" /etc/nginx/sites-enabled/
+    fi
     nginx -t
     systemctl restart nginx
     systemctl enable nginx
@@ -572,8 +632,9 @@ install_from_source() {
     git clone "$GITHUB_REPO" "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 
-    # 创建必要目录
-    mkdir -p "$DATA_DIR"/{uploads,backups,postgres}
+    # 创建必要目录（源码模式保留本地上传目录在项目内）
+    mkdir -p "$DATA_DIR"/{backups,postgres}
+    mkdir -p "$INSTALL_DIR/public/uploads" "$INSTALL_DIR/private/uploads"
 
     # 创建 .env 文件
     cat > "$INSTALL_DIR/.env" <<EOF
@@ -585,10 +646,8 @@ ADMIN_PASSWORD=${ADMIN_PASSWORD}
 BASE_URL=${BASE_URL}
 EOF
 
-    # 启动 PostgreSQL
+    # 启动 PostgreSQL（Compose）
     cat > "$INSTALL_DIR/docker-compose.yml" <<EOF
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -682,7 +741,16 @@ do_install() {
             ;;
         3)
             DEPLOY_MODE="simple"
-            SERVER_IP=$(curl -s ifconfig.me)
+            SERVER_IP=$(curl -s ifconfig.me || true)
+            if [ -z "$SERVER_IP" ]; then
+                SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+            fi
+            if [ -z "$SERVER_IP" ]; then
+                SERVER_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++){if($i=="src"){print $(i+1); exit}}}')
+            fi
+            if [ -z "$SERVER_IP" ]; then
+                SERVER_IP="127.0.0.1"
+            fi
             DOMAIN=""
             BASE_URL="http://${SERVER_IP}"
             print_info "检测到服务器IP: $SERVER_IP"
@@ -807,7 +875,18 @@ do_update() {
         docker compose exec -T postgres pg_dump -U ccframe ccframe > "$BACKUP_DIR/$backup_name/database.sql"
     fi
 
-    cp -r "$DATA_DIR/uploads" "$BACKUP_DIR/$backup_name/" 2>/dev/null || true
+    # 备份上传目录（容器模式与源码模式兼容）
+    if [ -d "$DATA_DIR/public_uploads" ] || [ -d "$DATA_DIR/private_uploads" ]; then
+        mkdir -p "$BACKUP_DIR/$backup_name/uploads"
+        [ -d "$DATA_DIR/public_uploads" ] && cp -r "$DATA_DIR/public_uploads" "$BACKUP_DIR/$backup_name/uploads/" 2>/dev/null || true
+        [ -d "$DATA_DIR/private_uploads" ] && cp -r "$DATA_DIR/private_uploads" "$BACKUP_DIR/$backup_name/uploads/" 2>/dev/null || true
+    else
+        if [ -d "$INSTALL_DIR/public/uploads" ] || [ -d "$INSTALL_DIR/private/uploads" ]; then
+            mkdir -p "$BACKUP_DIR/$backup_name/uploads/public" "$BACKUP_DIR/$backup_name/uploads/private"
+            [ -d "$INSTALL_DIR/public/uploads" ] && cp -r "$INSTALL_DIR/public/uploads" "$BACKUP_DIR/$backup_name/uploads/public/" 2>/dev/null || true
+            [ -d "$INSTALL_DIR/private/uploads" ] && cp -r "$INSTALL_DIR/private/uploads" "$BACKUP_DIR/$backup_name/uploads/private/" 2>/dev/null || true
+        fi
+    fi
 
     print_success "数据备份完成: $BACKUP_DIR/$backup_name"
 
@@ -973,7 +1052,27 @@ do_backup() {
 
     # 备份上传文件
     print_info "备份上传文件..."
-    cp -r "$DATA_DIR/uploads" "$BACKUP_DIR/$backup_name/" 2>/dev/null || true
+    # 容器模式：使用 data 目录下的 public/private_uploads
+    if [ -d "$DATA_DIR/public_uploads" ] || [ -d "$DATA_DIR/private_uploads" ]; then
+        mkdir -p "$BACKUP_DIR/$backup_name/uploads"
+        if [ -d "$DATA_DIR/public_uploads" ]; then
+            cp -r "$DATA_DIR/public_uploads" "$BACKUP_DIR/$backup_name/uploads/" 2>/dev/null || true
+        fi
+        if [ -d "$DATA_DIR/private_uploads" ]; then
+            cp -r "$DATA_DIR/private_uploads" "$BACKUP_DIR/$backup_name/uploads/" 2>/dev/null || true
+        fi
+    else
+        # 源码模式：直接从项目目录下的 public/private/uploads
+        if [ -d "$INSTALL_DIR/public/uploads" ] || [ -d "$INSTALL_DIR/private/uploads" ]; then
+            mkdir -p "$BACKUP_DIR/$backup_name/uploads/public" "$BACKUP_DIR/$backup_name/uploads/private"
+            if [ -d "$INSTALL_DIR/public/uploads" ]; then
+                cp -r "$INSTALL_DIR/public/uploads" "$BACKUP_DIR/$backup_name/uploads/public/" 2>/dev/null || true
+            fi
+            if [ -d "$INSTALL_DIR/private/uploads" ]; then
+                cp -r "$INSTALL_DIR/private/uploads" "$BACKUP_DIR/$backup_name/uploads/private/" 2>/dev/null || true
+            fi
+        fi
+    fi
 
     # 备份配置
     print_info "备份配置文件..."
@@ -1020,11 +1119,44 @@ do_restore() {
         docker compose exec -T postgres psql -U ccframe -d ccframe < "$BACKUP_DIR/$backup_dir/database.sql"
     fi
 
-    # 恢复上传文件
-    if [ -d "$backup_dir/uploads" ]; then
-        print_info "恢复上传文件..."
-        rm -rf "$DATA_DIR/uploads"
-        cp -r "$backup_dir/uploads" "$DATA_DIR/"
+    # 恢复上传文件（兼容容器模式与源码模式的目录结构）
+    print_info "恢复上传文件..."
+    # 优先容器模式
+    if [ -d "$DATA_DIR" ]; then
+        mkdir -p "$DATA_DIR/public_uploads" "$DATA_DIR/private_uploads"
+        if [ -d "$backup_dir/uploads/public_uploads" ]; then
+            rm -rf "$DATA_DIR/public_uploads"
+            cp -r "$backup_dir/uploads/public_uploads" "$DATA_DIR/" 2>/dev/null || true
+        elif [ -d "$backup_dir/public_uploads" ]; then
+            rm -rf "$DATA_DIR/public_uploads"
+            cp -r "$backup_dir/public_uploads" "$DATA_DIR/" 2>/dev/null || true
+        fi
+        if [ -d "$backup_dir/uploads/private_uploads" ]; then
+            rm -rf "$DATA_DIR/private_uploads"
+            cp -r "$backup_dir/uploads/private_uploads" "$DATA_DIR/" 2>/dev/null || true
+        elif [ -d "$backup_dir/private_uploads" ]; then
+            rm -rf "$DATA_DIR/private_uploads"
+            cp -r "$backup_dir/private_uploads" "$DATA_DIR/" 2>/dev/null || true
+        fi
+    fi
+
+    # 源码模式：项目内 public/private/uploads
+    if [ -d "$INSTALL_DIR/public" ] || [ -d "$INSTALL_DIR/private" ]; then
+        mkdir -p "$INSTALL_DIR/public/uploads" "$INSTALL_DIR/private/uploads"
+        if [ -d "$backup_dir/uploads/public/uploads" ]; then
+            rm -rf "$INSTALL_DIR/public/uploads"
+            cp -r "$backup_dir/uploads/public/uploads" "$INSTALL_DIR/public/" 2>/dev/null || true
+        elif [ -d "$backup_dir/public/uploads" ]; then
+            rm -rf "$INSTALL_DIR/public/uploads"
+            cp -r "$backup_dir/public/uploads" "$INSTALL_DIR/public/" 2>/dev/null || true
+        fi
+        if [ -d "$backup_dir/uploads/private/uploads" ]; then
+            rm -rf "$INSTALL_DIR/private/uploads"
+            cp -r "$backup_dir/uploads/private/uploads" "$INSTALL_DIR/private/" 2>/dev/null || true
+        elif [ -d "$backup_dir/private/uploads" ]; then
+            rm -rf "$INSTALL_DIR/private/uploads"
+            cp -r "$backup_dir/private/uploads" "$INSTALL_DIR/private/" 2>/dev/null || true
+        fi
     fi
 
     # 恢复配置
