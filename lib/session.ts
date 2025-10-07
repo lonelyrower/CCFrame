@@ -1,14 +1,23 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error(
-    'NEXTAUTH_SECRET environment variable is required for session security. ' +
-    'Generate a strong secret with: openssl rand -base64 32'
-  );
+// Lazily resolve secret to avoid crashing builds when env is unset.
+function getSecretKey(): Uint8Array {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    // In production, require the secret at runtime when we actually need it.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'NEXTAUTH_SECRET is required in production. ' +
+          'Generate one with: openssl rand -base64 32'
+      );
+    }
+    // In non‑prod (dev/test/build), fall back to a deterministic dev secret.
+    // This prevents build-time crashes while keeping production strict.
+    return new TextEncoder().encode('insecure-development-secret');
+  }
+  return new TextEncoder().encode(secret);
 }
-
-const SECRET_KEY = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 export interface SessionData {
   userId: string;
@@ -25,7 +34,7 @@ export async function createSession(userId: string, email: string): Promise<stri
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d') // 7 days
-    .sign(SECRET_KEY);
+    .sign(getSecretKey());
 
   return token;
 }
@@ -35,7 +44,7 @@ export async function createSession(userId: string, email: string): Promise<stri
  */
 export async function verifySession(token: string): Promise<SessionData | null> {
   try {
-    const verified = await jwtVerify(token, SECRET_KEY);
+    const verified = await jwtVerify(token, getSecretKey());
     const payload = verified.payload;
     
     // Validate payload has required fields
