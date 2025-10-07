@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ccframe-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ccframe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ccframe_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ccframe}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups/db:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ccframe}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ccframe-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ccframe}:${POSTGRES_PASSWORD:-ccframe_password}@postgres:5432/${POSTGRES_DB:-ccframe}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      NODE_ENV: production
+    volumes:
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npx prisma migrate deploy &&
+        node scripts/seed-admin.js &&
+        node server.js
+      "
+
+volumes:
+  postgres_data:

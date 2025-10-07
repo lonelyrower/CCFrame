@@ -1,0 +1,83 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Series {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  summary   String?
+  coverId   String?
+  albums    Album[]
+  createdAt DateTime @default(now())
+}
+
+model Album {
+  id        String   @id @default(cuid())
+  title     String
+  summary   String?
+  seriesId  String?
+  coverId   String?
+  series    Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  photos    Photo[]
+  createdAt DateTime @default(now())
+}
+
+model Photo {
+  id        String     @id @default(cuid())
+  title     String?
+  fileKey   String
+  ext       String
+  width     Int?
+  height    Int?
+  takenAt   DateTime?
+  isPublic  Boolean    @default(true)
+  albumId   String?
+  album     Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  tags      PhotoTag[]
+  createdAt DateTime   @default(now())
+}
+
+model Tag {
+  id     String     @id @default(cuid())
+  name   String     @unique
+  photos PhotoTag[]
+}
+
+model PhotoTag {
+  photoId String
+  tagId   String
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([photoId, tagId])
+}
+
+model SiteCopy {
+  id        Int      @id @default(1)
+  homeCopy  String?
+  updatedAt DateTime @updatedAt
+}
+
+model MetricsDaily {
+  day       DateTime @id
+  pv        Int      @default(0)
+  uv        Int      @default(0)
+  topTags   Json?
+  topAlbums Json?
+  topSeries Json?
+}

@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+dist
+coverage
+.env*
+*.log
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+public
+uploads
+backups
