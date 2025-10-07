@@ -38,6 +38,118 @@ ensure_tty_stdin() {
     fi
 }
 
+# 计算 Compose 网络名（默认使用安装目录名作为 project name）
+compose_network_name() {
+    local project_name
+    project_name=$(basename "$INSTALL_DIR")
+    echo "${project_name}_ccframe-network"
+}
+
+# 在镜像容器内尝试运行迁移
+run_migrations_image_mode() {
+    print_info "运行数据库迁移 (容器内)..."
+    if docker compose exec -T app npx prisma migrate deploy; then
+        return 0
+    fi
+    return 1
+}
+
+# 使用临时 Debian Node 容器运行 Prisma 迁移（db push 回退）
+run_migrations_ephemeral() {
+    print_info "运行数据库迁移 (回退: Debian 临时容器)..."
+
+    local network
+    network=$(compose_network_name)
+
+    # 准备临时目录并从应用容器拷贝 prisma 目录
+    local tmp_dir="$INSTALL_DIR/tmp-prisma"
+    rm -rf "$tmp_dir"
+    mkdir -p "$tmp_dir"
+    if ! docker cp ${PROJECT_NAME}-app:/app/prisma "$tmp_dir/" 2>/dev/null; then
+        print_error "无法从应用容器拷贝 prisma 目录"
+        return 1
+    fi
+
+    # 若无 migrations，则使用 db push 直接按 schema 同步
+    local schema_path="/work/prisma/schema.prisma"
+    local cmd_db_push="npx -y prisma@5.18.0 db push --schema=${schema_path} --skip-generate --accept-data-loss"
+
+    if ! docker run --rm \
+        --network "$network" \
+        -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe" \
+        -v "$tmp_dir:/work" \
+        node:18-bullseye bash -lc "${cmd_db_push}"; then
+        return 1
+    fi
+
+    return 0
+}
+
+# 使用临时 Debian Node 容器运行种子脚本
+run_seed_ephemeral() {
+    print_info "创建管理员账户 (回退: Debian 临时容器)..."
+
+    local network
+    network=$(compose_network_name)
+
+    local tmp_dir="$INSTALL_DIR/tmp-prisma"
+    local tmp_scripts="$INSTALL_DIR/tmp-scripts"
+    rm -rf "$tmp_scripts"
+    mkdir -p "$tmp_scripts"
+    if ! docker cp ${PROJECT_NAME}-app:/app/scripts "$tmp_scripts/" 2>/dev/null; then
+        print_error "无法从应用容器拷贝 scripts 目录"
+        return 1
+    fi
+
+    local schema_path="/work/prisma/schema.prisma"
+    local seed_path="/work/scripts/seed-admin.js"
+
+    local bootstrap="\
+set -e; \
+cd /work; \
+npm -y init >/dev/null 2>&1; \
+npm i -y prisma@5.18.0 @prisma/client@5.18.0 bcryptjs >/dev/null 2>&1; \
+npx prisma generate --schema=${schema_path} >/dev/null 2>&1; \
+node ${seed_path}"
+
+    if ! docker run --rm \
+        --network "$network" \
+        -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe" \
+        -e ADMIN_EMAIL="$ADMIN_EMAIL" \
+        -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+        -v "$INSTALL_DIR/tmp-prisma:/work/prisma" \
+        -v "$tmp_scripts:/work/scripts" \
+        node:18-bullseye bash -lc "$bootstrap"; then
+        return 1
+    fi
+
+    return 0
+}
+
+# 综合执行（镜像安装模式）：先尝试容器内迁移与种子，失败则用回退方案
+run_migrations_and_seed_image_mode() {
+    # 优先尝试在应用容器内完成
+    if run_migrations_image_mode; then
+        print_info "迁移成功，创建管理员账户..."
+        if docker compose exec -T app npm run seed; then
+            return 0
+        else
+            print_warning "容器内种子失败，尝试回退方案..."
+        fi
+    else
+        print_warning "容器内迁移失败，尝试回退方案..."
+    fi
+
+    # 回退：使用 Debian 临时容器完成迁移与种子
+    if ! run_migrations_ephemeral; then
+        return 1
+    fi
+    if ! run_seed_ephemeral; then
+        return 1
+    fi
+    return 0
+}
+
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -373,8 +485,6 @@ EOF
 
     # 创建 docker-compose.yml
     cat > "$INSTALL_DIR/docker-compose.yml" <<EOF
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -429,19 +539,10 @@ EOF
     print_info "等待服务启动..."
     sleep 10
 
-    # 运行数据库迁移
-    print_info "运行数据库迁移..."
-    if ! docker compose exec -T app npx prisma migrate deploy; then
-        print_error "数据库迁移失败"
-        print_info "请检查日志: docker compose logs app"
-        exit 1
-    fi
-
-    # 创建管理员账户
-    print_info "创建管理员账户..."
-    if ! docker compose exec -T app npm run seed; then
-        print_error "管理员账户创建失败"
-        print_info "请检查日志: docker compose logs app"
+    # 运行数据库迁移（含回退方案）
+    if ! run_migrations_and_seed_image_mode; then
+        print_error "初始化数据库与管理员失败"
+        print_info "请查看日志并考虑选择 源码安装 模式重试"
         exit 1
     fi
 
@@ -721,10 +822,13 @@ do_update() {
             sleep 5
 
             print_info "运行数据库迁移..."
-            if ! docker compose exec -T app npx prisma migrate deploy; then
-                print_error "数据库迁移失败"
-                print_info "请检查日志: docker compose logs app"
-                exit 1
+            if ! run_migrations_image_mode; then
+                print_warning "容器内迁移失败，尝试回退方案..."
+                if ! run_migrations_ephemeral; then
+                    print_error "数据库迁移失败"
+                    print_info "请检查日志: docker compose logs app"
+                    exit 1
+                fi
             fi
             ;;
         2)
