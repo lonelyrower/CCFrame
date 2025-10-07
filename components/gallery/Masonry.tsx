@@ -118,7 +118,7 @@ function PhotoCard({
   return (
     <div
       ref={imgRef}
-      className="group relative overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800 cursor-pointer transition-transform hover:scale-[1.02]"
+      className="group relative overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800 cursor-pointer ring-1 ring-inset ring-black/10 dark:ring-white/10 transform-gpu will-change-transform transition duration-200 ease-out hover:scale-[1.01] hover:shadow-md hover:shadow-black/20 dark:hover:shadow-black/40"
       style={{ aspectRatio: `1 / ${aspectRatio}` }}
       onClick={() => onClick?.(photo)}
     >
@@ -135,7 +135,7 @@ function PhotoCard({
           />
 
           {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out">
             <div className="absolute bottom-0 left-0 right-0 p-4">
               {photo.title && (
                 <p className="text-white text-sm font-medium mb-2">{photo.title}</p>

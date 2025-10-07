@@ -351,7 +351,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
               </Button>
               <Button
                 onClick={startUpload}
-                variant="primary"
+                variant="outline"
                 size="sm"
                 isLoading={isUploading}
                 disabled={isUploading || files.every((f) => f.status === 'success')}

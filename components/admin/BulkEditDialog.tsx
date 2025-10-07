@@ -187,7 +187,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
           </Button>
           <Button
             onClick={handleSave}
-            variant="primary"
+            variant="outline"
             isLoading={isLoading}
             disabled={isLoading || (!updateTags && !updateAlbum)}
           >

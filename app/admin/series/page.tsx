@@ -112,7 +112,7 @@ export default function SeriesManagementPage() {
           <h1 className="text-3xl font-serif font-bold">系列管理</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">管理照片系列集</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="primary">
+        <Button onClick={() => setShowCreateModal(true)} variant="outline">
           创建系列
         </Button>
       </div>
@@ -124,7 +124,7 @@ export default function SeriesManagementPage() {
       ) : seriesList.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 mb-4">暂无系列</p>
-          <Button onClick={() => setShowCreateModal(true)} variant="primary">
+          <Button onClick={() => setShowCreateModal(true)} variant="outline">
             创建第一个系列
           </Button>
         </div>
@@ -215,7 +215,7 @@ export default function SeriesManagementPage() {
             <div className="flex gap-3 mt-6">
               <Button
                 onClick={editingSeries ? handleUpdate : handleCreate}
-                variant="primary"
+                variant="outline"
                 className="flex-1"
                 disabled={!slug.trim() || !title.trim()}
               >

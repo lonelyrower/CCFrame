@@ -92,7 +92,7 @@ export default function SettingsPage() {
               <div className="flex gap-3">
                 <Button
                   onClick={handleSave}
-                  variant="primary"
+                  variant="outline"
                   isLoading={isSaving}
                 >
                   保存文案

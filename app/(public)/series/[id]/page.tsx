@@ -114,12 +114,12 @@ export default function SeriesDetailPage() {
                 <p className="text-gray-600 dark:text-gray-400">该系列暂无相册</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
                 {series.albums.map((album) => (
                   <Link
                     key={album.id}
                     href={`/albums/${album.id}`}
-                    className="group block bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition-shadow overflow-hidden"
+                    className="group block bg-white dark:bg-gray-800 rounded-3xl ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-sm hover:shadow-md overflow-hidden transform-gpu transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] card-soft"
                   >
                     {/* Cover */}
                     <div className="aspect-[4/3] bg-gray-200 dark:bg-gray-700 overflow-hidden">
@@ -149,16 +149,16 @@ export default function SeriesDetailPage() {
                     </div>
 
                     {/* Info */}
-                    <div className="p-4">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <div className="p-6">
+                      <h3 className="text-xl font-serif font-semibold tracking-tight text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {album.title}
                       </h3>
                       {album.summary && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                        <p className="text-sm font-sans leading-relaxed text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                           {album.summary}
                         </p>
                       )}
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs font-sans text-gray-500 dark:text-gray-400">
                         {album._count.photos} 张照片
                       </p>
                     </div>

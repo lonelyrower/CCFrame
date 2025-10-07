@@ -70,7 +70,7 @@ export default function TagsManagementPage() {
             管理和合并标签
           </p>
         </div>
-        <Button onClick={() => setShowMergeModal(true)} variant="primary">
+        <Button onClick={() => setShowMergeModal(true)} variant="outline">
           合并标签
         </Button>
       </div>
@@ -165,7 +165,7 @@ export default function TagsManagementPage() {
             <div className="flex gap-3 mt-6">
               <Button
                 onClick={handleMergeTags}
-                variant="primary"
+                variant="outline"
                 className="flex-1"
                 disabled={!fromTag || !toTag}
               >

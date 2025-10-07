@@ -141,7 +141,7 @@ export default function LibraryPage() {
                 {photos.length} photos loaded
               </p>
             </div>
-            <Button onClick={() => router.push('/admin/upload')} variant="primary">
+            <Button onClick={() => router.push('/admin/upload')} variant="outline">
               Upload Photos
             </Button>
           </div>
@@ -154,7 +154,7 @@ export default function LibraryPage() {
               </span>
               <Button
                 onClick={() => setShowBulkEdit(true)}
-                variant="primary"
+                variant="outline"
                 size="sm"
               >
                 Edit Tags/Album
@@ -203,7 +203,7 @@ export default function LibraryPage() {
         ) : photos.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600 dark:text-gray-400 mb-4">No photos yet</p>
-            <Button onClick={() => router.push('/admin/upload')} variant="primary">
+            <Button onClick={() => router.push('/admin/upload')} variant="outline">
               Upload Your First Photos
             </Button>
           </div>

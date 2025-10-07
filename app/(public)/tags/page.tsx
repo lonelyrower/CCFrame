@@ -49,10 +49,10 @@ export default function TagsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-4xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4">
             标签云
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="font-sans text-gray-600 dark:text-gray-400">
             通过标签探索照片
           </p>
         </div>
@@ -68,19 +68,19 @@ export default function TagsPage() {
         ) : (
           <>
             {/* Tag Cloud */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 mb-12">
-              <div className="flex flex-wrap justify-center gap-4">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-sm px-6 py-10 sm:px-10 md:px-16 md:py-14 mb-12 card-soft">
+              <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5">
                 {tags.map((tag) => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="inline-block px-4 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    className="inline-block px-5 py-2.5 rounded-xl ring-1 ring-inset ring-black/10 dark:ring-white/10 hover:bg-blue-50 dark:hover:bg-white/10 transition-all"
                     style={{ fontSize: getFontSize(tag.count) }}
                   >
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    <span className="text-gray-800 dark:text-gray-200 font-serif tracking-tight">
                       {tag.name}
                     </span>
-                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="ml-2 text-xs font-sans text-gray-500 dark:text-gray-400">
                       ({tag.count})
                     </span>
                   </Link>
@@ -90,21 +90,21 @@ export default function TagsPage() {
 
             {/* Tag List */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              <h2 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-6">
                 全部标签
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                 {tags.map((tag) => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow"
+                    className="block p-7 md:p-8 bg-white dark:bg-gray-800 rounded-2xl ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:shadow-md transition-all card-soft"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                      <h3 className="text-xl font-serif font-semibold tracking-tight text-gray-900 dark:text-gray-100">
                         {tag.name}
                       </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+                      <span className="text-sm font-sans text-gray-500 dark:text-gray-400 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
                         {tag.count} 张
                       </span>
                     </div>

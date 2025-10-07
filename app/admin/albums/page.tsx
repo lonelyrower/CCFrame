@@ -133,7 +133,7 @@ export default function AlbumsManagementPage() {
             创建和管理照片相册
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="primary">
+        <Button onClick={() => setShowCreateModal(true)} variant="outline">
           创建相册
         </Button>
       </div>
@@ -146,7 +146,7 @@ export default function AlbumsManagementPage() {
       ) : albums.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 mb-4">暂无相册</p>
-          <Button onClick={() => setShowCreateModal(true)} variant="primary">
+          <Button onClick={() => setShowCreateModal(true)} variant="outline">
             创建第一个相册
           </Button>
         </div>
@@ -248,7 +248,7 @@ export default function AlbumsManagementPage() {
             <div className="flex gap-3 mt-6">
               <Button
                 onClick={editingAlbum ? handleUpdate : handleCreate}
-                variant="primary"
+                variant="outline"
                 className="flex-1"
                 disabled={!title.trim()}
               >

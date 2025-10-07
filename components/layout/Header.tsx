@@ -8,6 +8,11 @@ export function Header() {
   const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [hotTags, setHotTags] = useState<{ id: string; name: string; count: number }[]>([]);
+  const [topSeries, setTopSeries] = useState<
+    { id: string; title: string; photoCount: number }[]
+  >([]);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -30,6 +35,53 @@ export function Header() {
 
   const isActive = (path: string) => pathname === path;
 
+  // Load suggestions (popular tags, series) when search panel opens
+  useEffect(() => {
+    if (!showSearch || loadingSuggest || (hotTags.length && topSeries.length)) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingSuggest(true);
+        const [tagsRes, seriesRes] = await Promise.all([
+          fetch('/api/tags'),
+          fetch('/api/series'),
+        ]);
+        if (!cancelled) {
+          if (tagsRes.ok) {
+            const data = await tagsRes.json();
+            const top = (data.tags || []).slice(0, 12);
+            setHotTags(top);
+          }
+          if (seriesRes.ok) {
+            const data = await seriesRes.json();
+            const list = (data.series || [])
+              .sort((a: any, b: any) => (b.photoCount || 0) - (a.photoCount || 0))
+              .slice(0, 6)
+              .map((s: any) => ({ id: s.id, title: s.title, photoCount: s.photoCount }));
+            setTopSeries(list);
+          }
+        }
+      } catch (e) {
+        // silent fail
+      } finally {
+        if (!cancelled) setLoadingSuggest(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showSearch, loadingSuggest, hotTags.length, topSeries.length]);
+
+  // Close on Escape when search is open
+  useEffect(() => {
+    if (!showSearch) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowSearch(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showSearch]);
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,31 +97,31 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               href="/photos"
-              className={`text-sm font-medium transition-colors ${
+              className={`group relative text-sm font-medium transition-colors duration-200 ease-out ${
                 isActive('/photos')
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-blue-600 dark:text-blue-400 after:w-full'
                   : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-              }`}
+              } after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-current after:transition-[width] after:duration-200`}
             >
               照片
             </Link>
             <Link
               href="/tags"
-              className={`text-sm font-medium transition-colors ${
+              className={`group relative text-sm font-medium transition-colors duration-200 ease-out ${
                 isActive('/tags')
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-blue-600 dark:text-blue-400 after:w-full'
                   : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-              }`}
+              } after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-current after:transition-[width] after:duration-200`}
             >
               标签
             </Link>
             <Link
               href="/series"
-              className={`text-sm font-medium transition-colors ${
+              className={`group relative text-sm font-medium transition-colors duration-200 ease-out ${
                 isActive('/series')
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-blue-600 dark:text-blue-400 after:w-full'
                   : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-              }`}
+              } after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-current after:transition-[width] after:duration-200`}
             >
               系列
             </Link>
@@ -79,7 +131,7 @@ export function Header() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors transition-transform duration-200 ease-out hover:scale-110 active:scale-95"
               aria-label="Search"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,7 +140,7 @@ export function Header() {
             </button>
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors transition-transform duration-200 ease-out hover:scale-110 active:scale-95"
               aria-label="Toggle theme"
             >
             {isDark ? (
@@ -111,30 +163,30 @@ export function Header() {
         <div className="md:hidden pb-4 space-y-2">
           <Link
             href="/photos"
-            className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
               isActive('/photos')
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-black/10 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-white/10'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:ring-1 hover:ring-inset hover:ring-black/10 dark:hover:ring-white/10'
             }`}
           >
             照片
           </Link>
           <Link
             href="/tags"
-            className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
               isActive('/tags')
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-black/10 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-white/10'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:ring-1 hover:ring-inset hover:ring-black/10 dark:hover:ring-white/10'
             }`}
           >
             标签
           </Link>
           <Link
             href="/series"
-            className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
               isActive('/series')
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-black/10 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-white/10'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:ring-1 hover:ring-inset hover:ring-black/10 dark:hover:ring-white/10'
             }`}
           >
             系列
@@ -145,19 +197,104 @@ export function Header() {
 
       {/* Search Panel */}
       {showSearch && (
-        <div className="absolute top-16 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索照片、标签、相册..."
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
-              autoFocus
-            />
-            <p className="mt-2 text-sm text-gray-500">
-              提示: 输入标签名、照片标题或相册名称进行搜索
-            </p>
+        <div className="absolute top-16 left-0 right-0">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="relative rounded-2xl bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl ring-1 ring-inset ring-black/10 dark:ring-white/10 shadow-lg overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 dark:before:bg-white/10 before:pointer-events-none">
+              <div className="p-4 sm:p-5 md:p-6">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="搜索照片、标签、相册..."
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+                <p className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                  提示：输入标签名、照片标题或相册名称进行搜索
+                </p>
+              </div>
+
+              {/* Suggestions */}
+              <div className="border-t border-gray-200/80 dark:border-white/10">
+                <div className="p-4 sm:p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* 推荐关键词 */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">推荐关键词</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {['人像', '风景', '街拍', '黑白', '旅行', '城市', '自然', '夜景'].map((k) => (
+                        <button
+                          key={k}
+                          onClick={() => setSearchQuery(k)}
+                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        >
+                          {k}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 热门标签 */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">热门标签</h4>
+                    <div className="flex flex-wrap gap-2 min-h-[44px]" aria-busy={loadingSuggest}>
+                      {hotTags.length === 0 ? (
+                        <>
+                          <span className="sr-only">{loadingSuggest ? '加载中…' : '暂无数据'}</span>
+                          <div className="flex flex-wrap gap-2 w-full animate-pulse">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                              <span
+                                key={i}
+                                className="h-8 w-[4.5rem] rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-gray-200/80 dark:bg-white/10"
+                              />
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        hotTags.map((tag) => (
+                          <Link
+                            key={tag.id}
+                            href={`/tags/${encodeURIComponent(tag.name)}`}
+                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          >
+                            {tag.name}
+                            <span className="ml-1 text-xs text-gray-500">({tag.count})</span>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 系列推荐 */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">系列推荐</h4>
+                    <div className="grid grid-cols-1 gap-2 min-h-[116px]" aria-busy={loadingSuggest}>
+                      {topSeries.length === 0 ? (
+                        <div className="grid grid-cols-1 gap-2 animate-pulse">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="h-9 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/60 dark:bg-white/10"
+                            />
+                          ))}
+                          <span className="sr-only">{loadingSuggest ? '加载中…' : '暂无数据'}</span>
+                        </div>
+                      ) : (
+                        topSeries.map((s) => (
+                          <Link
+                            key={s.id}
+                            href={`/series/${s.id}`}
+                            className="flex items-center justify-between px-3 py-2 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/60 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          >
+                            <span className="truncate text-sm text-gray-900 dark:text-gray-100">{s.title}</span>
+                            <span className="ml-3 shrink-0 text-xs text-gray-500">{s.photoCount} 张</span>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

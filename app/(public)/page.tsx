@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/image/utils';
 import { cfImage } from '@/lib/cf-image';
-import { extractDominantColor } from '@/lib/theme-color';
+import { extractDominantColor, rgbToHsl } from '@/lib/theme-color';
 import { DEFAULT_HOME_COPY_SELECTED } from '@/lib/constants';
 
 interface HeroPhoto {
@@ -16,6 +16,16 @@ interface HeroPhoto {
 }
 
 export default function HomePage() {
+  const isLightHex = (hex?: string | null) => {
+    if (!hex) return false;
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+    if (!m) return false;
+    const r = parseInt(m[1], 16);
+    const g = parseInt(m[2], 16);
+    const b = parseInt(m[3], 16);
+    const [, , l] = rgbToHsl(r, g, b);
+    return l >= 70; // treat as light if lightness >= 70%
+  };
   const [heroPhoto, setHeroPhoto] = useState<HeroPhoto | null>(null);
   const [homeCopy, setHomeCopy] = useState<string>(DEFAULT_HOME_COPY_SELECTED);
   const [themeColor, setThemeColor] = useState<string | null>(null);
@@ -85,28 +95,66 @@ export default function HomePage() {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+            {/* Subtle grain/texture overlay (desktop only, lower opacity to avoid snow on dark covers) */}
+            <div className="hidden md:block absolute inset-0 bg-noise opacity-[0.05] mix-blend-soft-light pointer-events-none" />
           </div>
         )}
 
         {/* Content */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-6 animate-fade-in">
+          <h1
+            className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-6 animate-fade-in tracking-tight md:tracking-normal leading-tight"
+            style={{ animationDelay: '40ms' }}
+          >
             CCFrame
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-2xl mx-auto animate-slide-up">
+          <p
+            className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed md:leading-loose tracking-[0.01em] max-w-2xl mx-auto animate-slide-up"
+            style={{ animationDelay: '120ms' }}
+          >
             {homeCopy}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '200ms' }}>
             <Link
               href="/photos"
-              className="px-8 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              style={themeColor ? { backgroundColor: themeColor, color: 'white' } : {}}
+              className="px-8 py-3 rounded-lg font-medium btn-glass"
+              style={(() => {
+                if (!themeColor) return {};
+                const light = isLightHex(themeColor);
+                if (light) {
+                  return {
+                    color: '#111827',
+                    borderColor: 'rgba(17,24,39,0.35)',
+                    boxShadow:
+                      'inset 0 0 0 1px rgba(17,24,39,0.2), 0 8px 24px rgba(17,24,39,0.15)',
+                    backgroundColor: 'rgba(255,255,255,0.6)',
+                  };
+                }
+                return {
+                  borderColor: `${themeColor}80`,
+                  boxShadow: `inset 0 0 0 1px ${themeColor}33, 0 8px 24px ${themeColor}26`,
+                };
+              })()}
             >
               进入相册
             </Link>
             <Link
               href="/tags"
-              className="px-8 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg font-medium hover:bg-white/20 transition-colors"
+              className="px-8 py-3 text-white rounded-lg font-medium btn-outline-light"
+              style={(() => {
+                if (!themeColor) return {};
+                const light = isLightHex(themeColor);
+                if (light) {
+                  return {
+                    color: '#111827',
+                    borderColor: 'rgba(17,24,39,0.35)',
+                    boxShadow:
+                      'inset 0 0 0 1px rgba(17,24,39,0.18)',
+                    backgroundColor: 'rgba(255,255,255,0.5)',
+                  };
+                }
+                return {};
+              })()}
             >
               按标签浏览
             </Link>
@@ -218,7 +266,7 @@ export default function HomePage() {
           <div className="text-center">
             <Link
               href="/photos"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 text-base font-medium rounded-lg border text-gray-900 bg-transparent hover:bg-gray-100 transition-colors dark:text-gray-100 dark:border-gray-700 dark:hover:bg-white/5"
             >
               浏览全部照片
               <svg

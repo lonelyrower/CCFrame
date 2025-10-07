@@ -45,10 +45,10 @@ export default function SeriesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-4xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4">
             系列集
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="font-sans text-gray-600 dark:text-gray-400">
             按主题或品牌浏览精选作品集
           </p>
         </div>
@@ -63,12 +63,12 @@ export default function SeriesPage() {
             <p className="text-gray-600 dark:text-gray-400">暂无系列</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             {seriesList.map((series) => (
               <Link
                 key={series.id}
                 href={`/series/${series.id}`}
-                className="group block bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                className="group block bg-white dark:bg-gray-800 rounded-3xl ring-1 ring-inset ring-black/5 dark:ring-white/10 overflow-hidden shadow-sm hover:shadow-md transition-all card-soft"
               >
                 {/* Cover Image */}
                 <div className="aspect-[16/9] bg-gray-200 dark:bg-gray-700 overflow-hidden">
@@ -101,16 +101,16 @@ export default function SeriesPage() {
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
-                  <h2 className="text-2xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <div className="p-7 md:p-8">
+                  <h2 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {series.title}
                   </h2>
                   {series.summary && (
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                    <p className="font-sans text-base leading-relaxed text-gray-600 dark:text-gray-400 mb-5 line-clamp-2">
                       {series.summary}
                     </p>
                   )}
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-4 text-sm font-sans text-gray-500 dark:text-gray-400">
                     <span>{series.albumCount} 个相册</span>
                     <span>•</span>
                     <span>{series.photoCount} 张照片</span>
