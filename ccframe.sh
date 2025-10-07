@@ -48,6 +48,63 @@ sanitize_compose_file() {
     fi
 }
 
+# 从现有 .env 解析数据库密码（若存在且匹配常规格式）
+parse_db_password_from_env() {
+    local env_file="$INSTALL_DIR/.env"
+    if [ -f "$env_file" ]; then
+        local url
+        url=$(grep -E '^DATABASE_URL=' "$env_file" | head -n1 | cut -d'=' -f2-)
+        if [ -n "$url" ]; then
+            # 提取密码（支持任意主机/端口），形如 postgresql://user:PASS@host:port/db
+            local pass
+            pass=$(printf '%s' "$url" | sed -n 's#^postgresql://[^:]*:\([^@]*\)@.*#\1#p')
+            if [ -n "$pass" ]; then
+                echo "$pass"
+                return 0
+            fi
+        fi
+    fi
+    return 1
+}
+
+# 检测 Postgres 数据目录是否已初始化
+postgres_data_exists() {
+    [ -f "$DATA_DIR/postgres/PG_VERSION" ]
+}
+
+# 为镜像安装模式准备 DB 密码：若已有数据，则尽量复用现有 .env 中的密码
+prepare_db_password_image() {
+    if postgres_data_exists; then
+        local existing
+        if existing=$(parse_db_password_from_env); then
+            DB_PASSWORD="$existing"
+            export DB_PASSWORD
+            print_info "检测到已存在的数据库数据，复用已有密码。"
+            return 0
+        fi
+        print_warning "检测到已存在的数据库数据，但无法从 .env 解析密码。将继续使用新密码，数据库容器会忽略并沿用旧密码；请确保 .env 中的密码与数据库一致。"
+    fi
+    # 若无数据或无法解析，则维持外部生成的 DB_PASSWORD
+    return 0
+}
+
+# 创建 .env（若不存在）；若已存在则不覆盖，避免破坏现有配置
+ensure_env_file_image() {
+    local env_file="$INSTALL_DIR/.env"
+    if [ -f "$env_file" ]; then
+        print_info ".env 已存在，跳过创建以保留现有配置。"
+        return 0
+    fi
+    cat > "$env_file" <<EOF
+DATABASE_URL=postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+NEXTAUTH_URL=${BASE_URL}
+ADMIN_EMAIL=${ADMIN_EMAIL}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
+BASE_URL=${BASE_URL}
+EOF
+}
+
 # 计算 Compose 网络名（默认使用安装目录名作为 project name）
 compose_network_name() {
     local project_name
@@ -141,7 +198,10 @@ run_migrations_and_seed_image_mode() {
     # 优先尝试在应用容器内完成
     if run_migrations_image_mode; then
         print_info "迁移成功，创建管理员账户..."
-        if docker compose exec -T app npm run seed; then
+        if docker compose exec -T \
+            -e ADMIN_EMAIL="$ADMIN_EMAIL" \
+            -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+            app npm run seed; then
             return 0
         else
             print_warning "容器内种子失败，尝试回退方案..."
@@ -554,15 +614,11 @@ install_from_image() {
     mkdir -p "$DATA_DIR"/{public_uploads,private_uploads,backups}
     mkdir -p "$INSTALL_DIR"
 
-    # 创建 .env 文件
-    cat > "$INSTALL_DIR/.env" <<EOF
-DATABASE_URL=postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe
-NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-NEXTAUTH_URL=${BASE_URL}
-ADMIN_EMAIL=${ADMIN_EMAIL}
-ADMIN_PASSWORD=${ADMIN_PASSWORD}
-BASE_URL=${BASE_URL}
-EOF
+    # 若已有数据库数据，则复用原有密码；否则维持新随机密码
+    prepare_db_password_image
+
+    # 创建 .env（首次安装创建，已存在则保留）
+    ensure_env_file_image
 
     # 创建 docker-compose.yml
     cat > "$INSTALL_DIR/docker-compose.yml" <<EOF
@@ -658,8 +714,17 @@ install_from_source() {
     mkdir -p "$DATA_DIR"/{backups,postgres}
     mkdir -p "$INSTALL_DIR/public/uploads" "$INSTALL_DIR/private/uploads"
 
-    # 创建 .env 文件
-    cat > "$INSTALL_DIR/.env" <<EOF
+    # 创建 .env 文件（若不存在）。如存在数据库数据则优先复用旧密码
+    if postgres_data_exists; then
+        local existing
+        if existing=$(parse_db_password_from_env); then
+            DB_PASSWORD="$existing"
+            export DB_PASSWORD
+            print_info "检测到已存在的数据库数据，复用已有密码。"
+        fi
+    fi
+    if [ ! -f "$INSTALL_DIR/.env" ]; then
+        cat > "$INSTALL_DIR/.env" <<EOF
 DATABASE_URL=postgresql://ccframe:${DB_PASSWORD}@localhost:5432/ccframe
 NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
 NEXTAUTH_URL=${BASE_URL}
@@ -667,6 +732,9 @@ ADMIN_EMAIL=${ADMIN_EMAIL}
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 BASE_URL=${BASE_URL}
 EOF
+    else
+        print_info ".env 已存在，跳过创建以保留现有配置。"
+    fi
 
     # 启动 PostgreSQL（Compose）
     cat > "$INSTALL_DIR/docker-compose.yml" <<EOF
