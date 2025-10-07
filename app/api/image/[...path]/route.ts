@@ -65,7 +65,8 @@ export async function GET(
       'heic': 'image/heic',
     }[ext || 'jpg'] || 'image/jpeg';
 
-    return new NextResponse(fileBuffer, {
+    // Wrap Buffer into a Blob to satisfy BodyInit and avoid TS incompatibility
+    return new NextResponse(new Blob([fileBuffer]), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
