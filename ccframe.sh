@@ -1296,6 +1296,8 @@ do_update_script() {
         else
             print_info "下次可运行: bash $target"
         fi
+        # 通过管道运行时，更新后立即退出，避免悬挂等待输入
+        exit 0
     fi
 }
 
