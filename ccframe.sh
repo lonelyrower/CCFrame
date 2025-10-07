@@ -38,6 +38,16 @@ ensure_tty_stdin() {
     fi
 }
 
+# 移除 docker-compose 旧版 'version' 字段，消除警告
+sanitize_compose_file() {
+    local file="$INSTALL_DIR/docker-compose.yml"
+    if [ -f "$file" ] && grep -q '^version:' "$file"; then
+        print_info "修正 docker-compose.yml：删除已废弃的 version 字段"
+        # 仅删除第一行的 version: 定义
+        sed -i '/^version:/d' "$file"
+    fi
+}
+
 # 计算 Compose 网络名（默认使用安装目录名作为 project name）
 compose_network_name() {
     local project_name
@@ -604,6 +614,7 @@ EOF
 
     # 启动服务
     cd "$INSTALL_DIR"
+    sanitize_compose_file
     docker compose up -d
 
     # 等待服务启动
@@ -907,6 +918,7 @@ do_update() {
             docker pull "$DOCKER_IMAGE"
 
             print_info "重启服务..."
+            sanitize_compose_file
             docker compose up -d --force-recreate
 
             sleep 5
@@ -961,8 +973,9 @@ do_status() {
     echo ""
 
     if [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
-        cd "$INSTALL_DIR"
-        docker compose ps
+    cd "$INSTALL_DIR"
+    sanitize_compose_file
+    docker compose ps
     fi
 
     if [ -f "/etc/systemd/system/${PROJECT_NAME}.service" ]; then
