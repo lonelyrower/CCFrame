@@ -1,6 +1,9 @@
 # CCFrame - Personal Photography Showcase
 
-A fast, elegant personal photography portfolio built with Next.js, PostgreSQL, and Cloudflare optimization.
+A fast, elegant personal photography portfolio built with Next.js, PostgreSQL, and Cloudflare optimiz## 📝 Project Structure
+
+```text
+ccframe/n.
 
 ## 🎨 Features
 
@@ -78,20 +81,20 @@ git clone <your-repo-url>
 cd ccframe
 ```
 
-2. **Install dependencies**
+1. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-3. **Setup environment**
+1. **Setup environment**
 
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
-4. **Initialize database**
+1. **Initialize database**
 
 ```bash
 # Run migrations
@@ -104,7 +107,7 @@ npm run prisma:generate
 npm run seed
 ```
 
-5. **Start development server**
+1. **Start development server**
 
 ```bash
 npm run dev
@@ -127,7 +130,7 @@ docker-compose up -d
 docker-compose logs -f app
 ```
 
-2. **Using GitHub Container Registry Image**
+1. **Using GitHub Container Registry Image**
 
 ```bash
 docker pull ghcr.io/<your-username>/ccframe:latest
@@ -144,7 +147,7 @@ docker run -d \
 
 ## 🗂️ Project Structure
 
-```
+```text
 ccframe/
 ├── app/                    # Next.js App Router
 │   ├── (public)/          # Public pages
@@ -190,6 +193,7 @@ See [.env.example](.env.example) for all available options:
 Access at `/admin/login` with your admin credentials.
 
 **Features:**
+
 - Batch photo upload with progress tracking
 - Quick edit: title, tags, public/private toggle
 - Create albums and series
@@ -219,6 +223,7 @@ bash scripts/backup.sh
 ```
 
 Setup cron job:
+
 ```bash
 # Add to crontab
 0 2 * * * cd /path/to/ccframe && bash scripts/backup.sh >> logs/backup.log 2>&1
@@ -261,6 +266,7 @@ Images are automatically built and pushed to GitHub Container Registry on push t
 ## 🎯 Roadmap
 
 ### M1: Foundation ✅ (Complete)
+
 - [x] Data models + basic pages
 - [x] Authentication + upload
 - [x] Photo CRUD API
@@ -268,6 +274,7 @@ Images are automatically built and pushed to GitHub Container Registry on push t
 - [x] Photo library management UI
 
 ### M2: Public Features ✅ (Complete)
+
 - [x] Photo gallery (masonry/infinite scroll)
 - [x] Tags browsing (tag cloud + detail pages)
 - [x] Albums & Series API
@@ -278,6 +285,7 @@ Images are automatically built and pushed to GitHub Container Registry on push t
 - [x] Lightbox viewer
 
 ### M3: Admin & Theming ⚠️ (Core Complete)
+
 - [x] Admin dashboard (photo management)
 - [x] Batch upload & operations
 - [x] Theme color extraction
@@ -287,6 +295,7 @@ Images are automatically built and pushed to GitHub Container Registry on push t
 - [ ] Analytics dashboard (optional)
 
 ### M4: Polish ✅ (Complete)
+
 - [x] Backup scripts
 - [x] Docker configuration
 - [x] CI/CD (GitHub Actions)
