@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { saveUploadedFile, validateImageFile } from '@/lib/image/upload';
 
+// Configure route segment for file uploads
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Get form data
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
         isPublic,
         albumId: albumId || undefined,
         tags: {
-          create: tagRecords.map((tag) => ({
+          create: tagRecords.map((tag: { id: string }) => ({
             tag: {
               connect: { id: tag.id },
             },
@@ -84,7 +88,7 @@ export async function POST(request: NextRequest) {
         width: photo.width,
         height: photo.height,
         isPublic: photo.isPublic,
-        tags: photo.tags.map((pt) => pt.tag.name),
+        tags: photo.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
         album: photo.album,
         createdAt: photo.createdAt,
       },
@@ -97,10 +101,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-// Increase body size limit for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
