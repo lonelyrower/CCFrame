@@ -4,14 +4,15 @@ import { prisma } from '@/lib/db';
 // GET single series
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if user is authenticated (admin)
     const isAdmin = request.headers.get('x-user-id');
+    const { id } = await params;
 
     const series = await prisma.series.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         albums: {
           include: {
@@ -68,13 +69,14 @@ export async function GET(
 // PUT update series (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { slug, title, summary, brand, coverId } = await request.json();
+    const { id } = await params;
 
     const series = await prisma.series.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         slug,
         title,
@@ -100,11 +102,12 @@ export async function PUT(
 // DELETE series (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.series.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

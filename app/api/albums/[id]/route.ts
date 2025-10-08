@@ -4,14 +4,15 @@ import { prisma } from '@/lib/db';
 // GET single album
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if user is authenticated (admin)
     const isAdmin = request.headers.get('x-user-id');
+    const { id } = await params;
 
     const album = await prisma.album.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         series: true,
         photos: {
@@ -59,13 +60,14 @@ export async function GET(
 // PUT update album (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { title, summary, seriesId, coverId } = await request.json();
+    const { id } = await params;
 
     const album = await prisma.album.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         summary,
@@ -90,11 +92,12 @@ export async function PUT(
 // DELETE album (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.album.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

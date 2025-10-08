@@ -103,14 +103,26 @@ export default function HomePage() {
         {/* Content */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <h1
-            className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-6 animate-fade-in tracking-tight md:tracking-normal leading-tight"
-            style={{ animationDelay: '40ms' }}
+            className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-6 animate-fade-in tracking-tight md:tracking-normal leading-tight"
+            style={{
+              animationDelay: '40ms',
+              color: themeColor && isLightHex(themeColor) ? '#111827' : '#ffffff',
+              textShadow: themeColor && isLightHex(themeColor)
+                ? '0 2px 8px rgba(0,0,0,0.1)'
+                : '0 2px 8px rgba(0,0,0,0.5)',
+            }}
           >
             CCFrame
           </h1>
           <p
-            className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed md:leading-loose tracking-[0.01em] max-w-2xl mx-auto animate-slide-up"
-            style={{ animationDelay: '120ms' }}
+            className="text-xl md:text-2xl mb-8 leading-relaxed md:leading-loose tracking-[0.01em] max-w-2xl mx-auto animate-slide-up"
+            style={{
+              animationDelay: '120ms',
+              color: themeColor && isLightHex(themeColor) ? 'rgba(17,24,39,0.85)' : 'rgba(255,255,255,0.9)',
+              textShadow: themeColor && isLightHex(themeColor)
+                ? '0 1px 4px rgba(0,0,0,0.08)'
+                : '0 1px 4px rgba(0,0,0,0.3)',
+            }}
           >
             {homeCopy}
           </p>
@@ -164,7 +176,10 @@ export default function HomePage() {
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <svg
-            className="w-6 h-6 text-white"
+            className="w-6 h-6"
+            style={{
+              color: themeColor && isLightHex(themeColor) ? '#111827' : '#ffffff',
+            }}
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
