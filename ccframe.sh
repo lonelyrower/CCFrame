@@ -1012,6 +1012,9 @@ do_install() {
         print_warning "管理员密码为系统随机生成，建议首次登录后及时修改。"
     fi
     echo ""
+
+    # 安装完成后直接退出，不返回菜单
+    exit 0
 }
 
 #==============================================================================
@@ -1114,6 +1117,9 @@ do_update() {
     esac
 
     print_success "更新完成！"
+
+    # 更新完成后直接退出，不返回菜单
+    exit 0
 }
 
 #==============================================================================
@@ -1420,7 +1426,7 @@ do_update_script() {
     temp_script="/tmp/ccframe-new.sh"
     if ! curl -fsSL "$SCRIPT_URL" -o "$temp_script"; then
         print_error "下载失败，请检查网络连接"
-        exit 1
+        return 1
     fi
     chmod +x "$temp_script"
 
@@ -1436,7 +1442,10 @@ do_update_script() {
         install -m 0755 "$temp_script" "$source_path"
         print_success "脚本更新完成！"
         print_info "旧版本已备份到: ${source_path}.bak"
-        exec "$source_path" "$@"
+        print_warning "脚本已更新，将重新加载菜单..."
+        sleep 2
+        # 重新执行脚本以使用新版本（不传参数，进入菜单模式）
+        exec "$source_path"
     else
         # 通过管道或不可写路径执行：安装到稳定位置
         local target="/usr/local/bin/ccframe"
@@ -1452,8 +1461,10 @@ do_update_script() {
         else
             print_info "下次可运行: bash $target"
         fi
-        # 通过管道运行时，更新后立即退出，避免悬挂等待输入
-        exit 0
+        print_warning "脚本已更新，将重新加载菜单..."
+        sleep 2
+        # 重新执行新安装的脚本（不传参数，进入菜单模式）
+        exec "$target"
     fi
 }
 

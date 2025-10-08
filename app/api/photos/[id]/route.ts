@@ -8,12 +8,13 @@ import { getSession } from '@/lib/session';
 // GET single photo
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
+    const { id } = await params;
     const photo = await prisma.photo.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         tags: {
           include: {
@@ -70,15 +71,16 @@ export async function GET(
 // UPDATE photo
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { title, isPublic, albumId, tags, dominantColor } = body;
+    const { id } = await params;
 
     // Get current photo to check if isPublic is changing
     const currentPhoto = await prisma.photo.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!currentPhoto) {
@@ -154,7 +156,7 @@ export async function PUT(
     }
 
     const _photo = await prisma.photo.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         tags: {
@@ -169,7 +171,7 @@ export async function PUT(
     if (tags && Array.isArray(tags)) {
       // Remove existing tags
       await prisma.photoTag.deleteMany({
-        where: { photoId: params.id },
+        where: { photoId: id },
       });
 
       // Add new tags
@@ -186,7 +188,7 @@ export async function PUT(
 
         await prisma.photoTag.createMany({
           data: tagRecords.map((tag: { id: string }) => ({
-            photoId: params.id,
+            photoId: id,
             tagId: tag.id,
           })),
         });
@@ -195,7 +197,7 @@ export async function PUT(
 
     // Fetch updated photo with tags
     const updatedPhoto = await prisma.photo.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         tags: {
           include: {
@@ -229,12 +231,13 @@ export async function PUT(
 // DELETE photo
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Get photo to delete files
     const photo = await prisma.photo.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!photo) {
@@ -246,7 +249,7 @@ export async function DELETE(
 
     // Delete from database
     await prisma.photo.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     // Delete files from disk
