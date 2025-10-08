@@ -162,6 +162,45 @@ run_migrations_ephemeral() {
     return 0
 }
 
+# 使用临时 Debian Node 容器运行 Prisma 迁移（migrate deploy 回退，适用于非空库/升级）
+run_migrations_ephemeral_deploy() {
+    print_info "运行数据库迁移 (回退: Debian 临时容器 - migrate deploy)..."
+
+    local network
+    network=$(compose_network_name)
+
+    # 若未设置 DB_PASSWORD，则尝试从 .env 中解析
+    if [ -z "$DB_PASSWORD" ]; then
+        local existing
+        if existing=$(parse_db_password_from_env); then
+            DB_PASSWORD="$existing"
+            export DB_PASSWORD
+        fi
+    fi
+
+    # 准备临时目录并从应用容器拷贝 prisma 目录
+    local tmp_dir="$INSTALL_DIR/tmp-prisma"
+    rm -rf "$tmp_dir"
+    mkdir -p "$tmp_dir"
+    if ! docker cp ${PROJECT_NAME}-app:/app/prisma "$tmp_dir/" 2>/dev/null; then
+        print_error "无法从应用容器拷贝 prisma 目录"
+        return 1
+    fi
+
+    local schema_path="/work/prisma/schema.prisma"
+    local cmd_migrate_deploy="npx -y prisma@5.22.0 migrate deploy --schema=${schema_path} --skip-generate"
+
+    if ! docker run --rm \
+        --network "$network" \
+        -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe" \
+        -v "$tmp_dir:/work" \
+        node:18-bullseye bash -lc "${cmd_migrate_deploy}"; then
+        return 1
+    fi
+
+    return 0
+}
+
 # 使用临时 Debian Node 容器运行种子脚本
 run_seed_ephemeral() {
     print_info "创建管理员账户 (回退: Debian 临时容器)..."
@@ -233,10 +272,15 @@ run_migrations_and_seed_image_mode() {
             table_count=0
         fi
         if [ "$table_count" -gt 0 ]; then
-            print_error "检测到数据库已有表，出于安全考虑不使用回退方案（db push）。"
-            return 1
+            print_warning "数据库非空，将使用回退方案 (migrate deploy) 尝试迁移..."
+            if ! run_migrations_ephemeral_deploy; then
+                print_error "回退迁移 (migrate deploy) 失败"
+                return 1
+            fi
+            # 非空库不做种子
+            return 0
         fi
-        print_info "数据库为空，使用回退方案初始化..."
+        print_info "数据库为空，使用回退方案 (db push) 初始化..."
     fi
 
     # 回退：使用 Debian 临时容器完成迁移与种子
@@ -1076,10 +1120,13 @@ do_update() {
 
             print_info "运行数据库迁移..."
             if ! run_migrations_image_mode; then
-                print_error "数据库迁移失败"
-                print_info "请检查日志: docker compose logs app"
-                print_info "如为全新安装，建议使用安装菜单的 镜像安装 或 源码安装；如为升级，建议先修复应用镜像中的 Prisma 引擎后再更新。"
-                exit 1
+                print_warning "容器内迁移失败，尝试回退方案 (migrate deploy)..."
+                if ! run_migrations_ephemeral_deploy; then
+                    print_error "数据库迁移失败"
+                    print_info "请检查日志: docker compose logs app"
+                    print_info "如为全新安装，建议使用安装菜单的 镜像安装 或 源码安装；如为升级，已尝试回退 Prisma 迁移仍失败，请先修复应用镜像中的 Prisma 引擎或重建镜像。"
+                    exit 1
+                fi
             fi
             ;;
         2)
