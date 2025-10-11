@@ -1,9 +1,9 @@
-name: Delete old workflow runs
+name: delete old workflow runs
 on:
   workflow_dispatch:
 jobs:
   delete-workflow-runs:
-          runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:
