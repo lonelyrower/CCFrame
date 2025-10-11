@@ -15,7 +15,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 脚本版本
-SCRIPT_VERSION="1.1.0"
+SCRIPT_VERSION="1.2.0"
 SCRIPT_URL="https://raw.githubusercontent.com/lonelyrower/CCFrame/main/ccframe.sh"
 
 # 默认配置
@@ -25,6 +25,7 @@ DATA_DIR="${INSTALL_DIR}/data"
 BACKUP_DIR="${INSTALL_DIR}/backups"
 DOCKER_IMAGE="ghcr.io/lonelyrower/ccframe:latest"
 GITHUB_REPO="https://github.com/lonelyrower/CCFrame.git"
+PRISMA_VERSION="6.17.0"
 
 #==============================================================================
 # 工具函数
@@ -112,6 +113,16 @@ compose_network_name() {
     echo "${project_name}_ccframe-network"
 }
 
+prisma_has_migrations_local() {
+    local prisma_dir="$1"
+    if [ -d "$prisma_dir/migrations" ]; then
+        if compgen -G "$prisma_dir/migrations/*/" > /dev/null; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
 ensure_prisma_binaries_image_mode() {
     print_info "刷新 Prisma Client 二进制 (容器内)..."
     if docker compose exec -T app npx prisma generate \
@@ -125,8 +136,20 @@ ensure_prisma_binaries_image_mode() {
 # 在镜像容器内尝试运行迁移
 run_migrations_image_mode() {
     print_info "运行数据库迁移 (容器内)..."
-    # Pin Prisma CLI to a stable version to avoid Effect/fast-check regressions in Prisma 6.x
-    if docker compose exec -T app npx -y prisma@5.22.0 migrate deploy; then
+    local schema_path="prisma/schema.prisma"
+    local migrate_cmd="npx prisma migrate deploy --schema ${schema_path}"
+    local has_migrations=true
+
+    if ! docker compose exec -T app sh -lc 'if [ -d prisma/migrations ]; then for entry in prisma/migrations/*; do if [ -d "$entry" ]; then exit 0; fi; done; fi; exit 1'; then
+        has_migrations=false
+    fi
+
+    if [ "$has_migrations" = false ]; then
+        print_warning "No Prisma migrations detected; falling back to prisma db push..."
+        migrate_cmd="npx prisma db push --schema ${schema_path} --skip-generate --accept-data-loss"
+    fi
+
+    if docker compose exec -T app sh -lc "$migrate_cmd"; then
         return 0
     fi
     return 1
@@ -148,22 +171,23 @@ run_migrations_ephemeral() {
         return 1
     fi
 
-    # 若无 migrations，则使用 db push 直接按 schema 同步
     local schema_path="/work/prisma/schema.prisma"
-    local cmd_db_push="npx -y prisma@5.22.0 db push --schema=${schema_path} --skip-generate --accept-data-loss"
+    local prisma_cmd
 
-    if ! docker run --rm \
-        --network "$network" \
-        -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe" \
-        -v "$tmp_dir:/work" \
-        node:18-bullseye bash -lc "${cmd_db_push}"; then
+    if prisma_has_migrations_local "$tmp_dir/prisma"; then
+        prisma_cmd="npx -y prisma@${PRISMA_VERSION} migrate deploy --schema=${schema_path}"
+    else
+        print_warning "No Prisma migrations detected; falling back to prisma db push..."
+        prisma_cmd="npx -y prisma@${PRISMA_VERSION} db push --schema=${schema_path} --skip-generate --accept-data-loss"
+    fi
+
+    if ! docker run --rm         --network "$network"         -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe"         -v "$tmp_dir:/work"         node:18-bullseye bash -lc "${prisma_cmd}"; then
         return 1
     fi
 
     return 0
 }
 
-# 使用临时 Debian Node 容器运行 Prisma 迁移（migrate deploy 回退，适用于非空库/升级）
 run_migrations_ephemeral_deploy() {
     print_info "运行数据库迁移 (回退: Debian 临时容器 - migrate deploy)..."
 
@@ -189,21 +213,20 @@ run_migrations_ephemeral_deploy() {
     fi
 
     local schema_path="/work/prisma/schema.prisma"
-    # prisma migrate deploy does not support --skip-generate; remove it to avoid failure
-    local cmd_migrate_deploy="npx -y prisma@5.22.0 migrate deploy --schema=${schema_path}"
+    if ! prisma_has_migrations_local "$tmp_dir/prisma"; then
+        print_error "检测到数据库已存在数据，但 prisma/migrations 为空，请先推送迁移文件"
+        return 1
+    fi
 
-    if ! docker run --rm \
-        --network "$network" \
-        -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe" \
-        -v "$tmp_dir:/work" \
-        node:18-bullseye bash -lc "${cmd_migrate_deploy}"; then
+    local cmd_migrate_deploy="npx -y prisma@${PRISMA_VERSION} migrate deploy --schema=${schema_path}"
+
+    if ! docker run --rm         --network "$network"         -e DATABASE_URL="postgresql://ccframe:${DB_PASSWORD}@postgres:5432/ccframe"         -v "$tmp_dir:/work"         node:18-bullseye bash -lc "${cmd_migrate_deploy}"; then
         return 1
     fi
 
     return 0
 }
 
-# 使用临时 Debian Node 容器运行种子脚本
 run_seed_ephemeral() {
     print_info "创建管理员账户 (回退: Debian 临时容器)..."
 
@@ -226,7 +249,7 @@ run_seed_ephemeral() {
 set -e; \
 cd /work; \
 npm -y init >/dev/null 2>&1; \
-npm i -y prisma@5.22.0 @prisma/client@5.22.0 bcryptjs >/dev/null 2>&1; \
+npm i -y prisma@${PRISMA_VERSION} @prisma/client@${PRISMA_VERSION} bcryptjs >/dev/null 2>&1; \
 npx prisma generate --schema=${schema_path} --binary-targets native linux-musl linux-musl-openssl-3.0.x >/dev/null 2>&1; \
 node ${seed_path}"
 
@@ -883,7 +906,13 @@ EOF
 
     # 运行数据库迁移
     print_info "运行数据库迁移..."
-    npx prisma migrate deploy
+    if prisma_has_migrations_local "${INSTALL_DIR}/prisma"; then
+        npx prisma migrate deploy
+    else
+        print_warning "No Prisma migrations detected; falling back to prisma db push..."
+        npx prisma db push --skip-generate --accept-data-loss
+    fi
+
 
     # 创建管理员
     print_info "创建管理员账户..."
