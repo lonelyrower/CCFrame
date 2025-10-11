@@ -111,64 +111,64 @@ export function Header() {
   }, [showSearch]);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-50 bg-stone-50/70 dark:bg-neutral-950/70 backdrop-blur-xl border-b border-stone-200/50 dark:border-neutral-800/50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-serif font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo - Fashion Editorial Style */}
+          <Link href="/" className="group flex items-center space-x-3">
+            <span className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300">
               CCFrame
             </span>
           </Link>
 
-          {/* Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Navigation - Refined Typography */}
+          <div className="hidden md:flex items-center space-x-10">
             <Link
               href="/photos"
-              className={`group relative text-sm font-medium transition-colors duration-200 ease-out ${
+              className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/photos')
-                  ? 'text-blue-600 dark:text-blue-400 after:w-full'
-                  : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-              } after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-current after:transition-[width] after:duration-200`}
+                  ? 'text-[#e63946] dark:text-[#ff6b7a] after:w-full'
+                  : 'text-stone-700 dark:text-stone-300 hover:text-[#e63946] dark:hover:text-[#ff6b7a]'
+              } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               照片
             </Link>
             <Link
               href="/tags"
-              className={`group relative text-sm font-medium transition-colors duration-200 ease-out ${
+              className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/tags')
-                  ? 'text-blue-600 dark:text-blue-400 after:w-full'
-                  : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-              } after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-current after:transition-[width] after:duration-200`}
+                  ? 'text-[#e63946] dark:text-[#ff6b7a] after:w-full'
+                  : 'text-stone-700 dark:text-stone-300 hover:text-[#e63946] dark:hover:text-[#ff6b7a]'
+              } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               标签
             </Link>
             <Link
               href="/series"
-              className={`group relative text-sm font-medium transition-colors duration-200 ease-out ${
+              className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/series')
-                  ? 'text-blue-600 dark:text-blue-400 after:w-full'
-                  : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-              } after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-current after:transition-[width] after:duration-200`}
+                  ? 'text-[#e63946] dark:text-[#ff6b7a] after:w-full'
+                  : 'text-stone-700 dark:text-stone-300 hover:text-[#e63946] dark:hover:text-[#ff6b7a]'
+              } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               系列
             </Link>
           </div>
 
-          {/* Search & Theme & User */}
-          <div className="flex items-center gap-2">
+          {/* Search & Theme & User - Minimal Icons */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors transition-transform duration-200 ease-out hover:scale-110 active:scale-95"
+              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
               aria-label="Search"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors transition-transform duration-200 ease-out hover:scale-110 active:scale-95"
+              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
               aria-label="Toggle theme"
             >
               {isDark ? (
@@ -191,26 +191,26 @@ export function Header() {
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors transition-transform duration-200 ease-out hover:scale-110 active:scale-95"
+                  className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
                   aria-label="User menu"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 py-1 z-50 animate-fade-in-200">
+                  <div className="absolute right-0 mt-3 w-52 bg-stone-50/95 dark:bg-neutral-900/95 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 py-2 z-50 animate-fade-in-200">
                     <Link
                       href="/admin"
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="block px-5 py-3 text-sm font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-colors duration-200"
                       onClick={() => setShowUserMenu(false)}
                     >
                       管理后台
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="w-full text-left px-5 py-3 text-sm font-medium text-[#e63946] dark:text-[#ff6b7a] hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-colors duration-200"
                     >
                       退出登录
                     </button>
@@ -220,11 +220,11 @@ export function Header() {
             ) : (
               <Link
                 href="/admin/login"
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors transition-transform duration-200 ease-out hover:scale-110 active:scale-95"
+                className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
                 aria-label="Login"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
               </Link>
             )}

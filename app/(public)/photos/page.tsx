@@ -118,15 +118,20 @@ export default function PhotosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-2">
-            全部照片
+        {/* Header - Editorial Style */}
+        <div className="mb-12 md:mb-16">
+          <div className="inline-block mb-4">
+            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              Portfolio
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
+            全部作品
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {photos.length} 张照片已加载
+          <p className="text-lg md:text-xl text-stone-600 dark:text-stone-400 font-light">
+            {photos.length} 张作品已加载
           </p>
         </div>
 
@@ -135,24 +140,34 @@ export default function PhotosPage() {
           <Masonry photos={photos} onPhotoClick={handlePhotoClick} />
         ) : (
           !isLoading && (
-            <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-400">暂无照片</p>
+            <div className="text-center py-20">
+              <p className="text-xl text-stone-600 dark:text-stone-400 font-light">暂无作品</p>
             </div>
           )
         )}
 
-        {/* Load More Indicator */}
+        {/* Load More Indicator - Minimal Design */}
         {hasMore && (
-          <div ref={loadMoreRef} className="mt-8 text-center py-8">
+          <div ref={loadMoreRef} className="mt-12 text-center py-12">
             {isLoading && (
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600" />
+              <div className="inline-flex flex-col items-center gap-4">
+                <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+                <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
+                  Loading
+                </span>
+              </div>
             )}
           </div>
         )}
 
         {!hasMore && photos.length > 0 && (
-          <div className="mt-8 text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">已加载全部照片</p>
+          <div className="mt-12 text-center py-12">
+            <div className="inline-block">
+              <div className="w-16 h-px bg-stone-300 dark:bg-neutral-700 mb-4" />
+              <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400 font-light">
+                已加载全部作品
+              </p>
+            </div>
           </div>
         )}
       </div>

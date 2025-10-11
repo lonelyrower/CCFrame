@@ -118,7 +118,7 @@ function PhotoCard({
   return (
     <div
       ref={imgRef}
-      className="group relative overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800 cursor-pointer ring-1 ring-inset ring-black/10 dark:ring-white/10 transform-gpu will-change-transform transition duration-200 ease-out hover:scale-[1.01] hover:shadow-md hover:shadow-black/20 dark:hover:shadow-black/40"
+      className="group relative overflow-hidden rounded-2xl bg-stone-200 dark:bg-neutral-800 cursor-pointer ring-1 ring-inset ring-stone-300/30 dark:ring-neutral-700/30 transform-gpu will-change-transform transition-all duration-400 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/25 dark:hover:shadow-black/50 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20"
       style={{ aspectRatio: `1 / ${aspectRatio}` }}
       onClick={() => onClick?.(photo)}
     >
@@ -127,25 +127,25 @@ function PhotoCard({
           <img
             src={getImageUrl(photo.fileKey, photo.isPublic, { width: 600, quality: 85 })}
             alt={photo.title || 'Photo'}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
-              isLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`w-full h-full object-cover transition-all duration-500 ${
+              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+            } group-hover:scale-110`}
             onLoad={() => setIsLoaded(true)}
             loading="lazy"
           />
 
-          {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out">
-            <div className="absolute bottom-0 left-0 right-0 p-4">
+          {/* Sophisticated overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-400 ease-out">
+            <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-400 ease-out">
               {photo.title && (
-                <p className="text-white text-sm font-medium mb-2">{photo.title}</p>
+                <p className="text-white text-base font-serif font-semibold mb-3 tracking-tight leading-tight">{photo.title}</p>
               )}
               {photo.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {photo.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="text-xs px-2 py-1 bg-white/20 backdrop-blur rounded"
+                      className="text-xs px-3 py-1.5 bg-white/15 dark:bg-white/10 backdrop-blur-sm rounded-full ring-1 ring-white/20 text-white font-medium tracking-wide"
                     >
                       {tag}
                     </span>
@@ -154,12 +154,17 @@ function PhotoCard({
               )}
             </div>
           </div>
+
+          {/* Accent glow effect */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#e63946]/10 via-transparent to-[#d4af37]/10 mix-blend-overlay" />
+          </div>
         </>
       )}
 
-      {/* Loading skeleton */}
+      {/* Premium loading skeleton */}
       {!isLoaded && isVisible && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-800 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-stone-300 via-stone-200 to-stone-300 dark:from-neutral-700 dark:via-neutral-800 dark:to-neutral-700 animate-pulse" />
       )}
     </div>
   );

@@ -126,27 +126,37 @@ export default function AlbumsManagementPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100">
+          <div className="inline-block mb-3">
+            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              Management
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
             相册管理
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="text-stone-600 dark:text-stone-400 font-light">
             创建和管理照片相册
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="outline">
+        <Button onClick={() => setShowCreateModal(true)} variant="primary">
           创建相册
         </Button>
       </div>
 
       {/* Albums List */}
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600" />
+        <div className="text-center py-20">
+          <div className="inline-flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
+              Loading
+            </span>
+          </div>
         </div>
       ) : albums.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">暂无相册</p>
-          <Button onClick={() => setShowCreateModal(true)} variant="outline">
+        <div className="text-center py-20">
+          <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无相册</p>
+          <Button onClick={() => setShowCreateModal(true)} variant="primary">
             创建第一个相册
           </Button>
         </div>
@@ -155,23 +165,26 @@ export default function AlbumsManagementPage() {
           {albums.map((album) => (
             <div
               key={album.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6"
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-6 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20 hover:shadow-xl transition-all duration-300"
             >
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              <h3 className="text-xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 {album.title}
               </h3>
               {album.summary && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                <p className="text-sm text-stone-600 dark:text-stone-400 mb-3 line-clamp-2 leading-relaxed">
                   {album.summary}
                 </p>
               )}
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-4">
+              <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-4 flex-wrap">
                 {album.series && (
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
+                  <span className="px-3 py-1.5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] rounded-full ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20 font-medium">
                     {album.series.title}
                   </span>
                 )}
-                <span>{album.photoCount} 张照片</span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-[#d4af37]" />
+                  {album.photoCount} 张照片
+                </span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -186,7 +199,7 @@ export default function AlbumsManagementPage() {
                   onClick={() => handleDelete(album.id)}
                   variant="ghost"
                   size="sm"
-                  className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="text-[#e63946] dark:text-[#ff6b7a] hover:bg-[#e63946]/10 dark:hover:bg-[#ff6b7a]/10"
                 >
                   删除
                 </Button>
@@ -198,13 +211,13 @@ export default function AlbumsManagementPage() {
 
       {/* Create/Edit Modal */}
       {(showCreateModal || editingAlbum) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 max-w-lg w-full p-8">
+            <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">
               {editingAlbum ? '编辑相册' : '创建相册'}
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <Input
                 label="相册标题"
                 value={title}
@@ -214,7 +227,7 @@ export default function AlbumsManagementPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
                   简介（可选）
                 </label>
                 <textarea
@@ -222,18 +235,18 @@ export default function AlbumsManagementPage() {
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="输入相册简介"
                   rows={3}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
                   所属系列（可选）
                 </label>
                 <select
                   value={selectedSeriesId}
                   onChange={(e) => setSelectedSeriesId(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
                 >
                   <option value="">无</option>
                   {series.map((s) => (
@@ -245,10 +258,10 @@ export default function AlbumsManagementPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-8">
               <Button
                 onClick={editingAlbum ? handleUpdate : handleCreate}
-                variant="outline"
+                variant="primary"
                 className="flex-1"
                 disabled={!title.trim()}
               >
@@ -260,7 +273,7 @@ export default function AlbumsManagementPage() {
                   setEditingAlbum(null);
                   resetForm();
                 }}
-                variant="ghost"
+                variant="secondary"
                 className="flex-1"
               >
                 取消

@@ -45,66 +45,81 @@ export default function TagsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="text-4xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4">
+        {/* Header - Editorial Style */}
+        <div className="mb-16 text-center">
+          <div className="inline-block mb-4">
+            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              Explore
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
             标签云
           </h1>
-          <p className="font-sans text-gray-600 dark:text-gray-400">
-            通过标签探索照片
+          <p className="text-lg md:text-xl font-light text-stone-600 dark:text-stone-400">
+            通过风格与主题探索作品
           </p>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600" />
+          <div className="text-center py-20">
+            <div className="inline-flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
+                Loading
+              </span>
+            </div>
           </div>
         ) : tags.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-400">暂无标签</p>
+          <div className="text-center py-20">
+            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">暂无标签</p>
           </div>
         ) : (
           <>
-            {/* Tag Cloud */}
-            <div className="bg-white dark:bg-gray-800 rounded-3xl ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-sm px-6 py-10 sm:px-10 md:px-16 md:py-14 mb-12 card-soft">
-              <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5">
+            {/* Interactive Tag Cloud - Fashion Magazine Style */}
+            <div className="relative mb-20 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-stone-200/50 dark:ring-neutral-800/50 shadow-xl px-8 py-12 md:px-16 md:py-16">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/8 pointer-events-none" />
+
+              <div className="relative flex flex-wrap justify-center items-center gap-4 md:gap-6">
                 {tags.map((tag) => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="inline-block px-5 py-2.5 rounded-xl ring-1 ring-inset ring-black/10 dark:ring-white/10 hover:bg-blue-50 dark:hover:bg-white/10 transition-all"
+                    className="group inline-block px-6 py-3 rounded-full bg-white dark:bg-neutral-800 ring-1 ring-stone-200 dark:ring-neutral-700 hover:ring-[#e63946] dark:hover:ring-[#ff6b7a] hover:bg-[#e63946] dark:hover:bg-[#ff6b7a] transition-all duration-300 hover:scale-110 hover:shadow-lg"
                     style={{ fontSize: getFontSize(tag.count) }}
                   >
-                    <span className="text-gray-800 dark:text-gray-200 font-serif tracking-tight">
+                    <span className="font-serif tracking-tight text-stone-900 dark:text-stone-50 group-hover:text-white transition-colors duration-300">
                       {tag.name}
                     </span>
-                    <span className="ml-2 text-xs font-sans text-gray-500 dark:text-gray-400">
-                      ({tag.count})
+                    <span className="ml-2 text-xs font-sans text-stone-500 dark:text-stone-400 group-hover:text-white/80 transition-colors duration-300">
+                      {tag.count}
                     </span>
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* Tag List */}
+            {/* Elegant Tag List */}
             <div>
-              <h2 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-6">
-                全部标签
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="mb-10">
+                <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50">
+                  全部标签
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tags.map((tag) => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="block p-7 md:p-8 bg-white dark:bg-gray-800 rounded-2xl ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:shadow-md transition-all card-soft"
+                    className="group block p-8 bg-white dark:bg-neutral-900 rounded-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 hover:ring-[#e63946]/30 dark:hover:ring-[#ff6b7a]/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 card-soft"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-serif font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+                      <h3 className="text-xl md:text-2xl font-serif font-semibold tracking-tight text-stone-900 dark:text-stone-50 group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300">
                         {tag.name}
                       </h3>
-                      <span className="text-sm font-sans text-gray-500 dark:text-gray-400 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+                      <span className="text-sm font-sans text-stone-500 dark:text-stone-400 px-4 py-2 bg-stone-100 dark:bg-neutral-800 rounded-full group-hover:bg-[#e63946]/10 dark:group-hover:bg-[#ff6b7a]/10 transition-colors duration-300">
                         {tag.count} 张
                       </span>
                     </div>

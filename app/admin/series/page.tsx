@@ -109,22 +109,32 @@ export default function SeriesManagementPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold">系列管理</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">管理照片系列集</p>
+          <div className="inline-block mb-3">
+            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              Management
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">系列管理</h1>
+          <p className="text-stone-600 dark:text-stone-400 font-light">管理照片系列集</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="outline">
+        <Button onClick={() => setShowCreateModal(true)} variant="primary">
           创建系列
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600" />
+        <div className="text-center py-20">
+          <div className="inline-flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
+              Loading
+            </span>
+          </div>
         </div>
       ) : seriesList.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">暂无系列</p>
-          <Button onClick={() => setShowCreateModal(true)} variant="outline">
+        <div className="text-center py-20">
+          <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无系列</p>
+          <Button onClick={() => setShowCreateModal(true)} variant="primary">
             创建第一个系列
           </Button>
         </div>
@@ -133,23 +143,29 @@ export default function SeriesManagementPage() {
           {seriesList.map((series) => (
             <div
               key={series.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6"
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-6 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20 hover:shadow-xl transition-all duration-300"
             >
-              <h3 className="text-xl font-bold mb-2">{series.title}</h3>
-              <p className="text-sm text-gray-500 mb-3">Slug: {series.slug}</p>
+              <h3 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">{series.title}</h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 font-mono">Slug: {series.slug}</p>
               {series.brand && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  <span className="font-medium">品牌：</span>{series.brand}
+                <p className="text-sm text-stone-600 dark:text-stone-400 mb-2">
+                  <span className="font-medium text-[#e63946] dark:text-[#ff6b7a]">品牌：</span>{series.brand}
                 </p>
               )}
               {series.summary && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-sm text-stone-600 dark:text-stone-400 mb-4 line-clamp-2 leading-relaxed">
                   {series.summary}
                 </p>
               )}
-              <div className="flex gap-4 text-sm text-gray-500 mb-4">
-                <span>{series.albumCount} 个相册</span>
-                <span>{series.photoCount} 张照片</span>
+              <div className="flex gap-4 text-xs text-stone-500 dark:text-stone-400 mb-4">
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-[#d4af37]" />
+                  {series.albumCount} 个相册
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-[#d4af37]" />
+                  {series.photoCount} 张照片
+                </span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -164,7 +180,7 @@ export default function SeriesManagementPage() {
                   onClick={() => handleDelete(series.id)}
                   variant="ghost"
                   size="sm"
-                  className="text-red-600"
+                  className="text-[#e63946] dark:text-[#ff6b7a] hover:bg-[#e63946]/10 dark:hover:bg-[#ff6b7a]/10"
                 >
                   删除
                 </Button>
@@ -175,12 +191,12 @@ export default function SeriesManagementPage() {
       )}
 
       {(showCreateModal || editingSeries) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full mx-4 p-6">
-            <h2 className="text-2xl font-bold mb-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 max-w-lg w-full p-8">
+            <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">
               {editingSeries ? '编辑系列' : '创建系列'}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <Input
                 label="Slug (URL 标识)"
                 value={slug}
@@ -202,20 +218,20 @@ export default function SeriesManagementPage() {
                 placeholder="品牌名称（可选）"
               />
               <div>
-                <label className="block text-sm font-medium mb-1">简介</label>
+                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">简介</label>
                 <textarea
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={3}
                   placeholder="系列简介（可选）"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-8">
               <Button
                 onClick={editingSeries ? handleUpdate : handleCreate}
-                variant="outline"
+                variant="primary"
                 className="flex-1"
                 disabled={!slug.trim() || !title.trim()}
               >
@@ -227,7 +243,7 @@ export default function SeriesManagementPage() {
                   setEditingSeries(null);
                   resetForm();
                 }}
-                variant="ghost"
+                variant="secondary"
                 className="flex-1"
               >
                 取消

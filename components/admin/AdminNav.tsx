@@ -23,22 +23,30 @@ export function AdminNav() {
   ];
 
   return (
-    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-stone-200/50 dark:border-neutral-800/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-8">
-            <Link href="/" className="text-xl font-serif font-bold">
-              CCFrame Admin
+        <div className="flex items-center justify-between h-20">
+          <div className="flex items-center space-x-10">
+            {/* Brand */}
+            <Link href="/" className="group flex items-center space-x-3">
+              <span className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300">
+                CCFrame
+              </span>
+              <span className="text-xs uppercase tracking-[0.15em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+                Admin
+              </span>
             </Link>
-            <div className="hidden md:flex space-x-4">
+
+            {/* Nav Items */}
+            <div className="hidden md:flex items-center space-x-2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium tracking-wide transition-all duration-300 ${
                     pathname === item.href
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20'
+                      : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   {item.label}
@@ -46,9 +54,11 @@ export function AdminNav() {
               ))}
             </div>
           </div>
+
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+            className="px-5 py-2.5 text-sm font-medium tracking-wide text-[#e63946] dark:text-[#ff6b7a] hover:bg-[#e63946]/10 dark:hover:bg-[#ff6b7a]/10 rounded-xl transition-all duration-300 hover:ring-1 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20"
           >
             登出
           </button>

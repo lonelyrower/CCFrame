@@ -10,27 +10,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
             {label}
           </label>
         )}
         <input
           ref={ref}
           className={`
-            w-full px-4 py-2 rounded-lg border
-            bg-white dark:bg-gray-800
-            border-gray-300 dark:border-gray-600
-            text-gray-900 dark:text-gray-100
-            placeholder-gray-400 dark:placeholder-gray-500
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            w-full px-5 py-3 rounded-xl border-2
+            bg-white dark:bg-neutral-900
+            border-stone-200 dark:border-neutral-700
+            text-stone-900 dark:text-stone-100
+            placeholder-stone-400 dark:placeholder-neutral-500
+            focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a]
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? 'border-red-500 focus:ring-red-500' : ''}
+            transition-all duration-300
+            ${error ? 'border-[#e63946] dark:border-[#ff6b7a] focus:ring-[#e63946]/30 dark:focus:ring-[#ff6b7a]/30' : ''}
             ${className}
           `}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="mt-2 text-sm text-[#e63946] dark:text-[#ff6b7a]">{error}</p>
         )}
       </div>
     );

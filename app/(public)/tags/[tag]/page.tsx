@@ -74,36 +74,49 @@ export default function TagDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
-        <div className="mb-6">
+        <div className="mb-8">
           <Link
             href="/tags"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#e63946] dark:text-[#ff6b7a] hover:gap-3 transition-all duration-300"
           >
-            ← 返回标签列表
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            返回标签列表
           </Link>
         </div>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-2">
+        {/* Header - Fashion Style */}
+        <div className="mb-16">
+          <div className="inline-block mb-4">
+            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              Tag
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
             #{tagName}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {photos.length} 张照片
+          <p className="text-lg md:text-xl text-stone-600 dark:text-stone-400 font-light">
+            {photos.length} 张作品
           </p>
         </div>
 
         {/* Photos */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600" />
+          <div className="text-center py-20">
+            <div className="inline-flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
+                Loading
+              </span>
+            </div>
           </div>
         ) : photos.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-400">该标签下暂无照片</p>
+          <div className="text-center py-20">
+            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">该标签下暂无作品</p>
           </div>
         ) : (
           <Masonry photos={photos} onPhotoClick={handlePhotoClick} />
