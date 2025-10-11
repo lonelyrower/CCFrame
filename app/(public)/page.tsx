@@ -84,218 +84,199 @@ export default function HomePage() {
 
   return (
     <div className="relative">
-      {/* Hero Section */}
-      <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
+      {/* Hero Section - Fashion Editorial Style */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         {heroPhoto && (
           <div className="absolute inset-0">
             <img
               src={getImageUrl(heroPhoto.fileKey, heroPhoto.isPublic, { width: 1920, quality: 90 })}
               alt="Hero"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover scale-105 animate-fade-in"
+              style={{ animationDuration: '1.2s' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-            {/* Subtle grain/texture overlay (desktop only, lower opacity to avoid snow on dark covers) */}
-            <div className="hidden md:block absolute inset-0 bg-noise opacity-[0.05] mix-blend-soft-light pointer-events-none" />
+            {/* Sophisticated gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
+            {/* Subtle grain texture */}
+            <div className="hidden md:block absolute inset-0 bg-noise opacity-[0.08] mix-blend-overlay pointer-events-none" />
+            {/* Accent color tint */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#e63946]/10 via-transparent to-[#d4af37]/5 mix-blend-multiply" />
           </div>
         )}
 
-        {/* Content */}
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1
-            className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-6 animate-fade-in tracking-tight md:tracking-normal leading-tight"
-            style={{
-              animationDelay: '40ms',
-              color: themeColor && isLightHex(themeColor) ? '#111827' : '#ffffff',
-              textShadow: themeColor && isLightHex(themeColor)
-                ? '0 2px 8px rgba(0,0,0,0.1)'
-                : '0 2px 8px rgba(0,0,0,0.5)',
-            }}
-          >
-            CCFrame
-          </h1>
-          <p
-            className="text-xl md:text-2xl mb-8 leading-relaxed md:leading-loose tracking-[0.01em] max-w-2xl mx-auto animate-slide-up"
-            style={{
-              animationDelay: '120ms',
-              color: themeColor && isLightHex(themeColor) ? 'rgba(17,24,39,0.85)' : 'rgba(255,255,255,0.9)',
-              textShadow: themeColor && isLightHex(themeColor)
-                ? '0 1px 4px rgba(0,0,0,0.08)'
-                : '0 1px 4px rgba(0,0,0,0.3)',
-            }}
-          >
-            {homeCopy}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '200ms' }}>
-            <Link
-              href="/photos"
-              className="px-8 py-3 rounded-lg font-medium btn-glass"
-              style={(() => {
-                if (!themeColor) return {};
-                const light = isLightHex(themeColor);
-                if (light) {
-                  return {
-                    color: '#111827',
-                    borderColor: 'rgba(17,24,39,0.35)',
-                    boxShadow:
-                      'inset 0 0 0 1px rgba(17,24,39,0.2), 0 8px 24px rgba(17,24,39,0.15)',
-                    backgroundColor: 'rgba(255,255,255,0.6)',
-                  };
-                }
-                return {
-                  borderColor: `${themeColor}80`,
-                  boxShadow: `inset 0 0 0 1px ${themeColor}33, 0 8px 24px ${themeColor}26`,
-                };
-              })()}
+        {/* Content - Editorial Layout */}
+        <div className="relative z-10 px-4 max-w-6xl mx-auto">
+          {/* Brand Mark - Top Left */}
+          <div className="absolute top-0 left-0 right-0 text-center md:text-left mb-12 md:mb-0">
+            <h1
+              className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-serif font-bold mb-4 animate-reveal tracking-tighter leading-none"
+              style={{
+                animationDelay: '100ms',
+                color: themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff',
+                textShadow: themeColor && isLightHex(themeColor)
+                  ? '0 4px 20px rgba(0,0,0,0.08)'
+                  : '0 4px 30px rgba(0,0,0,0.6), 0 2px 10px rgba(230,57,70,0.3)',
+                letterSpacing: '-0.04em',
+              }}
             >
-              进入相册
-            </Link>
-            <Link
-              href="/tags"
-              className="px-8 py-3 text-white rounded-lg font-medium btn-outline-light"
-              style={(() => {
-                if (!themeColor) return {};
-                const light = isLightHex(themeColor);
-                if (light) {
-                  return {
-                    color: '#111827',
-                    borderColor: 'rgba(17,24,39,0.35)',
-                    boxShadow:
-                      'inset 0 0 0 1px rgba(17,24,39,0.18)',
-                    backgroundColor: 'rgba(255,255,255,0.5)',
-                  };
-                }
-                return {};
-              })()}
+              CCFrame
+            </h1>
+          </div>
+
+          {/* Tagline - Bottom Center */}
+          <div className="absolute bottom-32 left-0 right-0 text-center">
+            <p
+              className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed tracking-wide max-w-3xl mx-auto font-light animate-reveal"
+              style={{
+                animationDelay: '300ms',
+                color: themeColor && isLightHex(themeColor) ? 'rgba(10,10,10,0.9)' : 'rgba(255,255,255,0.95)',
+                textShadow: themeColor && isLightHex(themeColor)
+                  ? '0 2px 10px rgba(0,0,0,0.1)'
+                  : '0 2px 15px rgba(0,0,0,0.5)',
+                letterSpacing: '0.05em',
+              }}
             >
-              按标签浏览
-            </Link>
+              {homeCopy}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-5 justify-center animate-reveal" style={{ animationDelay: '500ms' }}>
+              <Link
+                href="/photos"
+                className="px-10 py-4 rounded-full font-medium text-base tracking-wide uppercase btn-glass hover:scale-105 active:scale-100"
+                style={(() => {
+                  if (!themeColor) return {};
+                  const light = isLightHex(themeColor);
+                  if (light) {
+                    return {
+                      color: '#0a0a0a',
+                      borderColor: 'rgba(10,10,10,0.3)',
+                      boxShadow:
+                        'inset 0 1px 0 rgba(255,255,255,0.5), 0 10px 30px rgba(10,10,10,0.15)',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                    };
+                  }
+                  return {};
+                })()}
+              >
+                探索作品
+              </Link>
+              <Link
+                href="/tags"
+                className="px-10 py-4 text-white rounded-full font-medium text-base tracking-wide uppercase btn-outline-light hover:scale-105 active:scale-100"
+                style={(() => {
+                  if (!themeColor) return {};
+                  const light = isLightHex(themeColor);
+                  if (light) {
+                    return {
+                      color: '#0a0a0a',
+                      borderColor: 'rgba(10,10,10,0.3)',
+                      backgroundColor: 'rgba(255,255,255,0.3)',
+                    };
+                  }
+                  return {};
+                })()}
+              >
+                浏览标签
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg
-            className="w-6 h-6"
+        {/* Minimal Scroll Indicator */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce opacity-70">
+          <span
+            className="text-xs uppercase tracking-widest font-light"
             style={{
-              color: themeColor && isLightHex(themeColor) ? '#111827' : '#ffffff',
+              color: themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff',
             }}
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
           >
-            <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-          </svg>
+            Scroll
+          </span>
+          <div
+            className="w-px h-12 opacity-50"
+            style={{
+              backgroundColor: themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff',
+            }}
+          />
         </div>
       </section>
 
-      {/* Featured Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-4">
-              精选作品
+      {/* Fashion Editorial Section */}
+      <section className="relative py-24 md:py-32 bg-stone-50 dark:bg-neutral-950 overflow-hidden">
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-1/3 h-64 bg-gradient-to-bl from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/10" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-96 bg-gradient-to-tr from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/8" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header - Fashion Magazine Style */}
+          <div className="max-w-3xl mx-auto text-center mb-20">
+            <div className="inline-block mb-6">
+              <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+                Portfolio Showcase
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight leading-tight">
+              时尚与艺术的融合
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              探索镜头下捕捉的每一个瞬间
+            <p className="text-lg md:text-xl text-stone-600 dark:text-stone-400 font-light tracking-wide leading-relaxed">
+              捕捉每一个瞬间的美学与情感
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+          {/* Feature Grid - Modern Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-16">
+            <div className="group text-center md:text-left">
+              <div className="inline-flex items-center justify-center w-14 h-14 mb-6 rounded-full bg-gradient-to-br from-[#e63946]/10 to-[#e63946]/5 dark:from-[#ff6b7a]/15 dark:to-[#ff6b7a]/5 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-6 h-6 rounded-full bg-[#e63946] dark:bg-[#ff6b7a]" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                精心策展
+              <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-3 tracking-tight">
+                专业策展
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                每一张照片都经过精心挑选和整理
+              <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+                每一张作品都经过精心挑选，展现独特的视觉美学
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                  />
-                </svg>
+            <div className="group text-center md:text-left">
+              <div className="inline-flex items-center justify-center w-14 h-14 mb-6 rounded-full bg-gradient-to-br from-[#d4af37]/10 to-[#d4af37]/5 dark:from-[#d4af37]/15 dark:to-[#d4af37]/5 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-6 h-6 rounded-full bg-[#d4af37]" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                智能分类
+              <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-3 tracking-tight">
+                多维度分类
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                通过标签和系列轻松找到想看的内容
+              <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+                通过标签、系列、相册，轻松探索不同风格的作品
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+            <div className="group text-center md:text-left">
+              <div className="inline-flex items-center justify-center w-14 h-14 mb-6 rounded-full bg-gradient-to-br from-stone-400/10 to-stone-400/5 dark:from-stone-400/15 dark:to-stone-400/5 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-6 h-6 rounded-full bg-stone-700 dark:bg-stone-300" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                快速加载
+              <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-3 tracking-tight">
+                沉浸体验
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                优化的图片加载，流畅的浏览体验
+              <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+                优化的加载性能，流畅的浏览体验，专注于作品本身
               </p>
             </div>
           </div>
 
-          <div className="text-center">
+          {/* CTA */}
+          <div className="text-center pt-8">
             <Link
               href="/photos"
-              className="inline-flex items-center px-6 py-3 text-base font-medium rounded-lg border text-gray-900 bg-transparent hover:bg-gray-100 transition-colors dark:text-gray-100 dark:border-gray-700 dark:hover:bg-white/5"
+              className="group inline-flex items-center gap-3 px-10 py-4 text-base font-medium tracking-wide uppercase rounded-full bg-stone-900 text-white hover:bg-[#e63946] dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-[#ff6b7a] transition-all duration-300 hover:scale-105 active:scale-100 shadow-lg hover:shadow-2xl"
             >
-              浏览全部照片
+              <span>查看完整作品集</span>
               <svg
-                className="ml-2 w-5 h-5"
+                className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                strokeWidth={2}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
           </div>

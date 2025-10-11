@@ -227,32 +227,32 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
   const getStatusColor = (status: UploadFile['status']) => {
     switch (status) {
       case 'success':
-        return 'text-green-600';
+        return 'text-[#e63946] dark:text-[#ff6b7a]';
       case 'error':
-        return 'text-red-600';
+        return 'text-[#e63946] dark:text-[#ff6b7a]';
       case 'uploading':
-        return 'text-blue-600';
+        return 'text-[#d4af37]';
       default:
-        return 'text-gray-600';
+        return 'text-stone-600 dark:text-stone-400';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Upload Settings */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg space-y-4">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100">Upload Settings</h3>
+      <div className="p-6 bg-stone-50 dark:bg-neutral-950 rounded-2xl space-y-5 ring-1 ring-stone-200/50 dark:ring-neutral-800/50">
+        <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-50 tracking-tight">Upload Settings</h3>
 
         {/* Album Selection */}
         <div>
-          <label htmlFor="album-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="album-select" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
             Album (Optional)
           </label>
           <select
             id="album-select"
             value={selectedAlbumId}
             onChange={(e) => setSelectedAlbumId(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
           >
             <option value="">No Album</option>
             {albums.map((album) => (
@@ -265,7 +265,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
             Tags (Optional)
           </label>
           <input
@@ -274,19 +274,19 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             placeholder="Type tag and press Enter"
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
           />
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-2 mt-3">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] rounded-full text-sm ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20 font-medium"
               >
                 {tag}
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="hover:text-blue-600 dark:hover:text-blue-400"
+                  className="hover:scale-110 transition-transform"
                   aria-label={`Remove tag ${tag}`}
                 >
                   ×
@@ -303,12 +303,12 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`
-          border-2 border-dashed rounded-xl p-12 text-center transition-colors
-          ${isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-700'}
+          border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300
+          ${isDragging ? 'border-[#e63946] bg-[#e63946]/5 dark:bg-[#ff6b7a]/10 scale-[1.02]' : 'border-stone-300 dark:border-neutral-700 hover:border-[#e63946]/50 dark:hover:border-[#ff6b7a]/50'}
         `}
       >
         <svg
-          className="mx-auto h-12 w-12 text-gray-400"
+          className="mx-auto h-14 w-14 text-stone-400 dark:text-neutral-500"
           stroke="currentColor"
           fill="none"
           viewBox="0 0 48 48"
@@ -320,9 +320,9 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             strokeLinejoin="round"
           />
         </svg>
-        <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+        <p className="mt-5 text-lg text-stone-700 dark:text-stone-300 font-light">
           Drag and drop images here, or{' '}
-          <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
+          <label className="text-[#e63946] dark:text-[#ff6b7a] hover:underline cursor-pointer font-medium">
             browse
             <input
               type="file"
@@ -333,7 +333,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             />
           </label>
         </p>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
           Supports: JPG, PNG, WebP, HEIC (Max 50MB each)
         </p>
       </div>
@@ -342,16 +342,16 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       {files.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">
-              Files ({files.length}) - {files.filter((f) => f.status === 'success').length} uploaded
+            <h3 className="text-lg font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
+              Files ({files.length}) <span className="text-[#e63946] dark:text-[#ff6b7a]">· {files.filter((f) => f.status === 'success').length} uploaded</span>
             </h3>
             <div className="flex gap-2">
-              <Button onClick={clearCompleted} variant="ghost" size="sm">
+              <Button onClick={clearCompleted} variant="secondary" size="sm">
                 Clear Completed
               </Button>
               <Button
                 onClick={startUpload}
-                variant="outline"
+                variant="primary"
                 size="sm"
                 isLoading={isUploading}
                 disabled={isUploading || files.every((f) => f.status === 'success')}
@@ -361,33 +361,33 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {files.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20 transition-all duration-300"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.file.name}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-stone-900 dark:text-stone-50 truncate">{file.file.name}</p>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                     {(file.file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   {file.error && (
-                    <p className="text-xs text-red-600 mt-1">{file.error}</p>
+                    <p className="text-xs text-[#e63946] dark:text-[#ff6b7a] mt-1">{file.error}</p>
                   )}
                 </div>
 
                 {/* Progress Bar */}
                 {file.status === 'uploading' && (
                   <div className="flex-1">
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-stone-200 dark:bg-neutral-800 rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        className="bg-gradient-to-r from-[#e63946] to-[#ff6b7a] h-2 rounded-full transition-all duration-300"
                         style={{ width: `${file.progress}%` }}
                         aria-label={`Upload progress ${file.progress}%`}
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{file.progress}%</p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-1.5 font-medium">{file.progress}%</p>
                   </div>
                 )}
 
@@ -403,7 +403,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 {file.status !== 'uploading' && (
                   <button
                     onClick={() => removeFile(file.id)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="text-stone-400 hover:text-[#e63946] dark:hover:text-[#ff6b7a] transition-colors"
                   >
                     ✕
                   </button>

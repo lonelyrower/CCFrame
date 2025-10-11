@@ -81,17 +81,17 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-8 border-b border-stone-200 dark:border-neutral-800">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Bulk Edit {selectedCount} Photos
+            <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
+              Bulk Edit <span className="text-[#e63946] dark:text-[#ff6b7a]">{selectedCount}</span> Photos
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-stone-400 hover:text-[#e63946] dark:hover:text-[#ff6b7a] transition-colors p-2 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-full"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -101,18 +101,18 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-8 space-y-6">
           {/* Album Selection */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 id="update-album"
                 checked={updateAlbum}
                 onChange={(e) => setUpdateAlbum(e.target.checked)}
-                className="rounded"
+                className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[#e63946] focus:ring-[#e63946]/20 focus:ring-2"
               />
-              <label htmlFor="update-album" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <label htmlFor="update-album" className="text-sm font-medium tracking-wide text-stone-900 dark:text-stone-50 cursor-pointer">
                 Update Album
               </label>
             </div>
@@ -120,7 +120,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
               <select
                 value={selectedAlbumId}
                 onChange={(e) => setSelectedAlbumId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
               >
                 <option value="">No Album</option>
                 {albums.map((album) => (
@@ -133,16 +133,16 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
           </div>
 
           {/* Tags */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 id="update-tags"
                 checked={updateTags}
                 onChange={(e) => setUpdateTags(e.target.checked)}
-                className="rounded"
+                className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[#e63946] focus:ring-[#e63946]/20 focus:ring-2"
               />
-              <label htmlFor="update-tags" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <label htmlFor="update-tags" className="text-sm font-medium tracking-wide text-stone-900 dark:text-stone-50 cursor-pointer">
                 Update Tags
               </label>
             </div>
@@ -154,25 +154,25 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type tag and press Enter"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
                 />
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] rounded-full text-sm ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20 font-medium"
                     >
                       {tag}
                       <button
                         onClick={() => removeTag(tag)}
-                        className="hover:text-blue-600 dark:hover:text-blue-400"
+                        className="hover:scale-110 transition-transform"
                       >
                         ×
                       </button>
                     </span>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
                   Note: This will replace existing tags on selected photos
                 </p>
               </>
@@ -181,13 +181,13 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-          <Button onClick={onClose} variant="ghost" disabled={isLoading}>
+        <div className="p-8 border-t border-stone-200 dark:border-neutral-800 flex justify-end gap-3">
+          <Button onClick={onClose} variant="secondary" disabled={isLoading}>
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            variant="outline"
+            variant="primary"
             isLoading={isLoading}
             disabled={isLoading || (!updateTags && !updateAlbum)}
           >

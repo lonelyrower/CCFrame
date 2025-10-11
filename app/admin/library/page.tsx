@@ -128,33 +128,33 @@ export default function LibraryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 Photo Library
               </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
+              <p className="text-stone-600 dark:text-stone-400">
                 {photos.length} photos loaded
               </p>
             </div>
-            <Button onClick={() => router.push('/admin/upload')} variant="outline">
+            <Button onClick={() => router.push('/admin/upload')} variant="primary">
               Upload Photos
             </Button>
           </div>
 
           {/* Batch Actions */}
           {selectedPhotos.size > 0 && (
-            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex-wrap">
-              <span className="text-sm font-medium">
+            <div className="flex items-center gap-3 p-5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 rounded-2xl flex-wrap ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20">
+              <span className="text-sm font-semibold text-[#e63946] dark:text-[#ff6b7a]">
                 {selectedPhotos.size} selected
               </span>
               <Button
                 onClick={() => setShowBulkEdit(true)}
-                variant="outline"
+                variant="secondary"
                 size="sm"
               >
                 Edit Tags/Album
@@ -178,7 +178,7 @@ export default function LibraryPage() {
                 variant="ghost"
                 size="sm"
               >
-                Clear Selection
+                Clear
               </Button>
             </div>
           )}
@@ -187,7 +187,7 @@ export default function LibraryPage() {
           <div className="mt-4">
             <button
               onClick={selectAll}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              className="text-sm font-medium text-[#e63946] hover:text-[#c1121f] dark:text-[#ff6b7a] dark:hover:text-[#ff8fa3] transition-colors"
             >
               {selectedPhotos.size === photos.length ? 'Deselect All' : 'Select All'}
             </button>
@@ -196,14 +196,16 @@ export default function LibraryPage() {
 
         {/* Photo Grid */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600" />
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading photos...</p>
+          <div className="text-center py-20">
+            <div className="inline-flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <p className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">Loading</p>
+            </div>
           </div>
         ) : photos.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">No photos yet</p>
-            <Button onClick={() => router.push('/admin/upload')} variant="outline">
+          <div className="text-center py-20">
+            <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">No photos yet</p>
+            <Button onClick={() => router.push('/admin/upload')} variant="primary">
               Upload Your First Photos
             </Button>
           </div>
@@ -213,9 +215,9 @@ export default function LibraryPage() {
               <div
                 key={photo.id}
                 className={`
-                  relative group rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800
-                  aspect-square cursor-pointer transition-all
-                  ${selectedPhotos.has(photo.id) ? 'ring-4 ring-blue-500' : ''}
+                  relative group rounded-2xl overflow-hidden bg-stone-200 dark:bg-neutral-800
+                  aspect-square cursor-pointer transition-all duration-300
+                  ${selectedPhotos.has(photo.id) ? 'ring-4 ring-[#e63946] dark:ring-[#ff6b7a] scale-[0.97]' : 'hover:scale-[1.02]'}
                 `}
                 onClick={() => togglePhotoSelection(photo.id)}
               >
@@ -246,18 +248,18 @@ export default function LibraryPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       togglePublic(photo.id, photo.isPublic);
                     }}
                     className={`
-                      px-2 py-1 rounded text-xs font-medium
+                      px-3 py-1.5 rounded-lg text-xs font-medium transition-all backdrop-blur-sm
                       ${
                         photo.isPublic
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-500 text-white'
+                          ? 'bg-green-500/90 text-white hover:bg-green-600'
+                          : 'bg-stone-500/90 text-white hover:bg-stone-600'
                       }
                     `}
                   >
@@ -268,7 +270,7 @@ export default function LibraryPage() {
                       e.stopPropagation();
                       deletePhoto(photo.id);
                     }}
-                    className="px-2 py-1 bg-red-500 text-white rounded text-xs font-medium"
+                    className="px-3 py-1.5 bg-[#e63946]/90 dark:bg-[#ff6b7a]/90 text-white rounded-lg text-xs font-medium hover:bg-[#c1121f] dark:hover:bg-[#ff8fa3] transition-all backdrop-blur-sm"
                   >
                     Delete
                   </button>
@@ -276,18 +278,18 @@ export default function LibraryPage() {
 
                 {/* Selection Indicator */}
                 {selectedPhotos.has(photo.id) && (
-                  <div className="absolute top-2 left-2">
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="absolute top-3 left-3">
+                    <div className="w-7 h-7 bg-[#e63946] dark:bg-[#ff6b7a] rounded-full flex items-center justify-center shadow-lg">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        strokeWidth={3}
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={3}
                           d="M5 13l4 4L19 7"
                         />
                       </svg>

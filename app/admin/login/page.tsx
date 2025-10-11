@@ -43,22 +43,30 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 px-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/8 blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/8 blur-3xl" />
+
+      <div className="relative max-w-md w-full">
+        {/* Brand Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-3 tracking-tighter">
             CCFrame
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Admin Login
-          </p>
+          <div className="inline-block">
+            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              Admin Portal
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+        {/* Login Card */}
+        <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <div className="p-4 rounded-2xl bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 border-2 border-[#e63946]/20 dark:border-[#ff6b7a]/20">
+                <p className="text-sm font-medium text-[#e63946] dark:text-[#ff6b7a]">{error}</p>
               </div>
             )}
 
@@ -86,7 +94,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              variant="outline"
+              variant="primary"
               size="lg"
               className="w-full"
               isLoading={isLoading}
@@ -96,8 +104,9 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
-          Protected area - Authorized access only
+        {/* Footer Note */}
+        <p className="mt-8 text-center text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+          Protected Area · Authorized Access Only
         </p>
       </div>
     </div>
