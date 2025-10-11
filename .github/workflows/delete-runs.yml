@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 jobs:
   delete-workflow-runs:
-    runs-on:n: ubuntu-latest
+          runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:
