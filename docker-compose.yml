@@ -46,7 +46,7 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        npx prisma migrate deploy &&
+        npx -y prisma@5.22.0 migrate deploy &&
         node scripts/seed-admin.js &&
         node server.js
       "

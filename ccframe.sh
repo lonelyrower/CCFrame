@@ -125,7 +125,8 @@ ensure_prisma_binaries_image_mode() {
 # 在镜像容器内尝试运行迁移
 run_migrations_image_mode() {
     print_info "运行数据库迁移 (容器内)..."
-    if docker compose exec -T app npx prisma migrate deploy; then
+    # Pin Prisma CLI to a stable version to avoid Effect/fast-check regressions in Prisma 6.x
+    if docker compose exec -T app npx -y prisma@5.22.0 migrate deploy; then
         return 0
     fi
     return 1
@@ -188,7 +189,8 @@ run_migrations_ephemeral_deploy() {
     fi
 
     local schema_path="/work/prisma/schema.prisma"
-    local cmd_migrate_deploy="npx -y prisma@5.22.0 migrate deploy --schema=${schema_path} --skip-generate"
+    # prisma migrate deploy does not support --skip-generate; remove it to avoid failure
+    local cmd_migrate_deploy="npx -y prisma@5.22.0 migrate deploy --schema=${schema_path}"
 
     if ! docker run --rm \
         --network "$network" \
