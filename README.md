@@ -117,10 +117,29 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ### Docker Deployment
 
-1. **Using Docker Compose**
+**🚀 Quick Deploy (Recommended)**
 
 ```bash
-# Create .env file with production settings
+# After git pull, just run:
+bash deploy.sh
+```
+
+This will automatically:
+- Initialize secure credentials (if .env doesn't exist)
+- Pull latest code
+- Rebuild and restart containers
+- Show admin credentials
+
+**Default Credentials (if .env not configured):**
+- Email: `admin@ccframe.local`
+- Password: `admin123456`
+
+⚠️ **Important**: Change these defaults in production by editing `.env` file or running `bash scripts/init-secrets.sh` to generate secure random credentials!
+
+**Manual Deployment**
+
+```bash
+# Optional: Create .env file with custom settings (has secure defaults)
 cp .env.example .env
 
 # Build and start services
@@ -130,7 +149,7 @@ docker-compose up -d
 docker-compose logs -f app
 ```
 
-1. **Using GitHub Container Registry Image**
+**Using GitHub Container Registry Image**
 
 ```bash
 docker pull ghcr.io/<your-username>/ccframe:latest

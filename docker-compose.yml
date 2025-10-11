@@ -30,10 +30,10 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-ccframe}:${POSTGRES_PASSWORD:-ccframe_password}@postgres:5432/${POSTGRES_DB:-ccframe}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-this-nextauth-secret-to-something-secure}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@ccframe.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123456}
       BASE_URL: ${BASE_URL:-http://localhost:3000}
       NODE_ENV: production
     volumes:
