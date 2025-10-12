@@ -978,18 +978,30 @@ do_install() {
             ;;
         3)
             DEPLOY_MODE="simple"
-            SERVER_IP=$(curl -s ifconfig.me || true)
+            # 优先尝试获取 IPv4 地址
+            SERVER_IP=$(curl -4 -s ifconfig.me 2>/dev/null || true)
             if [ -z "$SERVER_IP" ]; then
-                SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+                # 从本地网络接口获取 IPv4
+                SERVER_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++){if($i=="src"){print $(i+1); exit}}}')
             fi
             if [ -z "$SERVER_IP" ]; then
-                SERVER_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++){if($i=="src"){print $(i+1); exit}}}')
+                # 回退到 IPv6
+                SERVER_IP=$(curl -6 -s ifconfig.me 2>/dev/null || true)
+            fi
+            if [ -z "$SERVER_IP" ]; then
+                # 最后从 hostname -I 获取第一个地址
+                SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
             fi
             if [ -z "$SERVER_IP" ]; then
                 SERVER_IP="127.0.0.1"
             fi
             DOMAIN=""
-            BASE_URL="http://${SERVER_IP}"
+            # IPv6 地址需要用方括号包裹
+            if [[ "$SERVER_IP" == *:* ]]; then
+                BASE_URL="http://[${SERVER_IP}]"
+            else
+                BASE_URL="http://${SERVER_IP}"
+            fi
             print_info "检测到服务器IP: $SERVER_IP"
             ;;
         *)
