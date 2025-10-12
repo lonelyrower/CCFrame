@@ -250,77 +250,64 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 w-1/2 h-96 bg-gradient-to-tr from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/8" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header - Fashion Magazine Style */}
-          <div className="max-w-3xl mx-auto text-center mb-20">
-            <div className="inline-block mb-6">
-              <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
-                Portfolio Showcase
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight leading-tight">
-              时尚与艺术的融合
+          {/* Section Header - Personal Style */}
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight">
+              探索摄影世界
             </h2>
-            <p className="text-lg md:text-xl text-stone-600 dark:text-stone-400 font-light tracking-wide leading-relaxed">
-              捕捉每一个瞬间的美学与情感
+            <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light leading-relaxed">
+              用镜头记录生活的美好瞬间
             </p>
           </div>
 
-          {/* Feature Grid - Modern Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-16">
-            <div className="group text-center md:text-left">
-              <div className="inline-flex items-center justify-center w-14 h-14 mb-6 rounded-full bg-gradient-to-br from-[#e63946]/10 to-[#e63946]/5 dark:from-[#ff6b7a]/15 dark:to-[#ff6b7a]/5 group-hover:scale-110 transition-transform duration-300">
-                <div className="w-6 h-6 rounded-full bg-[#e63946] dark:bg-[#ff6b7a]" />
+          {/* Feature Grid - Clean Icon Design */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            <div className="group text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[#e63946]/10 to-[#e63946]/5 dark:from-[#ff6b7a]/15 dark:to-[#ff6b7a]/5 group-hover:scale-105 transition-all duration-300">
+                {/* Camera Icon */}
+                <svg className="w-8 h-8 text-[#e63946] dark:text-[#ff6b7a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                </svg>
               </div>
-              <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-3 tracking-tight">
-                专业策展
+              <h3 className="text-lg md:text-xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-2.5 tracking-tight">
+                精选作品
               </h3>
-              <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
-                每一张作品都经过精心挑选，展现独特的视觉美学
+              <p className="text-sm md:text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+                每张照片都经过精心拍摄与后期处理
               </p>
             </div>
 
-            <div className="group text-center md:text-left">
-              <div className="inline-flex items-center justify-center w-14 h-14 mb-6 rounded-full bg-gradient-to-br from-[#d4af37]/10 to-[#d4af37]/5 dark:from-[#d4af37]/15 dark:to-[#d4af37]/5 group-hover:scale-110 transition-transform duration-300">
-                <div className="w-6 h-6 rounded-full bg-[#d4af37]" />
+            <div className="group text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[#d4af37]/10 to-[#d4af37]/5 dark:from-[#d4af37]/15 dark:to-[#d4af37]/5 group-hover:scale-105 transition-all duration-300">
+                {/* Tags Icon */}
+                <svg className="w-8 h-8 text-[#d4af37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                </svg>
               </div>
-              <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-3 tracking-tight">
-                多维度分类
+              <h3 className="text-lg md:text-xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-2.5 tracking-tight">
+                灵活分类
               </h3>
-              <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
-                通过标签、系列、相册，轻松探索不同风格的作品
+              <p className="text-sm md:text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+                通过标签和系列快速找到感兴趣的内容
               </p>
             </div>
 
-            <div className="group text-center md:text-left">
-              <div className="inline-flex items-center justify-center w-14 h-14 mb-6 rounded-full bg-gradient-to-br from-stone-400/10 to-stone-400/5 dark:from-stone-400/15 dark:to-stone-400/5 group-hover:scale-110 transition-transform duration-300">
-                <div className="w-6 h-6 rounded-full bg-stone-700 dark:bg-stone-300" />
+            <div className="group text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-stone-400/10 to-stone-400/5 dark:from-stone-400/15 dark:to-stone-400/5 group-hover:scale-105 transition-all duration-300">
+                {/* Gallery Icon */}
+                <svg className="w-8 h-8 text-stone-700 dark:text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
               </div>
-              <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-3 tracking-tight">
-                沉浸体验
+              <h3 className="text-lg md:text-xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-2.5 tracking-tight">
+                流畅浏览
               </h3>
-              <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
-                优化的加载性能，流畅的浏览体验，专注于作品本身
+              <p className="text-sm md:text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+                响应式设计，在任何设备上都有最佳体验
               </p>
             </div>
-          </div>
-
-          {/* CTA */}
-          <div className="text-center pt-8">
-            <Link
-              href="/photos"
-              className="group inline-flex items-center gap-3 px-10 py-4 text-base font-medium tracking-wide uppercase rounded-full bg-stone-900 text-white hover:bg-[#e63946] dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-[#ff6b7a] transition-all duration-300 hover:scale-105 active:scale-100 shadow-lg hover:shadow-2xl"
-            >
-              <span>查看完整作品集</span>
-              <svg
-                className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
           </div>
         </div>
       </section>
