@@ -115,7 +115,20 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo - Fashion Editorial Style */}
-          <Link href="/" className="group flex items-center space-x-3">
+          <Link href="/" className="group flex items-center space-x-2.5">
+            <div className="relative w-9 h-9 md:w-10 md:h-10">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-[#e63946] dark:text-[#ff6b7a] group-hover:text-[#c1121f] dark:group-hover:text-[#ff8fa3] transition-colors duration-300"/>
+                <circle cx="32" cy="32" r="14" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7" className="text-[#d4af37]"/>
+                <circle cx="32" cy="32" r="8" fill="currentColor" opacity="0.15" className="text-[#e63946] dark:text-[#ff6b7a]"/>
+                <path d="M32 24 L38 32 L32 40 L26 32 Z" fill="currentColor" opacity="0.3" className="text-[#e63946] dark:text-[#ff6b7a]"/>
+                <path d="M12 12 L12 20 M12 12 L20 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
+                <path d="M52 52 L52 44 M52 52 L44 52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
+                <path d="M52 12 L52 20 M52 12 L44 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
+                <path d="M12 52 L12 44 M12 52 L20 52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
+                <circle cx="32" cy="32" r="2" fill="currentColor" className="text-[#e63946] dark:text-[#ff6b7a]"/>
+              </svg>
+            </div>
             <span className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300">
               CCFrame
             </span>

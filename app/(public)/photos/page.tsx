@@ -140,8 +140,27 @@ export default function PhotosPage() {
           <Masonry photos={photos} onPhotoClick={handlePhotoClick} />
         ) : (
           !isLoading && (
-            <div className="text-center py-20">
-              <p className="text-xl text-stone-600 dark:text-stone-400 font-light">暂无作品</p>
+            <div className="text-center py-32">
+              <div className="max-w-md mx-auto">
+                {/* Empty state icon */}
+                <div className="mb-8 flex justify-center">
+                  <div className="relative w-32 h-32 opacity-20">
+                    <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="64" cy="64" r="40" stroke="currentColor" strokeWidth="2" className="text-[#e63946] dark:text-[#ff6b7a]"/>
+                      <circle cx="64" cy="64" r="28" stroke="currentColor" strokeWidth="1.5" className="text-[#d4af37]"/>
+                      <path d="M24 24 L24 40 M24 24 L40 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-stone-400 dark:text-stone-600"/>
+                      <path d="M104 104 L104 88 M104 104 L88 104" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-stone-400 dark:text-stone-600"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
+                  暂无公开作品
+                </h3>
+                <p className="text-lg text-stone-600 dark:text-stone-400 font-light leading-relaxed mb-8">
+                  这里还没有上传任何照片，<br/>请稍后再来查看精彩内容
+                </p>
+              </div>
             </div>
           )
         )}

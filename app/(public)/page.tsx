@@ -86,8 +86,8 @@ export default function HomePage() {
     <div className="relative">
       {/* Hero Section - Fashion Editorial Style */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
-        {heroPhoto && (
+        {/* Background Image or Empty State */}
+        {heroPhoto ? (
           <div className="absolute inset-0">
             <img
               src={getImageUrl(heroPhoto.fileKey, heroPhoto.isPublic, { width: 1920, quality: 90 })}
@@ -103,6 +103,28 @@ export default function HomePage() {
             {/* Accent color tint */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#e63946]/10 via-transparent to-[#d4af37]/5 mix-blend-multiply" />
           </div>
+        ) : (
+          /* Empty State - Elegant Minimal Design */
+          <div className="absolute inset-0 bg-gradient-to-br from-stone-100 via-stone-50 to-white dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+            {/* Decorative geometric elements */}
+            <div className="absolute inset-0 overflow-hidden">
+              {/* Large camera lens illustration */}
+              <div className="absolute top-1/4 right-1/4 w-96 h-96 opacity-[0.03] dark:opacity-[0.08]">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="100" cy="100" r="80" stroke="currentColor" strokeWidth="2" className="text-[#e63946]"/>
+                  <circle cx="100" cy="100" r="60" stroke="currentColor" strokeWidth="1.5" className="text-[#d4af37]"/>
+                  <circle cx="100" cy="100" r="40" stroke="currentColor" strokeWidth="1" className="text-[#e63946]"/>
+                  <path d="M100 40 L130 100 L100 160 L70 100 Z" stroke="currentColor" strokeWidth="1" className="text-[#e63946]"/>
+                </svg>
+              </div>
+              {/* Frame corners */}
+              <div className="absolute top-10 left-10 w-24 h-24 border-l-2 border-t-2 border-stone-300 dark:border-neutral-700 opacity-30"/>
+              <div className="absolute bottom-10 right-10 w-24 h-24 border-r-2 border-b-2 border-stone-300 dark:border-neutral-700 opacity-30"/>
+              {/* Subtle gradient orbs */}
+              <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-gradient-to-br from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/10 rounded-full blur-3xl"/>
+              <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-gradient-to-tl from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/10 rounded-full blur-3xl"/>
+            </div>
+          </div>
         )}
 
         {/* Content - Editorial Layout */}
@@ -113,10 +135,14 @@ export default function HomePage() {
               className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-serif font-bold mb-4 animate-reveal tracking-tighter leading-none"
               style={{
                 animationDelay: '100ms',
-                color: themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff',
-                textShadow: themeColor && isLightHex(themeColor)
-                  ? '0 4px 20px rgba(0,0,0,0.08)'
-                  : '0 4px 30px rgba(0,0,0,0.6), 0 2px 10px rgba(230,57,70,0.3)',
+                color: heroPhoto
+                  ? (themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff')
+                  : 'var(--foreground)',
+                textShadow: heroPhoto
+                  ? (themeColor && isLightHex(themeColor)
+                      ? '0 4px 20px rgba(0,0,0,0.08)'
+                      : '0 4px 30px rgba(0,0,0,0.6), 0 2px 10px rgba(230,57,70,0.3)')
+                  : 'none',
                 letterSpacing: '-0.04em',
               }}
             >
@@ -127,13 +153,17 @@ export default function HomePage() {
           {/* Tagline - Bottom Center */}
           <div className="absolute bottom-32 left-0 right-0 text-center">
             <p
-              className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed tracking-wide max-w-3xl mx-auto font-light animate-reveal"
+              className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed tracking-wide max-w-3xl mx-auto font-light animate-reveal text-stone-700 dark:text-stone-300"
               style={{
                 animationDelay: '300ms',
-                color: themeColor && isLightHex(themeColor) ? 'rgba(10,10,10,0.9)' : 'rgba(255,255,255,0.95)',
-                textShadow: themeColor && isLightHex(themeColor)
-                  ? '0 2px 10px rgba(0,0,0,0.1)'
-                  : '0 2px 15px rgba(0,0,0,0.5)',
+                color: heroPhoto
+                  ? (themeColor && isLightHex(themeColor) ? 'rgba(10,10,10,0.9)' : 'rgba(255,255,255,0.95)')
+                  : undefined,
+                textShadow: heroPhoto
+                  ? (themeColor && isLightHex(themeColor)
+                      ? '0 2px 10px rgba(0,0,0,0.1)'
+                      : '0 2px 15px rgba(0,0,0,0.5)')
+                  : 'none',
                 letterSpacing: '0.05em',
               }}
             >
@@ -142,9 +172,13 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-5 justify-center animate-reveal" style={{ animationDelay: '500ms' }}>
               <Link
                 href="/photos"
-                className="px-10 py-4 rounded-full font-medium text-base tracking-wide uppercase btn-glass hover:scale-105 active:scale-100"
+                className={`px-10 py-4 rounded-full font-medium text-base tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
+                  heroPhoto
+                    ? 'btn-glass'
+                    : 'bg-[#e63946] text-white hover:bg-[#c1121f] dark:bg-[#ff6b7a] dark:hover:bg-[#ff8fa3] shadow-lg hover:shadow-xl'
+                }`}
                 style={(() => {
-                  if (!themeColor) return {};
+                  if (!heroPhoto || !themeColor) return {};
                   const light = isLightHex(themeColor);
                   if (light) {
                     return {
@@ -162,9 +196,13 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/tags"
-                className="px-10 py-4 text-white rounded-full font-medium text-base tracking-wide uppercase btn-outline-light hover:scale-105 active:scale-100"
+                className={`px-10 py-4 rounded-full font-medium text-base tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
+                  heroPhoto
+                    ? 'text-white btn-outline-light'
+                    : 'border-2 border-[#e63946] text-[#e63946] hover:bg-[#e63946] hover:text-white dark:border-[#ff6b7a] dark:text-[#ff6b7a] dark:hover:bg-[#ff6b7a] dark:hover:text-neutral-900'
+                }`}
                 style={(() => {
-                  if (!themeColor) return {};
+                  if (!heroPhoto || !themeColor) return {};
                   const light = isLightHex(themeColor);
                   if (light) {
                     return {
@@ -185,17 +223,21 @@ export default function HomePage() {
         {/* Minimal Scroll Indicator */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce opacity-70">
           <span
-            className="text-xs uppercase tracking-widest font-light"
+            className="text-xs uppercase tracking-widest font-light text-stone-600 dark:text-stone-400"
             style={{
-              color: themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff',
+              color: heroPhoto
+                ? (themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff')
+                : undefined,
             }}
           >
             Scroll
           </span>
           <div
-            className="w-px h-12 opacity-50"
+            className="w-px h-12 opacity-50 bg-stone-600 dark:bg-stone-400"
             style={{
-              backgroundColor: themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff',
+              backgroundColor: heroPhoto
+                ? (themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff')
+                : undefined,
             }}
           />
         </div>

@@ -27,6 +27,13 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: 'CCFrame - Personal Photography Showcase',
   description: 'Artistic photography portfolio with elegant design and fast loading',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/logo.svg', sizes: '64x64', type: 'image/svg+xml' }
+    ],
+    apple: '/logo.svg',
+  },
 };
 
 export default function RootLayout({

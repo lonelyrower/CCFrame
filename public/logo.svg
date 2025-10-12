@@ -1,0 +1,22 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Camera lens outer ring -->
+  <circle cx="32" cy="32" r="20" stroke="#e63946" stroke-width="2.5" fill="none"/>
+
+  <!-- Camera lens inner elements -->
+  <circle cx="32" cy="32" r="14" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.8"/>
+  <circle cx="32" cy="32" r="8" fill="#e63946" opacity="0.15"/>
+
+  <!-- Aperture blades effect -->
+  <path d="M32 24 L38 32 L32 40 L26 32 Z" fill="#e63946" opacity="0.3"/>
+
+  <!-- Frame corners (top-left and bottom-right) -->
+  <path d="M12 12 L12 20 M12 12 L20 12" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M52 52 L52 44 M52 52 L44 52" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Frame corners (top-right and bottom-left) -->
+  <path d="M52 12 L52 20 M52 12 L44 12" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M12 52 L12 44 M12 52 L20 52" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Center dot (focus point) -->
+  <circle cx="32" cy="32" r="2" fill="#e63946"/>
+</svg>
