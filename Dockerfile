@@ -45,15 +45,22 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
 # Copy Prisma CLI and seed script dependencies
+# Include all Prisma-related modules and their transitive dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+
+# Copy seed script dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
+
+# Copy Prisma transitive dependencies (required by @prisma/config and others)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/fast-check ./node_modules/fast-check
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_modules/effect
+
+# Copy package.json for npm commands
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-# Copy .bin directory for npx commands
+# Copy .bin directory for npx and npm commands
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
 
 # Create uploads directory structure for public/private separation

@@ -248,8 +248,8 @@ run_seed_ephemeral() {
     local bootstrap="\
 set -e; \
 cd /work; \
-npm -y init >/dev/null 2>&1; \
-npm i -y prisma@${PRISMA_VERSION} @prisma/client@${PRISMA_VERSION} bcryptjs >/dev/null 2>&1; \
+npm init -y >/dev/null 2>&1; \
+npm install prisma@${PRISMA_VERSION} @prisma/client@${PRISMA_VERSION} bcryptjs >/dev/null 2>&1; \
 npx prisma generate --schema=${schema_path} --binary-targets native linux-musl linux-musl-openssl-3.0.x >/dev/null 2>&1; \
 node ${seed_path}"
 
