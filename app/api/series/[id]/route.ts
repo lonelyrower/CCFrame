@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 // GET single series
 export async function GET(
@@ -8,7 +9,8 @@ export async function GET(
 ) {
   try {
     // Check if user is authenticated (admin)
-    const isAdmin = request.headers.get('x-user-id');
+    const session = await getSession();
+    const isAdmin = Boolean(session);
     const { id } = await params;
 
     const series = await prisma.series.findUnique({

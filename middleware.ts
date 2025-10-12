@@ -60,11 +60,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Add session to headers for API routes
-    const response = NextResponse.next();
-    response.headers.set('x-user-id', session.userId);
-    response.headers.set('x-user-email', session.email);
-
-    return response;
+    return NextResponse.next();
   }
 
   return NextResponse.next();

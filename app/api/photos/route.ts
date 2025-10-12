@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { PHOTOS_PER_PAGE } from '@/lib/constants';
 import { getSession } from '@/lib/session';
-import sharp from 'sharp';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import type { Album, Photo as PhotoModel, PhotoTag, Prisma, Series, Tag } from '@prisma/client';
+
+interface PhotoWithRelations extends PhotoModel {
+  tags: (PhotoTag & { tag: Tag })[];
+  album: (Album & { series: Series | null }) | null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,13 +24,13 @@ export async function GET(request: NextRequest) {
     const session = await getSession();
 
     // Build where clause
-    const where: Record<string, unknown> = {};
+    const where: Prisma.PhotoWhereInput = {};
 
-    // Enforce visibility: unauthenticated用户只能看到公开照片
+    // Unauthenticated users can only view public photos
     if (!session) {
       where.isPublic = true;
     } else if (isPublic !== null) {
-      // 管理端可通过查询参数筛选
+      // Authenticated users can explicitly filter by isPublic flag
       where.isPublic = isPublic === 'true';
     }
 
@@ -54,8 +57,8 @@ export async function GET(request: NextRequest) {
     // Get total count
     const total = await prisma.photo.count({ where });
 
-    // Get photos
-    const photos = await prisma.photo.findMany({
+    // Get photos without performing per-request image processing
+    const photos = (await prisma.photo.findMany({
       where,
       include: {
         tags: {
@@ -74,55 +77,10 @@ export async function GET(request: NextRequest) {
       },
       skip: (page - 1) * limit,
       take: limit,
-    });
-
-    // Lazy fill dominantColor for public photos if missing (no auth required)
-    // Best-effort, non-blocking on failure
-    await Promise.all(
-      photos.map(async (photo) => {
-        if (photo.isPublic && !photo.dominantColor && typeof photo.fileKey === 'string') {
-          try {
-            const fileKey = photo.fileKey as string;
-            const filePath = fileKey.startsWith('uploads/')
-              ? join(process.cwd(), 'public', fileKey)
-              : fileKey.startsWith('public/')
-              ? join(process.cwd(), fileKey)
-              : null;
-
-            if (filePath && existsSync(filePath)) {
-              const stats = await sharp(filePath).stats();
-              let hex: string | null = null;
-              if ((stats as any).dominant) {
-                const { r, g, b } = (stats as any).dominant as { r: number; g: number; b: number };
-                hex = `#${r.toString(16).padStart(2, '0')}${g
-                  .toString(16)
-                  .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-              } else if (stats.channels && stats.channels.length >= 3) {
-                const [red, green, blue] = stats.channels;
-                const r = Math.round(red.mean);
-                const g = Math.round(green.mean);
-                const b = Math.round(blue.mean);
-                hex = `#${r.toString(16).padStart(2, '0')}${g
-                  .toString(16)
-                  .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-              }
-              if (hex) {
-                await prisma.photo.update({ where: { id: photo.id }, data: { dominantColor: hex } });
-                // mutate in memory to reflect in response
-                (photo as any).dominantColor = hex;
-              }
-            }
-          } catch (e) {
-            // ignore
-          }
-        }
-      })
-    );
+    })) as PhotoWithRelations[];
 
     return NextResponse.json({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      photos: photos.map((photo: any) => {
-        // 未登录时绝不返回私密路径（理论上不会出现，双重保险）
+      photos: photos.map((photo) => {
         const fileKey = !session && String(photo.fileKey).startsWith('private/')
           ? ''
           : String(photo.fileKey);
@@ -135,7 +93,7 @@ export async function GET(request: NextRequest) {
           height: photo.height,
           isPublic: photo.isPublic,
           dominantColor: photo.dominantColor,
-          tags: photo.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
+          tags: photo.tags.map((pt) => pt.tag.name),
           album: photo.album,
           createdAt: photo.createdAt,
         };
