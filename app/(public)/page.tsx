@@ -128,11 +128,11 @@ export default function HomePage() {
         )}
 
         {/* Content - Editorial Layout */}
-        <div className="relative z-10 px-4 max-w-6xl mx-auto">
-          {/* Brand Mark - Top Left */}
-          <div className="absolute top-0 left-0 right-0 text-center md:text-left mb-12 md:mb-0">
+        <div className="relative z-10 px-4 max-w-6xl mx-auto h-full flex flex-col justify-center items-center">
+          {/* Brand Mark - Center */}
+          <div className="text-center mb-8 md:mb-12">
             <h1
-              className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-serif font-bold mb-4 animate-reveal tracking-tighter leading-none"
+              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold mb-4 md:mb-6 animate-reveal tracking-tighter leading-none"
               style={{
                 animationDelay: '100ms',
                 color: heroPhoto
@@ -150,8 +150,8 @@ export default function HomePage() {
             </h1>
           </div>
 
-          {/* Tagline - Bottom Center */}
-          <div className="absolute bottom-32 left-0 right-0 text-center">
+          {/* Tagline - Center */}
+          <div className="text-center max-w-4xl">
             <p
               className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed tracking-wide max-w-3xl mx-auto font-light animate-reveal text-stone-700 dark:text-stone-300"
               style={{
@@ -169,10 +169,10 @@ export default function HomePage() {
             >
               {homeCopy}
             </p>
-            <div className="flex flex-col sm:flex-row gap-5 justify-center animate-reveal" style={{ animationDelay: '500ms' }}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-reveal" style={{ animationDelay: '500ms' }}>
               <Link
                 href="/photos"
-                className={`px-10 py-4 rounded-full font-medium text-base tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
+                className={`px-6 py-2.5 rounded-full font-medium text-sm tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
                   heroPhoto
                     ? 'btn-glass'
                     : 'bg-[#e63946] text-white hover:bg-[#c1121f] dark:bg-[#ff6b7a] dark:hover:bg-[#ff8fa3] shadow-lg hover:shadow-xl'
@@ -196,7 +196,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/tags"
-                className={`px-10 py-4 rounded-full font-medium text-base tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
+                className={`px-6 py-2.5 rounded-full font-medium text-sm tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
                   heroPhoto
                     ? 'text-white btn-outline-light'
                     : 'border-2 border-[#e63946] text-[#e63946] hover:bg-[#e63946] hover:text-white dark:border-[#ff6b7a] dark:text-[#ff6b7a] dark:hover:bg-[#ff6b7a] dark:hover:text-neutral-900'
