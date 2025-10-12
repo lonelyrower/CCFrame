@@ -43,18 +43,13 @@ export default function SeriesPage() {
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Editorial Style */}
+        {/* Header - Clean Style */}
         <div className="mb-16 text-center">
-          <div className="inline-block mb-4">
-            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
-              Collections
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
-            系列集
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
+            系列
           </h1>
-          <p className="text-lg md:text-xl font-light text-stone-600 dark:text-stone-400">
-            按主题与品牌浏览精选作品集
+          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400">
+            按主题浏览作品集
           </p>
         </div>
 
@@ -69,8 +64,24 @@ export default function SeriesPage() {
             </div>
           </div>
         ) : seriesList.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">暂无系列</p>
+          <div className="text-center py-32">
+            <div className="max-w-md mx-auto">
+              {/* Empty state icon */}
+              <div className="mb-8 flex justify-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-stone-400/10 to-stone-400/5 dark:from-stone-400/15 dark:to-stone-400/5 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-stone-700 dark:text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-.98.626-1.813 1.5-2.122" />
+                  </svg>
+                </div>
+              </div>
+
+              <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
+                暂无系列
+              </h3>
+              <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light leading-relaxed">
+                还没有创建任何系列，<br/>可以将相关照片组织成主题系列
+              </p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

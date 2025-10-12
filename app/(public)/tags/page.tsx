@@ -47,18 +47,13 @@ export default function TagsPage() {
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Editorial Style */}
+        {/* Header - Clean Style */}
         <div className="mb-16 text-center">
-          <div className="inline-block mb-4">
-            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
-              Explore
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
-            标签云
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
+            标签
           </h1>
-          <p className="text-lg md:text-xl font-light text-stone-600 dark:text-stone-400">
-            通过风格与主题探索作品
+          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400">
+            按主题分类浏览照片
           </p>
         </div>
 
@@ -72,8 +67,25 @@ export default function TagsPage() {
             </div>
           </div>
         ) : tags.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">暂无标签</p>
+          <div className="text-center py-32">
+            <div className="max-w-md mx-auto">
+              {/* Empty state icon */}
+              <div className="mb-8 flex justify-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#d4af37]/10 to-[#d4af37]/5 dark:from-[#d4af37]/15 dark:to-[#d4af37]/5 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-[#d4af37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                  </svg>
+                </div>
+              </div>
+
+              <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
+                暂无标签
+              </h3>
+              <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light leading-relaxed">
+                还没有创建任何标签，<br/>上传照片后可以添加标签进行分类
+              </p>
+            </div>
           </div>
         ) : (
           <>

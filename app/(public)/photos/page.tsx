@@ -120,18 +120,13 @@ export default function PhotosPage() {
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Editorial Style */}
+        {/* Header - Clean Style */}
         <div className="mb-12 md:mb-16">
-          <div className="inline-block mb-4">
-            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
-              Portfolio
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
             全部作品
           </h1>
-          <p className="text-lg md:text-xl text-stone-600 dark:text-stone-400 font-light">
-            {photos.length} 张作品已加载
+          <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light">
+            {photos.length > 0 ? `${photos.length} 张作品` : '加载中...'}
           </p>
         </div>
 
