@@ -10,6 +10,8 @@ interface UploadFile {
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
   photoId?: string;
+  duplicate?: boolean;
+  duplicateMessage?: string;
 }
 
 interface Album {
@@ -19,6 +21,15 @@ interface Album {
 
 interface UploadZoneProps {
   onUploadComplete?: (photoIds: string[]) => void;
+}
+
+interface UploadApiResponse {
+  message?: string;
+  duplicate?: boolean;
+  photo: {
+    id: string;
+    fileKey: string;
+  };
 }
 
 export function UploadZone({ onUploadComplete }: UploadZoneProps) {
@@ -121,6 +132,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       formData.append('file', fileToUpload.file);
       formData.append('title', fileToUpload.file.name);
       formData.append('isPublic', 'true');
+      formData.append('skipDuplicateCheck', 'false');
 
       // Add album if selected
       if (selectedAlbumId) {
@@ -144,12 +156,23 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         }
       });
 
-      const response = await new Promise<{ photo: { id: string; fileKey: string } }>((resolve, reject) => {
+      const response = await new Promise<UploadApiResponse>((resolve, reject) => {
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            reject(new Error(`Upload failed: ${xhr.statusText}`));
+          try {
+            const payload = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+              if (payload.error) {
+                reject(new Error(payload.error));
+                return;
+              }
+              resolve(payload as UploadApiResponse);
+            } else {
+              const message = payload.error || xhr.statusText || 'Upload failed';
+              reject(new Error(message));
+            }
+          } catch {
+            reject(new Error('Invalid server response'));
           }
         };
         xhr.onerror = () => reject(new Error('Network error'));
@@ -158,10 +181,21 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       });
 
       // Success
+      const duplicateMessage = response.duplicate
+        ? response.message || 'Photo already exists in the library'
+        : undefined;
+
       setFiles((prev) =>
         prev.map((f) =>
           f.id === fileToUpload.id
-            ? { ...f, status: 'success' as const, progress: 100, photoId: response.photo.id }
+            ? {
+                ...f,
+                status: 'success' as const,
+                progress: 100,
+                photoId: response.photo.id,
+                duplicate: response.duplicate ?? false,
+                duplicateMessage,
+              }
             : f
         )
       );
@@ -374,6 +408,11 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   </p>
                   {file.error && (
                     <p className="text-xs text-[#e63946] dark:text-[#ff6b7a] mt-1">{file.error}</p>
+                  )}
+                  {!file.error && file.duplicate && file.duplicateMessage && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      {file.duplicateMessage}
+                    </p>
                   )}
                 </div>
 

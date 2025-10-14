@@ -198,6 +198,9 @@ See [.env.example](.env.example) for all available options:
 - `ADMIN_EMAIL`: Initial admin email
 - `ADMIN_PASSWORD`: Initial admin password
 - `BASE_URL`: Your domain URL
+- `STORAGE_PROVIDER`: Storage backend (`local` by default, pluggable for future S3/R2)
+- `STORAGE_LOCAL_PUBLIC_ROOT`, `STORAGE_LOCAL_PRIVATE_ROOT`: Override default public/private roots
+- `STORAGE_PUBLIC_URL_PREFIX`: Optional CDN prefix for public assets
 
 ### Cloudflare Setup
 
@@ -214,6 +217,9 @@ Access at `/admin/login` with your admin credentials.
 **Features:**
 
 - Batch photo upload with progress tracking
+- Smart duplicate detection to skip existing photos
+- Progressive image loading with low/high-res blending
+- WebGL-powered lightbox viewer with smooth zoom & pan
 - Quick edit: title, tags, public/private toggle
 - Create albums and series
 - Customize homepage copy and theme

@@ -1,7 +1,5 @@
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
 import sharp from 'sharp';
-import { existsSync } from 'fs';
+import { getStorageProvider } from '@/lib/storage';
 
 export interface UploadResult {
   fileKey: string;
@@ -18,69 +16,69 @@ export interface UploadResult {
 export async function saveUploadedFile(
   file: File,
   fileName: string,
-  isPublic: boolean = true
+  isPublic: boolean = true,
+  providedBuffer?: Buffer
 ): Promise<UploadResult> {
+  const storageProvider = getStorageProvider();
+
   // Get file buffer
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  const buffer =
+    providedBuffer || Buffer.from(await file.arrayBuffer());
 
   // Get current date for folder structure
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
 
-  // Create upload directory path based on isPublic
-  // Public files: public/uploads/... (accessible via CDN)
-  // Private files: private/uploads/... (accessible only via API)
-  const baseDir = isPublic ? 'public' : 'private';
-  const uploadDir = join(process.cwd(), baseDir, 'uploads', 'original', String(year), month);
-
-  // Ensure directory exists
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-
   // Get file extension
   const ext = fileName.split('.').pop()?.toLowerCase() || 'jpg';
 
   // Generate unique filename
   const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-  const filePath = join(uploadDir, uniqueName);
+  const originalKey = ['uploads', 'original', String(year), month, uniqueName].join('/');
 
   // Get image metadata using sharp
   const metadata = await sharp(buffer).metadata();
 
-  // Save original file
-  await writeFile(filePath, buffer);
+  // Save original file through storage provider
+  const { storedKey: fileKey } = await storageProvider.putObject({
+    key: originalKey,
+    body: buffer,
+    contentType: file.type,
+    isPublic,
+  });
 
   // Generate thumbnail (optional, for future use)
-  const thumbDir = join(process.cwd(), baseDir, 'uploads', 'thumbs', String(year), month);
-  if (!existsSync(thumbDir)) {
-    await mkdir(thumbDir, { recursive: true });
-  }
-
-  const thumbPath = join(thumbDir, uniqueName);
-  await sharp(buffer)
+  const thumbKey = ['uploads', 'thumbs', String(year), month, uniqueName].join('/');
+  const thumbBuffer = await sharp(buffer)
     .resize(400, 400, {
       fit: 'inside',
       withoutEnlargement: true,
     })
     .jpeg({ quality: 85 })
-    .toFile(thumbPath);
+    .toBuffer();
+
+  await storageProvider.putObject({
+    key: thumbKey,
+    body: thumbBuffer,
+    contentType: 'image/jpeg',
+    isPublic,
+  });
 
   // Compute dominant color on server (best-effort)
   let dominantColor: string | undefined;
   try {
     const stats = await sharp(buffer).stats();
     // Prefer sharp's dominant swatch if available
-    if ((stats as any).dominant) {
-      const { r, g, b } = (stats as any).dominant as { r: number; g: number; b: number };
+    const dominantSwatch = (stats as { dominant?: { r: number; g: number; b: number } }).dominant;
+    if (dominantSwatch) {
+      const { r, g, b } = dominantSwatch;
       dominantColor = `#${r.toString(16).padStart(2, '0')}${g
         .toString(16)
         .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    } else if (stats.channels && stats.channels.length >= 3) {
+    } else if (Array.isArray(stats.channels) && stats.channels.length >= 3) {
       // Fallback: average across channels
-      const [red, green, blue] = stats.channels;
+      const [red, green, blue] = stats.channels as Array<{ mean: number }>;
       const r = Math.round(red.mean);
       const g = Math.round(green.mean);
       const b = Math.round(blue.mean);
@@ -95,10 +93,6 @@ export async function saveUploadedFile(
   // Return file info
   // For public files, omit the 'public/' prefix since Next.js serves them from root
   // For private files, keep the full path for API routing
-  const fileKey = isPublic
-    ? `uploads/original/${year}/${month}/${uniqueName}`
-    : `${baseDir}/uploads/original/${year}/${month}/${uniqueName}`;
-
   return {
     fileKey,
     ext,

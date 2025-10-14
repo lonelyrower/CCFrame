@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { getImageUrl } from '@/lib/image/utils';
+import { ProgressiveImage } from '@/components/media/ProgressiveImage';
 
 interface Photo {
   id: string;
@@ -89,8 +89,8 @@ function PhotoCard({
   photo: Photo;
   onClick?: (photo: Photo) => void;
 }) {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,14 +124,15 @@ function PhotoCard({
     >
       {isVisible && (
         <>
-          <img
-            src={getImageUrl(photo.fileKey, photo.isPublic, { width: 600, quality: 85 })}
+          <ProgressiveImage
+            fileKey={photo.fileKey}
+            isPublic={photo.isPublic}
             alt={photo.title || 'Photo'}
-            className={`w-full h-full object-cover transition-all duration-500 ${
-              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-            } group-hover:scale-110`}
-            onLoad={() => setIsLoaded(true)}
-            loading="lazy"
+            className="absolute inset-0"
+            imgClassName="transform-gpu transition-transform duration-500 group-hover:scale-110"
+            highResOptions={{ width: 900, quality: 88 }}
+            onHighResLoad={() => setIsLoaded(true)}
+            onHighResError={() => setIsLoaded(true)}
           />
 
           {/* Sophisticated overlay on hover */}
