@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { saveUploadedFile, validateImageFile } from '@/lib/image/upload';
 import { getStorageProvider } from '@/lib/storage';
+import { RATE_LIMIT_UPLOAD } from '@/lib/constants';
+import { getClientIp, rateLimit } from '@/lib/rate-limit';
 
 // Configure route segment for file uploads
 export const dynamic = 'force-dynamic';
@@ -10,6 +12,19 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const limit = rateLimit(`upload:${ip}`, RATE_LIMIT_UPLOAD.max, RATE_LIMIT_UPLOAD.windowMs);
+    if (!limit.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((limit.resetAt - Date.now()) / 1000));
+      return NextResponse.json(
+        { error: 'Too many uploads. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': retryAfter.toString() },
+        }
+      );
+    }
+
     // Get form data
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -103,6 +118,7 @@ export async function POST(request: NextRequest) {
         ext: uploadResult.ext,
         width: uploadResult.width,
         height: uploadResult.height,
+        takenAt: uploadResult.takenAt ?? undefined,
         isPublic,
         checksum,
         fileSize: uploadResult.size,

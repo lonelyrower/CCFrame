@@ -80,7 +80,7 @@ export default function TagDetailPage() {
         <div className="mb-8">
           <Link
             href="/tags"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#e63946] dark:text-[#ff6b7a] hover:gap-3 transition-all duration-300"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ds-accent)] hover:gap-3 transition-all duration-300"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -92,7 +92,7 @@ export default function TagDetailPage() {
         {/* Header - Fashion Style */}
         <div className="mb-16">
           <div className="inline-block mb-4">
-            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+            <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
               Tag
             </span>
           </div>
@@ -108,7 +108,7 @@ export default function TagDetailPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
               <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
                 Loading
               </span>

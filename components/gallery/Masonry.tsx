@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { ProgressiveImage } from '@/components/media/ProgressiveImage';
 
 interface Photo {
@@ -42,7 +42,7 @@ export function Masonry({ photos, onPhotoClick }: MasonryProps) {
   }, []);
 
   // Distribute photos into columns
-  const distributePhotos = () => {
+  const photoColumns = useMemo(() => {
     const cols: Photo[][] = Array.from({ length: columns }, () => []);
     const colHeights = Array(columns).fill(0);
 
@@ -59,9 +59,7 @@ export function Masonry({ photos, onPhotoClick }: MasonryProps) {
     });
 
     return cols;
-  };
-
-  const photoColumns = distributePhotos();
+  }, [columns, photos]);
 
   return (
     <div
@@ -92,6 +90,7 @@ function PhotoCard({
   const [isVisible, setIsVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
+  const handleClick = () => onClick?.(photo);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -114,13 +113,23 @@ function PhotoCard({
   }, []);
 
   const aspectRatio = photo.width && photo.height ? photo.height / photo.width : 1;
+  const hasMeta = Boolean(photo.title) || photo.tags.length > 0;
 
   return (
     <div
       ref={imgRef}
-      className="group relative overflow-hidden rounded-2xl bg-stone-200 dark:bg-neutral-800 cursor-pointer ring-1 ring-inset ring-stone-300/30 dark:ring-neutral-700/30 transform-gpu will-change-transform transition-all duration-400 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/25 dark:hover:shadow-black/50 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20"
+      className="group relative overflow-hidden rounded-2xl bg-stone-200 dark:bg-neutral-800 cursor-pointer ring-1 ring-inset ring-stone-300/30 dark:ring-neutral-700/30 transform-gpu will-change-transform transition-all duration-400 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/25 dark:hover:shadow-black/50 hover:ring-[color:var(--ds-accent-20)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-accent-60)] focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 dark:focus-visible:ring-offset-neutral-950"
       style={{ aspectRatio: `1 / ${aspectRatio}` }}
-      onClick={() => onClick?.(photo)}
+      onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={photo.title ? `Open photo: ${photo.title}` : 'Open photo'}
     >
       {isVisible && (
         <>
@@ -131,13 +140,14 @@ function PhotoCard({
             className="absolute inset-0"
             imgClassName="transform-gpu transition-transform duration-500 group-hover:scale-110"
             highResOptions={{ width: 900, quality: 88 }}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
             onHighResLoad={() => setIsLoaded(true)}
             onHighResError={() => setIsLoaded(true)}
           />
 
           {/* Sophisticated overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-400 ease-out">
-            <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-400 ease-out">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 md:group-hover:opacity-100 transition-all duration-400 ease-out">
+            <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-4 md:group-hover:translate-y-0 transition-transform duration-400 ease-out">
               {photo.title && (
                 <p className="text-white text-base font-serif font-semibold mb-3 tracking-tight leading-tight">{photo.title}</p>
               )}
@@ -156,9 +166,25 @@ function PhotoCard({
             </div>
           </div>
 
+          {/* Mobile overlay for metadata */}
+          {hasMeta && (
+            <div className="absolute inset-x-0 bottom-0 md:hidden">
+              <div className="bg-gradient-to-t from-black/70 via-black/30 to-transparent px-4 pb-4 pt-6">
+                {photo.title && (
+                  <p className="text-white text-sm font-serif font-semibold tracking-tight truncate">
+                    {photo.title}
+                  </p>
+                )}
+                {photo.tags.length > 0 && (
+                  <p className="mt-1 text-xs text-white/70 truncate">{photo.tags[0]}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Accent glow effect */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#e63946]/10 via-transparent to-[#d4af37]/10 mix-blend-overlay" />
+          <div className="absolute inset-0 opacity-0 md:group-hover:opacity-100 transition-opacity duration-400 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--ds-accent-10)] via-transparent to-[var(--ds-luxury-10)] mix-blend-overlay" />
           </div>
         </>
       )}

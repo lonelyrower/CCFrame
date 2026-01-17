@@ -1,7 +1,7 @@
 'use client';
 
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
-import { getImageUrl } from '@/lib/image/utils';
+import { getImageSrcSet, getImageUrl } from '@/lib/image/utils';
 
 export interface ProgressiveImageProps {
   fileKey: string;
@@ -58,23 +58,37 @@ export function ProgressiveImage({
   }, [className]);
 
   // Memoise URLs to avoid re-computing on re-renders
-  const { lowResUrl, highResUrl } = useMemo(() => {
+  const { lowResUrl, highResUrl, highResSrcSet } = useMemo(() => {
     const low = getImageUrl(fileKey, isPublic, {
       width: lowResOptions?.width ?? 48,
       quality: lowResOptions?.quality ?? 30,
       format: 'webp',
     });
 
+    const highQuality = highResOptions?.quality ?? 90;
+    const highFormat =
+      highResOptions?.format === 'webp' || highResOptions?.format === 'avif'
+        ? highResOptions.format
+        : 'auto';
+    const highFit = highResOptions?.fit;
+
     const high = getImageUrl(fileKey, isPublic, {
       width: highResOptions?.width,
-      quality: highResOptions?.quality ?? 90,
-      format: highResOptions?.format ?? 'auto',
-      fit: highResOptions?.fit,
+      quality: highQuality,
+      format: highFormat,
+      fit: highFit,
+    });
+
+    const srcSet = getImageSrcSet(fileKey, isPublic, undefined, {
+      quality: highQuality,
+      format: highFormat,
+      fit: highFit,
     });
 
     return {
       lowResUrl: low,
       highResUrl: high,
+      highResSrcSet: srcSet,
     };
   }, [fileKey, isPublic, highResOptions, lowResOptions]);
 
@@ -111,11 +125,13 @@ export function ProgressiveImage({
         onLoad={() => setLowResLoaded(true)}
         aria-hidden
         loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
       />
 
       {/* High-res image */}
       <img
         src={highResUrl}
+        srcSet={highResSrcSet}
         alt={alt}
         className={`relative h-full w-full ${fitClass} transition-opacity duration-500 ${
           highResLoaded ? 'opacity-100' : 'opacity-0'
@@ -129,6 +145,8 @@ export function ProgressiveImage({
           onHighResError?.();
         }}
         loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
+        decoding="async"
         sizes={sizes}
       />
 

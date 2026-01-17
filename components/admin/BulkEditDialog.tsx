@@ -87,11 +87,11 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
         <div className="p-8 border-b border-stone-200 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
-              Bulk Edit <span className="text-[#e63946] dark:text-[#ff6b7a]">{selectedCount}</span> Photos
+              Bulk Edit <span className="text-[color:var(--ds-accent)]">{selectedCount}</span> Photos
             </h2>
             <button
               onClick={onClose}
-              className="text-stone-400 hover:text-[#e63946] dark:hover:text-[#ff6b7a] transition-colors p-2 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-full"
+              className="text-stone-400 hover:text-[color:var(--ds-accent)] transition-colors p-2 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-full"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -110,7 +110,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                 id="update-album"
                 checked={updateAlbum}
                 onChange={(e) => setUpdateAlbum(e.target.checked)}
-                className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[#e63946] focus:ring-[#e63946]/20 focus:ring-2"
+                className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[color:var(--ds-accent)] focus:ring-[color:var(--ds-accent-20)] focus:ring-2"
               />
               <label htmlFor="update-album" className="text-sm font-medium tracking-wide text-stone-900 dark:text-stone-50 cursor-pointer">
                 Update Album
@@ -120,7 +120,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
               <select
                 value={selectedAlbumId}
                 onChange={(e) => setSelectedAlbumId(e.target.value)}
-                className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+                className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
               >
                 <option value="">No Album</option>
                 {albums.map((album) => (
@@ -140,7 +140,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                 id="update-tags"
                 checked={updateTags}
                 onChange={(e) => setUpdateTags(e.target.checked)}
-                className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[#e63946] focus:ring-[#e63946]/20 focus:ring-2"
+                className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[color:var(--ds-accent)] focus:ring-[color:var(--ds-accent-20)] focus:ring-2"
               />
               <label htmlFor="update-tags" className="text-sm font-medium tracking-wide text-stone-900 dark:text-stone-50 cursor-pointer">
                 Update Tags
@@ -154,20 +154,20 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type tag and press Enter"
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] rounded-full text-sm ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20 font-medium"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] rounded-full text-sm ring-1 ring-[color:var(--ds-accent-20)] font-medium"
                     >
                       {tag}
                       <button
                         onClick={() => removeTag(tag)}
                         className="hover:scale-110 transition-transform"
                       >
-                        ×
+                        x
                       </button>
                     </span>
                   ))}

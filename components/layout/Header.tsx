@@ -8,9 +8,10 @@ export function Header() {
   const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const [hotTags, setHotTags] = useState<{ id: string; name: string; count: number }[]>([]);
   const [topSeries, setTopSeries] = useState<
-    { id: string; title: string; photoCount: number }[]
+    { id: string; slug: string; title: string; photoCount: number }[]
   >([]);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,12 +20,26 @@ export function Header() {
   const router = useRouter();
 
   useEffect(() => {
+    const applyTheme = (darkMode: boolean) => {
+      setIsDark(darkMode);
+      document.documentElement.classList.toggle('dark', darkMode);
+    };
+
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      applyTheme(storedTheme === 'dark');
+      return;
+    }
+
     // Check system preference
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDark(mediaQuery.matches);
+    applyTheme(mediaQuery.matches);
 
-    // Listen for changes
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    // Listen for changes only when following system preference
+    const handler = (e: MediaQueryListEvent) => {
+      if (localStorage.getItem('theme')) return;
+      applyTheme(e.matches);
+    };
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
@@ -61,7 +76,25 @@ export function Header() {
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
 
+  const toggleSearch = () => {
+    setShowSearch((value) => !value);
+    setShowMobileNav(false);
+    setShowUserMenu(false);
+  };
+
+  const toggleMobileNav = () => {
+    setShowMobileNav((value) => !value);
+    setShowSearch(false);
+    setShowUserMenu(false);
+  };
+
   const isActive = (path: string) => pathname === path;
+
+  useEffect(() => {
+    setShowMobileNav(false);
+    setShowSearch(false);
+    setShowUserMenu(false);
+  }, [pathname]);
 
   // Load suggestions (popular tags, series) when search panel opens
   useEffect(() => {
@@ -85,7 +118,12 @@ export function Header() {
             const list = (data.series || [])
               .sort((a: any, b: any) => (b.photoCount || 0) - (a.photoCount || 0))
               .slice(0, 6)
-              .map((s: any) => ({ id: s.id, title: s.title, photoCount: s.photoCount }));
+              .map((s: any) => ({
+                id: s.id,
+                slug: s.slug,
+                title: s.title,
+                photoCount: s.photoCount,
+              }));
             setTopSeries(list);
           }
         }
@@ -111,25 +149,25 @@ export function Header() {
   }, [showSearch]);
 
   return (
-    <header className="sticky top-0 z-50 bg-stone-50/70 dark:bg-neutral-950/70 backdrop-blur-xl border-b border-stone-200/50 dark:border-neutral-800/50">
+    <header className="sticky top-0 z-50 relative bg-stone-50/70 dark:bg-neutral-950/70 backdrop-blur-xl border-b border-stone-200/50 dark:border-neutral-800/50 pt-[env(safe-area-inset-top)]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo - Fashion Editorial Style */}
           <Link href="/" className="group flex items-center space-x-2.5">
             <div className="relative w-9 h-9 md:w-10 md:h-10">
               <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-[#e63946] dark:text-[#ff6b7a] group-hover:text-[#c1121f] dark:group-hover:text-[#ff8fa3] transition-colors duration-300"/>
-                <circle cx="32" cy="32" r="14" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7" className="text-[#d4af37]"/>
-                <circle cx="32" cy="32" r="8" fill="currentColor" opacity="0.15" className="text-[#e63946] dark:text-[#ff6b7a]"/>
-                <path d="M32 24 L38 32 L32 40 L26 32 Z" fill="currentColor" opacity="0.3" className="text-[#e63946] dark:text-[#ff6b7a]"/>
+                <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-[color:var(--ds-accent)] group-hover:text-[color:var(--ds-accent-strong)] transition-colors duration-300"/>
+                <circle cx="32" cy="32" r="14" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7" className="text-[color:var(--ds-luxury)]"/>
+                <circle cx="32" cy="32" r="8" fill="currentColor" opacity="0.15" className="text-[color:var(--ds-accent)]"/>
+                <path d="M32 24 L38 32 L32 40 L26 32 Z" fill="currentColor" opacity="0.3" className="text-[color:var(--ds-accent)]"/>
                 <path d="M12 12 L12 20 M12 12 L20 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
                 <path d="M52 52 L52 44 M52 52 L44 52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
                 <path d="M52 12 L52 20 M52 12 L44 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
                 <path d="M12 52 L12 44 M12 52 L20 52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
-                <circle cx="32" cy="32" r="2" fill="currentColor" className="text-[#e63946] dark:text-[#ff6b7a]"/>
+                <circle cx="32" cy="32" r="2" fill="currentColor" className="text-[color:var(--ds-accent)]"/>
               </svg>
             </div>
-            <span className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300">
+            <span className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
               CCFrame
             </span>
           </Link>
@@ -140,8 +178,8 @@ export function Header() {
               href="/photos"
               className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/photos')
-                  ? 'text-[#e63946] dark:text-[#ff6b7a] after:w-full'
-                  : 'text-stone-700 dark:text-stone-300 hover:text-[#e63946] dark:hover:text-[#ff6b7a]'
+                  ? 'text-[color:var(--ds-accent)] after:w-full'
+                  : 'text-stone-700 dark:text-stone-300 hover:text-[color:var(--ds-accent)]'
               } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               照片
@@ -150,8 +188,8 @@ export function Header() {
               href="/tags"
               className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/tags')
-                  ? 'text-[#e63946] dark:text-[#ff6b7a] after:w-full'
-                  : 'text-stone-700 dark:text-stone-300 hover:text-[#e63946] dark:hover:text-[#ff6b7a]'
+                  ? 'text-[color:var(--ds-accent)] after:w-full'
+                  : 'text-stone-700 dark:text-stone-300 hover:text-[color:var(--ds-accent)]'
               } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               标签
@@ -160,8 +198,8 @@ export function Header() {
               href="/series"
               className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/series')
-                  ? 'text-[#e63946] dark:text-[#ff6b7a] after:w-full'
-                  : 'text-stone-700 dark:text-stone-300 hover:text-[#e63946] dark:hover:text-[#ff6b7a]'
+                  ? 'text-[color:var(--ds-accent)] after:w-full'
+                  : 'text-stone-700 dark:text-stone-300 hover:text-[color:var(--ds-accent)]'
               } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               系列
@@ -169,9 +207,9 @@ export function Header() {
           </div>
 
           {/* Search & Theme & User - Minimal Icons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => setShowSearch(!showSearch)}
+              onClick={toggleSearch}
               className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
               aria-label="Search"
             >
@@ -203,7 +241,11 @@ export function Header() {
             {isLoggedIn ? (
               <div className="relative">
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => {
+                    setShowUserMenu((value) => !value);
+                    setShowMobileNav(false);
+                    setShowSearch(false);
+                  }}
                   className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
                   aria-label="User menu"
                 >
@@ -223,7 +265,7 @@ export function Header() {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-5 py-3 text-sm font-medium text-[#e63946] dark:text-[#ff6b7a] hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-colors duration-200"
+                      className="w-full text-left px-5 py-3 text-sm font-medium text-[color:var(--ds-accent)] hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-colors duration-200"
                     >
                       退出登录
                     </button>
@@ -241,47 +283,73 @@ export function Header() {
                 </svg>
               </Link>
             )}
+            <button
+              onClick={toggleMobileNav}
+              className="md:hidden p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
+              aria-label={showMobileNav ? 'Close menu' : 'Open menu'}
+              aria-expanded={showMobileNav}
+              aria-controls="mobile-nav"
+            >
+              {showMobileNav ? (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                </svg>
+              )}
+            </button>
           </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden pb-4 space-y-2">
-          <Link
-            href="/photos"
-            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
-              isActive('/photos')
-                ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-black/10 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-white/10'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:ring-1 hover:ring-inset hover:ring-black/10 dark:hover:ring-white/10'
-            }`}
-          >
-            照片
-          </Link>
-          <Link
-            href="/tags"
-            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
-              isActive('/tags')
-                ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-black/10 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-white/10'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:ring-1 hover:ring-inset hover:ring-black/10 dark:hover:ring-white/10'
-            }`}
-          >
-            标签
-          </Link>
-          <Link
-            href="/series"
-            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
-              isActive('/series')
-                ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-black/10 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-white/10'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:ring-1 hover:ring-inset hover:ring-black/10 dark:hover:ring-white/10'
-            }`}
-          >
-            系列
-          </Link>
-        </div>
         </div>
       </nav>
 
+      {showMobileNav && (
+        <div id="mobile-nav" className="md:hidden border-t border-stone-200/50 dark:border-neutral-800/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+            <div className="pt-3 space-y-2">
+              <Link
+                href="/photos"
+                className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
+                  isActive('/photos')
+                    ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
+                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
+                }`}
+                onClick={() => setShowMobileNav(false)}
+              >
+                照片
+              </Link>
+              <Link
+                href="/tags"
+                className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
+                  isActive('/tags')
+                    ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
+                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
+                }`}
+                onClick={() => setShowMobileNav(false)}
+              >
+                标签
+              </Link>
+              <Link
+                href="/series"
+                className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
+                  isActive('/series')
+                    ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
+                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
+                }`}
+                onClick={() => setShowMobileNav(false)}
+              >
+                系列
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search Panel */}
       {showSearch && (
-        <div className="absolute top-16 left-0 right-0">
+        <div className="absolute top-full left-0 right-0 pt-3 z-50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="relative rounded-2xl bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl ring-1 ring-inset ring-black/10 dark:ring-white/10 shadow-lg overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 dark:before:bg-white/10 before:pointer-events-none">
               <div className="p-4 sm:p-5 md:p-6">
@@ -290,7 +358,7 @@ export function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索照片、标签、相册..."
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[color:var(--ds-accent-40)] focus:border-[color:var(--ds-accent)]"
                   autoFocus
                 />
                 <p className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -299,7 +367,7 @@ export function Header() {
               </div>
 
               {/* Suggestions */}
-              <div className="border-t border-gray-200/80 dark:border-white/10">
+              <div className="border-t border-gray-200/80 dark:border-white/10 max-h-[60svh] overflow-y-auto md:max-h-none md:overflow-visible">
                 <div className="p-4 sm:p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* 推荐关键词 */}
                   <div>
@@ -309,7 +377,7 @@ export function Header() {
                         <button
                           key={k}
                           onClick={() => setSearchQuery(k)}
-                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-[color:var(--ds-accent)]/10 /15 transition-colors"
                         >
                           {k}
                         </button>
@@ -338,7 +406,7 @@ export function Header() {
                           <Link
                             key={tag.id}
                             href={`/tags/${encodeURIComponent(tag.name)}`}
-                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-[color:var(--ds-accent)]/10 /15 transition-colors"
                           >
                             {tag.name}
                             <span className="ml-1 text-xs text-gray-500">({tag.count})</span>
@@ -366,8 +434,8 @@ export function Header() {
                         topSeries.map((s) => (
                           <Link
                             key={s.id}
-                            href={`/series/${s.id}`}
-                            className="flex items-center justify-between px-3 py-2 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/60 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            href={`/series/${s.slug || s.id}`}
+                            className="flex items-center justify-between px-3 py-2 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/60 dark:bg-white/10 hover:bg-[color:var(--ds-accent)]/10 /15 transition-colors"
                           >
                             <span className="truncate text-sm text-gray-900 dark:text-gray-100">{s.title}</span>
                             <span className="ml-3 shrink-0 text-xs text-gray-500">{s.photoCount} 张</span>

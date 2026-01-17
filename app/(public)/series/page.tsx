@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { cfImage } from '@/lib/cf-image';
+import { ProgressiveImage } from '@/components/media/ProgressiveImage';
 
 interface Series {
   id: string;
@@ -10,6 +10,14 @@ interface Series {
   title: string;
   summary: string | null;
   coverId: string | null;
+  coverPhoto?: {
+    id: string;
+    fileKey: string;
+    isPublic: boolean;
+    dominantColor: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
   albumCount: number;
   photoCount: number;
 }
@@ -57,7 +65,7 @@ export default function SeriesPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
               <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
                 Loading
               </span>
@@ -88,20 +96,22 @@ export default function SeriesPage() {
             {seriesList.map((series) => (
               <Link
                 key={series.id}
-                href={`/series/${series.id}`}
-                className="group block bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden hover:ring-[#e63946]/30 dark:hover:ring-[#ff6b7a]/30 transition-all duration-400 hover:shadow-2xl hover:-translate-y-2 card-soft"
+                href={`/series/${series.slug || series.id}`}
+                className="group block bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden hover:ring-[color:var(--ds-accent-30)] transition-all duration-400 hover:shadow-2xl hover:-translate-y-2 card-soft"
               >
                 {/* Cover Image - Premium Style */}
                 <div className="relative aspect-[4/3] bg-stone-200 dark:bg-neutral-800 overflow-hidden">
-                  {series.coverId ? (
+                  {series.coverPhoto ? (
                     <>
-                      <img
-                        src={cfImage(`/uploads/cover/${series.coverId}`, {
-                          width: 800,
-                          quality: 90,
-                        })}
+                      <ProgressiveImage
+                        fileKey={series.coverPhoto.fileKey}
+                        isPublic={series.coverPhoto.isPublic}
                         alt={series.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="absolute inset-0"
+                        imgClassName="transition-transform duration-500 group-hover:scale-110"
+                        highResOptions={{ width: 1200, quality: 88 }}
+                        lowResOptions={{ width: 96, quality: 40 }}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                       {/* Gradient overlay on hover */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
@@ -127,7 +137,7 @@ export default function SeriesPage() {
 
                 {/* Content - Refined Typography */}
                 <div className="p-8">
-                  <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-3 group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300 leading-tight">
+                  <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-3 group-hover:text-[color:var(--ds-accent)] transition-colors duration-300 leading-tight">
                     {series.title}
                   </h2>
                   {series.summary && (
@@ -137,11 +147,11 @@ export default function SeriesPage() {
                   )}
                   <div className="flex items-center gap-4 text-sm font-sans text-stone-500 dark:text-stone-400">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[#e63946] dark:bg-[#ff6b7a]" />
+                      <span className="w-1 h-1 rounded-full bg-[color:var(--ds-accent)]" />
                       {series.albumCount} 相册
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[#d4af37]" />
+                      <span className="w-1 h-1 rounded-full bg-[color:var(--ds-luxury)]" />
                       {series.photoCount} 作品
                     </span>
                   </div>

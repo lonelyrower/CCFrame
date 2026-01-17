@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { getSession } from '@/lib/session';
+import { CACHE_CONTROL } from '@/lib/constants';
 
 /**
  * Serve private images with authentication
@@ -74,7 +75,7 @@ export async function GET(
     return new NextResponse(uint8, {
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'private, max-age=3600',
+        'Cache-Control': CACHE_CONTROL.PRIVATE,
       },
     });
   } catch (error) {

@@ -43,10 +43,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 px-4 relative overflow-hidden">
+    <div className="min-h-[100svh] md:min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 px-4 relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/8 blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/8 blur-3xl" />
+      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[var(--ds-accent-5)] to-transparent blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-[var(--ds-luxury-5)] to-transparent dark:from-[var(--ds-luxury-8)] blur-3xl" />
 
       <div className="relative max-w-md w-full">
         {/* Brand Header */}
@@ -55,7 +55,7 @@ export default function LoginPage() {
             CCFrame
           </h1>
           <div className="inline-block">
-            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
               Admin Portal
             </span>
           </div>
@@ -65,8 +65,8 @@ export default function LoginPage() {
         <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 rounded-2xl bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 border-2 border-[#e63946]/20 dark:border-[#ff6b7a]/20">
-                <p className="text-sm font-medium text-[#e63946] dark:text-[#ff6b7a]">{error}</p>
+              <div className="p-4 rounded-2xl bg-[color:var(--ds-accent-10)] border-2 border-[color:var(--ds-accent-20)]">
+                <p className="text-sm font-medium text-[color:var(--ds-accent)]">{error}</p>
               </div>
             )}
 
@@ -86,7 +86,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Password"
               required
               disabled={isLoading}
               autoComplete="current-password"
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
         {/* Footer Note */}
         <p className="mt-8 text-center text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
-          Protected Area · Authorized Access Only
+          Protected Area - Authorized Access Only
         </p>
       </div>
     </div>

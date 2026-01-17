@@ -132,7 +132,7 @@ export default function LibraryPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
               <h1 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 Photo Library
@@ -141,15 +141,15 @@ export default function LibraryPage() {
                 {photos.length} photos loaded
               </p>
             </div>
-            <Button onClick={() => router.push('/admin/upload')} variant="primary">
+            <Button onClick={() => router.push('/admin/upload')} variant="primary" className="w-full sm:w-auto">
               Upload Photos
             </Button>
           </div>
 
           {/* Batch Actions */}
           {selectedPhotos.size > 0 && (
-            <div className="flex items-center gap-3 p-5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 rounded-2xl flex-wrap ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20">
-              <span className="text-sm font-semibold text-[#e63946] dark:text-[#ff6b7a]">
+            <div className="flex items-center gap-3 p-5 bg-[color:var(--ds-accent-10)] rounded-2xl flex-wrap ring-1 ring-[color:var(--ds-accent-20)]">
+              <span className="text-sm font-semibold text-[color:var(--ds-accent)]">
                 {selectedPhotos.size} selected
               </span>
               <Button
@@ -187,7 +187,7 @@ export default function LibraryPage() {
           <div className="mt-4">
             <button
               onClick={selectAll}
-              className="text-sm font-medium text-[#e63946] hover:text-[#c1121f] dark:text-[#ff6b7a] dark:hover:text-[#ff8fa3] transition-colors"
+              className="text-sm font-medium text-[color:var(--ds-accent)] hover:text-[color:var(--ds-accent-strong)] transition-colors"
             >
               {selectedPhotos.size === photos.length ? 'Deselect All' : 'Select All'}
             </button>
@@ -198,7 +198,7 @@ export default function LibraryPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
               <p className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">Loading</p>
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function LibraryPage() {
                 className={`
                   relative group rounded-2xl overflow-hidden bg-stone-200 dark:bg-neutral-800
                   aspect-square cursor-pointer transition-all duration-300
-                  ${selectedPhotos.has(photo.id) ? 'ring-4 ring-[#e63946] dark:ring-[#ff6b7a] scale-[0.97]' : 'hover:scale-[1.02]'}
+                  ${selectedPhotos.has(photo.id) ? 'ring-4 ring-[color:var(--ds-accent)] scale-[0.97]' : 'hover:scale-[1.02]'}
                 `}
                 onClick={() => togglePhotoSelection(photo.id)}
               >
@@ -270,7 +270,7 @@ export default function LibraryPage() {
                       e.stopPropagation();
                       deletePhoto(photo.id);
                     }}
-                    className="px-3 py-1.5 bg-[#e63946]/90 dark:bg-[#ff6b7a]/90 text-white rounded-lg text-xs font-medium hover:bg-[#c1121f] dark:hover:bg-[#ff8fa3] transition-all backdrop-blur-sm"
+                    className="px-3 py-1.5 bg-[color:var(--ds-accent-90)] text-white rounded-lg text-xs font-medium hover:bg-[color:var(--ds-accent-strong)] transition-all backdrop-blur-sm"
                   >
                     Delete
                   </button>
@@ -279,7 +279,7 @@ export default function LibraryPage() {
                 {/* Selection Indicator */}
                 {selectedPhotos.has(photo.id) && (
                   <div className="absolute top-3 left-3">
-                    <div className="w-7 h-7 bg-[#e63946] dark:bg-[#ff6b7a] rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-7 h-7 bg-[color:var(--ds-accent)] rounded-full flex items-center justify-center shadow-lg">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"

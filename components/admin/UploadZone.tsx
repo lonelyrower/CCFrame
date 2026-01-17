@@ -261,11 +261,11 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
   const getStatusColor = (status: UploadFile['status']) => {
     switch (status) {
       case 'success':
-        return 'text-[#e63946] dark:text-[#ff6b7a]';
+        return 'text-[color:var(--ds-accent)]';
       case 'error':
-        return 'text-[#e63946] dark:text-[#ff6b7a]';
+        return 'text-[color:var(--ds-accent)]';
       case 'uploading':
-        return 'text-[#d4af37]';
+        return 'text-[color:var(--ds-luxury)]';
       default:
         return 'text-stone-600 dark:text-stone-400';
     }
@@ -274,7 +274,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
   return (
     <div className="space-y-6">
       {/* Upload Settings */}
-      <div className="p-6 bg-stone-50 dark:bg-neutral-950 rounded-2xl space-y-5 ring-1 ring-stone-200/50 dark:ring-neutral-800/50">
+      <div className="p-4 sm:p-6 bg-stone-50 dark:bg-neutral-950 rounded-2xl space-y-5 ring-1 ring-stone-200/50 dark:ring-neutral-800/50">
         <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-50 tracking-tight">Upload Settings</h3>
 
         {/* Album Selection */}
@@ -286,7 +286,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             id="album-select"
             value={selectedAlbumId}
             onChange={(e) => setSelectedAlbumId(e.target.value)}
-            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
           >
             <option value="">No Album</option>
             {albums.map((album) => (
@@ -308,13 +308,13 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             placeholder="Type tag and press Enter"
-            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
           />
           <div className="flex flex-wrap gap-2 mt-3">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] rounded-full text-sm ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20 font-medium"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] rounded-full text-sm ring-1 ring-[color:var(--ds-accent-20)] font-medium"
               >
                 {tag}
                 <button
@@ -323,7 +323,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   className="hover:scale-110 transition-transform"
                   aria-label={`Remove tag ${tag}`}
                 >
-                  ×
+                  x
                 </button>
               </span>
             ))}
@@ -337,8 +337,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`
-          border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300
-          ${isDragging ? 'border-[#e63946] bg-[#e63946]/5 dark:bg-[#ff6b7a]/10 scale-[1.02]' : 'border-stone-300 dark:border-neutral-700 hover:border-[#e63946]/50 dark:hover:border-[#ff6b7a]/50'}
+          border-2 border-dashed rounded-3xl p-6 sm:p-12 text-center transition-all duration-300
+          ${isDragging ? 'border-[color:var(--ds-accent)] bg-[color:var(--ds-accent-10)] scale-[1.02]' : 'border-stone-300 dark:border-neutral-700 hover:border-[color:var(--ds-accent-50)]'}
         `}
       >
         <svg
@@ -354,9 +354,9 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             strokeLinejoin="round"
           />
         </svg>
-        <p className="mt-5 text-lg text-stone-700 dark:text-stone-300 font-light">
+        <p className="mt-5 text-base sm:text-lg text-stone-700 dark:text-stone-300 font-light">
           Drag and drop images here, or{' '}
-          <label className="text-[#e63946] dark:text-[#ff6b7a] hover:underline cursor-pointer font-medium">
+          <label className="text-[color:var(--ds-accent)] hover:underline cursor-pointer font-medium">
             browse
             <input
               type="file"
@@ -375,12 +375,12 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       {/* File List */}
       {files.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
-              Files ({files.length}) <span className="text-[#e63946] dark:text-[#ff6b7a]">· {files.filter((f) => f.status === 'success').length} uploaded</span>
+              Files ({files.length}) <span className="text-[color:var(--ds-accent)]">/ {files.filter((f) => f.status === 'success').length} uploaded</span>
             </h3>
-            <div className="flex gap-2">
-              <Button onClick={clearCompleted} variant="secondary" size="sm">
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
+              <Button onClick={clearCompleted} variant="secondary" size="sm" className="flex-1 sm:flex-none">
                 Clear Completed
               </Button>
               <Button
@@ -389,6 +389,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 size="sm"
                 isLoading={isUploading}
                 disabled={isUploading || files.every((f) => f.status === 'success')}
+                className="flex-1 sm:flex-none"
               >
                 {isUploading ? 'Uploading...' : 'Start Upload'}
               </Button>
@@ -399,7 +400,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             {files.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20 transition-all duration-300"
+                className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 hover:ring-[color:var(--ds-accent-20)] transition-all duration-300"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-stone-900 dark:text-stone-50 truncate">{file.file.name}</p>
@@ -407,7 +408,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                     {(file.file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   {file.error && (
-                    <p className="text-xs text-[#e63946] dark:text-[#ff6b7a] mt-1">{file.error}</p>
+                    <p className="text-xs text-[color:var(--ds-accent)] mt-1">{file.error}</p>
                   )}
                   {!file.error && file.duplicate && file.duplicateMessage && (
                     <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -418,10 +419,10 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
                 {/* Progress Bar */}
                 {file.status === 'uploading' && (
-                  <div className="flex-1">
+                  <div className="w-full sm:flex-1">
                     <div className="w-full bg-stone-200 dark:bg-neutral-800 rounded-full h-2">
                       <div
-                        className="bg-gradient-to-r from-[#e63946] to-[#ff6b7a] h-2 rounded-full transition-all duration-300"
+                        className="bg-gradient-to-r from-[var(--ds-accent)] to-[var(--ds-accent-soft)] h-2 rounded-full transition-all duration-300"
                         style={{ width: `${file.progress}%` }}
                         aria-label={`Upload progress ${file.progress}%`}
                       />
@@ -430,23 +431,25 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   </div>
                 )}
 
-                {/* Status */}
-                <div className={`text-sm font-medium ${getStatusColor(file.status)}`}>
-                  {file.status === 'success' && '✓ Uploaded'}
-                  {file.status === 'error' && '✗ Failed'}
-                  {file.status === 'uploading' && 'Uploading...'}
-                  {file.status === 'pending' && 'Pending'}
-                </div>
+                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4">
+                  <div className={`text-sm font-medium ${getStatusColor(file.status)}`}>
+                    {file.status === 'success' && 'Uploaded'}
+                    {file.status === 'error' && 'Failed'}
+                    {file.status === 'uploading' && 'Uploading...'}
+                    {file.status === 'pending' && 'Pending'}
+                  </div>
 
-                {/* Remove Button */}
-                {file.status !== 'uploading' && (
-                  <button
-                    onClick={() => removeFile(file.id)}
-                    className="text-stone-400 hover:text-[#e63946] dark:hover:text-[#ff6b7a] transition-colors"
-                  >
-                    ✕
-                  </button>
-                )}
+                  {file.status !== 'uploading' && (
+                    <button
+                      onClick={() => removeFile(file.id)}
+                      className="text-stone-400 hover:text-[color:var(--ds-accent)] transition-colors"
+                      aria-label="Remove file"
+                      type="button"
+                    >
+                      x
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -1,341 +1,171 @@
-# CCFrame - Personal Photography Showcase
+# CCFrame
 
-A fast, elegant personal photography portfolio built with Next.js, PostgreSQL, and Cloudflare optimiz## 📝 Project Structure
+CCFrame is a single-admin photography showcase built for fast loading and easy maintenance. Public
+photos are available to visitors; private photos require login.
 
-```text
-ccframe/n.
+## Features
+- Public site: hero cover with theme color extraction, masonry gallery with infinite scroll, tags,
+  albums, and series pages
+- Admin dashboard: batch upload with progress and retry, library management, batch actions,
+  albums/series CRUD, tag merge, settings (home copy + theme color), analytics
+- Image pipeline: Cloudflare `/cdn-cgi/image` for public assets; private images via authenticated
+  API with `Cache-Control: no-store`
+- Theme system: `SiteCopy.themeColor` override > `Photo.dominantColor` auto extraction > default
+- Ops: backup/restore scripts, Docker deployment, CI pipelines
+- PWA: manifest + service worker for installable app and offline fallback
 
-## 🎨 Features
+## Tech Stack
+- Next.js 15 (App Router), React 19, TypeScript
+- Prisma ORM + PostgreSQL 16
+- Tailwind CSS, Framer Motion
+- Sharp for image metadata/thumbnails
+- JWT cookie auth (jose)
 
-- **Artistic Design**: Soft neutral colors, generous whitespace, and smooth animations
-- **Fast Loading**: Cloudflare image optimization with automatic format negotiation (AVIF/WebP)
-- **Smart Theming**: Auto-extract dominant colors from hero images
-- **Privacy Control**: Public and private photo management
-- **Efficient Organization**: Albums, series, and tag-based browsing
-- **Simple Admin**: Batch upload, quick editing, and lightweight analytics
-- **Performance**: Built for 10,000+ photos with lazy loading and pagination
+## Project Structure
+- `app/(public)` public pages
+- `app/admin` admin pages
+- `app/api` route handlers
+- `components` UI and gallery/admin components
+- `lib` db/auth/image/storage helpers
+- `prisma` schema and client
+- `scripts` seed/backup/restore
+- `public` static assets + public uploads
+- `private` private uploads (default)
+- `middleware.ts` auth guard
 
-## 🚀 Tech Stack
+## Quick Start (Local)
 
-- **Frontend**: Next.js 14 (App Router), React 18, Tailwind CSS, Framer Motion
-- **Backend**: Next.js API Routes, Prisma ORM
-- **Database**: PostgreSQL 16
-- **Image Processing**: Sharp (thumbnails), Cloudflare Image Resizing
-- **Authentication**: Custom JWT-based auth
-- **Deployment**: Docker, GitHub Actions, GitHub Container Registry
-
-## 📦 Quick Start
-
-### 🚀 一键部署到服务器（推荐）
-
-在任何 Linux 服务器上（Ubuntu/Debian/CentOS）运行以下命令：
-
-```bash
-wget -O ccframe.sh https://raw.githubusercontent.com/lonelyrower/CCFrame/main/ccframe.sh
-chmod +x ccframe.sh
-sudo ./ccframe.sh
-```
-
-脚本支持三种部署模式：
-
-1. **完整部署** - 域名 + Let's Encrypt SSL + HTTPS
-2. **Cloudflare部署** - 域名 + Cloudflare SSL + HTTPS
-3. **简单部署** - 仅IP访问，无SSL
-
-**功能特性：**
-
-- ✅ 自动安装 Docker、Nginx 等依赖
-- ✅ 支持镜像部署（快速）和源码部署（开发）
-- ✅ 自动配置 SSL 证书（Let's Encrypt）
-- ✅ 一键更新、备份、恢复
-- ✅ 服务管理（启动/停止/重启/日志）
-- ✅ 自动更新脚本本身
-
-**命令行快捷方式：**
+Using Make:
 
 ```bash
-./ccframe.sh install    # 安装
-./ccframe.sh update     # 更新
-./ccframe.sh status     # 查看状态
-./ccframe.sh logs       # 查看日志
-./ccframe.sh backup     # 备份数据
-./ccframe.sh restart    # 重启服务
+cp .env.example .env
+make setup
+make dev
 ```
 
----
-
-## 💻 本地开发
-
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL 16+
-- Docker & Docker Compose (optional)
-
-### Local Development
-
-1. **Clone the repository**
-
-```bash
-git clone <your-repo-url>
-cd ccframe
-```
-
-1. **Install dependencies**
+Using npm:
 
 ```bash
 npm install
-```
-
-1. **Setup environment**
-
-```bash
 cp .env.example .env
-# Edit .env with your configuration
-```
-
-1. **Initialize database**
-
-```bash
-# Run migrations
 npm run prisma:migrate
-
-# Generate Prisma Client
 npm run prisma:generate
-
-# Seed admin user
 npm run seed
-```
-
-1. **Start development server**
-
-```bash
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+Visit http://localhost:3000
+Admin login: http://localhost:3000/admin/login
 
-### Docker Deployment
+## Environment Variables
 
-**🚀 Quick Deploy (Recommended)**
+Required (local dev):
+- `DATABASE_URL`
+- `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `BASE_URL`
+- `NEXTAUTH_URL`
+
+Docker Compose:
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `DATABASE_URL` is set by `docker-compose.yml` (leave commented in `.env`)
+
+Optional:
+- `STORAGE_PROVIDER` (default: `local`)
+- `STORAGE_LOCAL_PUBLIC_ROOT`, `STORAGE_LOCAL_PRIVATE_ROOT`
+- `STORAGE_PUBLIC_URL_PREFIX`
+- `NEXT_PUBLIC_IMAGE_HOSTS` (comma-separated, default: `imagedelivery.net`)
+
+## Common Commands
 
 ```bash
-# After git pull, just run:
-bash deploy.sh
+make dev
+make build
+make start
+make test
+make migrate
+make migrate-deploy
+make seed
+make prisma-studio
+make docker-up
+make docker-down
+make docker-logs
 ```
 
-This will automatically:
-- Initialize secure credentials (if .env doesn't exist)
-- Pull latest code
-- Rebuild and restart containers
-- Show admin credentials
+## Admin Routes
+- `/admin/login`
+- `/admin/upload`
+- `/admin/library`
+- `/admin/albums`
+- `/admin/series`
+- `/admin/tags`
+- `/admin/settings`
+- `/admin/analytics`
 
-**Default Credentials (if .env not configured):**
-- Email: `admin@ccframe.local`
-- Password: `admin123456`
+## Data Model (High Level)
+- User (single admin)
+- Photo (tags, album, `isPublic`, `dominantColor`)
+- Album (series, cover)
+- Series (brand)
+- Tag + PhotoTag
+- SiteCopy (home copy + theme color)
+- MetricsDaily (PV/UV + top content)
 
-⚠️ **Important**: Change these defaults in production by editing `.env` file or running `bash scripts/init-secrets.sh` to generate secure random credentials!
+## Image Handling
+- Public images use Cloudflare URLs: `/cdn-cgi/image/format=auto,width=.../uploads/...`
+- Private images are served by `GET /api/image/private?id=...` with `Cache-Control: no-store`
+- Storage defaults to `public/` and `private/` roots; configurable via storage env vars
 
-**Manual Deployment**
+## Deployment
+
+Docker Compose (recommended):
 
 ```bash
-# Optional: Create .env file with custom settings (has secure defaults)
 cp .env.example .env
-
-# Build and start services
+# set NEXTAUTH_SECRET, ADMIN credentials, BASE_URL, POSTGRES_*
 docker-compose up -d
-
-# View logs
 docker-compose logs -f app
 ```
 
-**Using GitHub Container Registry Image**
+Quick deploy scripts:
+- `bash deploy.sh` (Docker update after `git pull`)
+- `ccframe.sh` (one-click install/update on Linux; run `./ccframe.sh` for options)
+
+Manual build:
 
 ```bash
-docker pull ghcr.io/<your-username>/ccframe:latest
-
-docker run -d \
-  -p 3000:3000 \
-  -e DATABASE_URL="postgresql://..." \
-  -e NEXTAUTH_SECRET="..." \
-  -e ADMIN_EMAIL="..." \
-  -e ADMIN_PASSWORD="..." \
-  -v ./uploads:/app/uploads \
-  ghcr.io/<your-username>/ccframe:latest
+npm ci
+npx prisma generate
+npm run build
+npx prisma migrate deploy
+npm run seed
+npm run start
 ```
 
-## 🗂️ Project Structure
+## Backup / Restore
+- `bash scripts/backup.sh` (daily DB, weekly uploads)
+- `bash scripts/restore.sh <YYYYMMDD> [--with-uploads]`
 
-```text
-ccframe/
-├── app/                    # Next.js App Router
-│   ├── (public)/          # Public pages
-│   ├── admin/             # Admin dashboard
-│   └── api/               # API routes
-├── components/            # React components
-├── lib/                   # Utility functions
-│   ├── db.ts             # Prisma client
-│   ├── cf-image.ts       # Cloudflare image helpers
-│   ├── theme-color.ts    # Color extraction
-│   └── auth.ts           # Authentication
-├── prisma/               # Database schema
-├── scripts/              # Utility scripts
-│   ├── seed-admin.js    # Create admin user
-│   ├── backup.sh        # Backup script
-│   └── restore.sh       # Restore script
-├── public/              # Static assets
-└── uploads/             # Uploaded images
-```
+## API Overview
+- Auth: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/session`
+- Photos: `GET /api/photos`, `GET|PUT|DELETE /api/photos/[id]`
+- Upload: `POST /api/upload/local`
+- Tags: `GET /api/tags`, `POST /api/tags/merge`
+- Albums: `GET|POST /api/albums`, `GET|PUT|DELETE /api/albums/[id]`
+- Series: `GET|POST /api/series`, `GET|PUT|DELETE /api/series/[id]`
+- Site copy: `GET|PUT /api/site-copy`, `POST /api/site-copy/reset`
+- Metrics: `POST /api/metrics/track`, `GET /api/metrics/summary`
+- Private image: `GET /api/image/private`
 
-## 🔧 Configuration
+## Development Notes
+- TypeScript strict mode; ESLint + Prettier (2-space, single quotes, 100 cols)
+- Path aliases: `@/components`, `@/lib`
+- CI runs lint, type-check, and build
+- Branch naming: `feature/*`, `fix/*`, `docs/*`, `refactor/*`
+- Conventional commits
 
-### Environment Variables
-
-See [.env.example](.env.example) for all available options:
-
-- `DATABASE_URL`: PostgreSQL connection string
-- `NEXTAUTH_SECRET`: Secret for JWT signing
-- `ADMIN_EMAIL`: Initial admin email
-- `ADMIN_PASSWORD`: Initial admin password
-- `BASE_URL`: Your domain URL
-- `STORAGE_PROVIDER`: Storage backend (`local` by default, pluggable for future S3/R2)
-- `STORAGE_LOCAL_PUBLIC_ROOT`, `STORAGE_LOCAL_PRIVATE_ROOT`: Override default public/private roots
-- `STORAGE_PUBLIC_URL_PREFIX`: Optional CDN prefix for public assets
-
-### Cloudflare Setup
-
-1. Point your domain to Cloudflare
-2. Enable "Cloudflare Images" or ensure `/cdn-cgi/image/*` is available
-3. Public images will automatically use Cloudflare optimization
-
-## 📸 Usage
-
-### Admin Dashboard
-
-Access at `/admin/login` with your admin credentials.
-
-**Features:**
-
-- Batch photo upload with progress tracking
-- Smart duplicate detection to skip existing photos
-- Progressive image loading with low/high-res blending
-- WebGL-powered lightbox viewer with smooth zoom & pan
-- Quick edit: title, tags, public/private toggle
-- Create albums and series
-- Customize homepage copy and theme
-- View analytics (PV/UV, top tags/albums)
-
-### API Endpoints
-
-See documentation in [docs/api.md](docs/api.md) for full API reference.
-
-## 🔐 Security
-
-- Single admin authentication with bcrypt password hashing
-- Private images served through protected API (no CDN caching)
-- Rate limiting on upload and auth endpoints
-- CSRF protection on all mutation endpoints
-- Environment-based secrets management
-
-## 🛠️ Backup & Restore
-
-### Backup
-
-```bash
-# Daily database backup (keeps 7 days)
-# Weekly uploads backup (keeps 8 weeks)
-bash scripts/backup.sh
-```
-
-Setup cron job:
-
-```bash
-# Add to crontab
-0 2 * * * cd /path/to/ccframe && bash scripts/backup.sh >> logs/backup.log 2>&1
-```
-
-### Restore
-
-```bash
-# Restore database only
-bash scripts/restore.sh 20250610
-
-# Restore database + uploads
-bash scripts/restore.sh 20250610 --with-uploads
-```
-
-## 🚢 CI/CD
-
-GitHub Actions workflows:
-
-- **CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)): Lint, type-check, build
-- **Docker Publish** ([.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml)): Build and push to GHCR
-- **Security Scanning** ([.github/workflows/security.yml](.github/workflows/security.yml)): CodeQL, dependency audit
-
-Images are automatically built and pushed to GitHub Container Registry on push to `main` branch.
-
-## 📝 Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run type-check` | Run TypeScript checks |
-| `npm run prisma:generate` | Generate Prisma Client |
-| `npm run prisma:migrate` | Run database migrations |
-| `npm run prisma:studio` | Open Prisma Studio |
-| `npm run seed` | Seed admin user |
-
-## 🎯 Roadmap
-
-### M1: Foundation ✅ (Complete)
-
-- [x] Data models + basic pages
-- [x] Authentication + upload
-- [x] Photo CRUD API
-- [x] Upload with progress tracking
-- [x] Photo library management UI
-
-### M2: Public Features ✅ (Complete)
-
-- [x] Photo gallery (masonry/infinite scroll)
-- [x] Tags browsing (tag cloud + detail pages)
-- [x] Albums & Series API
-- [x] Private image access control
-- [x] Cloudflare URL integration
-- [x] Homepage with Hero image
-- [x] Theme color extraction
-- [x] Lightbox viewer
-
-### M3: Admin & Theming ⚠️ (Core Complete)
-
-- [x] Admin dashboard (photo management)
-- [x] Batch upload & operations
-- [x] Theme color extraction
-- [x] Homepage copy management API
-- [ ] Albums/Series management UI (optional)
-- [ ] Settings page UI (optional)
-- [ ] Analytics dashboard (optional)
-
-### M4: Polish ✅ (Complete)
-
-- [x] Backup scripts
-- [x] Docker configuration
-- [x] CI/CD (GitHub Actions)
-- [x] Performance optimization
-- [x] Security scanning
-- [x] Complete documentation
-
-## 📄 License
-
-[MIT License](LICENSE)
-
-## 🤝 Contributing
-
-This is a personal project, but suggestions and bug reports are welcome via issues.
-
----
-
-Built with ❤️ using Next.js and modern web technologies.
+## License
+MIT

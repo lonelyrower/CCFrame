@@ -66,7 +66,7 @@ export default function TagsManagementPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <div className="inline-block mb-3">
-            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
               Management
             </span>
           </div>
@@ -85,7 +85,7 @@ export default function TagsManagementPage() {
       {isLoading ? (
         <div className="text-center py-20">
           <div className="inline-flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
             <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
               Loading
             </span>
@@ -142,7 +142,7 @@ export default function TagsManagementPage() {
                   id="from-tag-select"
                   value={fromTag}
                   onChange={(e) => setFromTag(e.target.value)}
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 >
                   <option value="">选择标签</option>
                   {tags.map((tag) => (
@@ -163,7 +163,7 @@ export default function TagsManagementPage() {
                   value={toTag}
                   onChange={(e) => setToTag(e.target.value)}
                   placeholder="输入标签名（可新建）"
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
               </div>
 

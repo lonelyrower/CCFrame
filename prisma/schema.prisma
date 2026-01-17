@@ -77,6 +77,7 @@ model SiteCopy {
   id               Int      @id @default(1)
   homeCopy         String?
   themeColor       String?  // Theme override color (hex format)
+  themePreset      String?  // Theme preset id
   updatedAt        DateTime @updatedAt
 }
 

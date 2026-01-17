@@ -6,8 +6,8 @@ export async function POST() {
   try {
     await prisma.siteCopy.upsert({
       where: { id: 1 },
-      update: { homeCopy: null, themeColor: null },
-      create: { id: 1, homeCopy: null, themeColor: null },
+      update: { homeCopy: null, themeColor: null, themePreset: null },
+      create: { id: 1, homeCopy: null, themeColor: null, themePreset: null },
     });
 
     return NextResponse.json({

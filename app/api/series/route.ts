@@ -13,6 +13,24 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
+    const coverIds = series
+      .map((item) => item.coverId)
+      .filter((id): id is string => Boolean(id));
+    const coverPhotos = coverIds.length
+      ? await prisma.photo.findMany({
+          where: { id: { in: coverIds }, isPublic: true },
+          select: {
+            id: true,
+            fileKey: true,
+            isPublic: true,
+            dominantColor: true,
+            width: true,
+            height: true,
+          },
+        })
+      : [];
+    const coverMap = new Map(coverPhotos.map((photo) => [photo.id, photo]));
+
     // 统计所有专辑的公开照片数量
     const allAlbumIds = series.flatMap((s) => s.albums.map((a) => a.id));
     const counts = allAlbumIds.length
@@ -32,6 +50,7 @@ export async function GET() {
         summary: s.summary,
         brand: s.brand,
         coverId: s.coverId,
+        coverPhoto: s.coverId ? coverMap.get(s.coverId) || null : null,
         albumCount: s.albums.length,
         photoCount: s.albums.reduce((sum, album) => sum + (map.get(album.id) || 0), 0),
         createdAt: s.createdAt,

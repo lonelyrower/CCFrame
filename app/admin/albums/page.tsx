@@ -124,10 +124,10 @@ export default function AlbumsManagementPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <div className="inline-block mb-3">
-            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
               Management
             </span>
           </div>
@@ -138,7 +138,7 @@ export default function AlbumsManagementPage() {
             创建和管理照片相册
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="primary">
+        <Button onClick={() => setShowCreateModal(true)} variant="primary" className="w-full sm:w-auto">
           创建相册
         </Button>
       </div>
@@ -147,7 +147,7 @@ export default function AlbumsManagementPage() {
       {isLoading ? (
         <div className="text-center py-20">
           <div className="inline-flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
             <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
               Loading
             </span>
@@ -165,7 +165,7 @@ export default function AlbumsManagementPage() {
           {albums.map((album) => (
             <div
               key={album.id}
-              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-6 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20 hover:shadow-xl transition-all duration-300"
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-6 hover:ring-[color:var(--ds-accent-20)] hover:shadow-xl transition-all duration-300"
             >
               <h3 className="text-xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 {album.title}
@@ -177,12 +177,12 @@ export default function AlbumsManagementPage() {
               )}
               <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-4 flex-wrap">
                 {album.series && (
-                  <span className="px-3 py-1.5 bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] rounded-full ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20 font-medium">
+                  <span className="px-3 py-1.5 bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] rounded-full ring-1 ring-[color:var(--ds-accent-20)] font-medium">
                     {album.series.title}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-[#d4af37]" />
+                  <span className="w-1 h-1 rounded-full bg-[color:var(--ds-luxury)]" />
                   {album.photoCount} 张照片
                 </span>
               </div>
@@ -199,7 +199,7 @@ export default function AlbumsManagementPage() {
                   onClick={() => handleDelete(album.id)}
                   variant="ghost"
                   size="sm"
-                  className="text-[#e63946] dark:text-[#ff6b7a] hover:bg-[#e63946]/10 dark:hover:bg-[#ff6b7a]/10"
+                  className="text-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent-10)]"
                 >
                   删除
                 </Button>
@@ -235,7 +235,7 @@ export default function AlbumsManagementPage() {
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="输入相册简介"
                   rows={3}
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
               </div>
 
@@ -246,7 +246,7 @@ export default function AlbumsManagementPage() {
                 <select
                   value={selectedSeriesId}
                   onChange={(e) => setSelectedSeriesId(e.target.value)}
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 >
                   <option value="">无</option>
                   {series.map((s) => (

@@ -22,6 +22,7 @@ interface Album {
   summary: string | null;
   series: {
     id: string;
+    slug: string;
     title: string;
   } | null;
   photos: Photo[];
@@ -90,7 +91,7 @@ export default function AlbumDetailPage() {
             <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
               <Link
                 href="/series"
-                className="text-[#e63946] dark:text-[#ff6b7a] hover:underline"
+                className="text-[color:var(--ds-accent)] hover:underline"
               >
                 系列
               </Link>
@@ -98,8 +99,8 @@ export default function AlbumDetailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
               <Link
-                href={`/series/${album.series.id}`}
-                className="text-[#e63946] dark:text-[#ff6b7a] hover:underline"
+                href={`/series/${album.series.slug || album.series.id}`}
+                className="text-[color:var(--ds-accent)] hover:underline"
               >
                 {album.series.title}
               </Link>
@@ -113,7 +114,7 @@ export default function AlbumDetailPage() {
           ) : (
             <Link
               href="/photos"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[#e63946] dark:text-[#ff6b7a] hover:gap-3 transition-all duration-300"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ds-accent)] hover:gap-3 transition-all duration-300"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -126,7 +127,7 @@ export default function AlbumDetailPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
               <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
                 Loading
               </span>
@@ -141,7 +142,7 @@ export default function AlbumDetailPage() {
             {/* Header - Editorial Style */}
             <div className="mb-16">
               <div className="inline-block mb-4">
-                <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+                <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
                   Album
                 </span>
               </div>
@@ -154,7 +155,7 @@ export default function AlbumDetailPage() {
                 </p>
               )}
               <div className="inline-flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#e63946] dark:bg-[#ff6b7a]" />
+                <span className="w-2 h-2 rounded-full bg-[color:var(--ds-accent)]" />
                 <p className="text-base text-stone-500 dark:text-stone-400">
                   {album.photos.length} 张作品
                 </p>

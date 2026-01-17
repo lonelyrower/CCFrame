@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getImageUrl } from '@/lib/image/utils';
+import { getImageSrcSet, getImageUrl } from '@/lib/image/utils';
 import { cfImage } from '@/lib/cf-image';
 import { extractDominantColor, rgbToHsl } from '@/lib/theme-color';
 import { DEFAULT_HOME_COPY_SELECTED } from '@/lib/constants';
@@ -29,6 +29,33 @@ export default function HomePage() {
   const [heroPhoto, setHeroPhoto] = useState<HeroPhoto | null>(null);
   const [homeCopy, setHomeCopy] = useState<string>(DEFAULT_HOME_COPY_SELECTED);
   const [themeColor, setThemeColor] = useState<string | null>(null);
+  const heroSrc = heroPhoto
+    ? getImageUrl(heroPhoto.fileKey, heroPhoto.isPublic, { width: 1920, quality: 90 })
+    : null;
+  const heroSrcSet = heroPhoto
+    ? getImageSrcSet(heroPhoto.fileKey, heroPhoto.isPublic, undefined, { quality: 90 })
+    : undefined;
+  const heroIsLight = heroPhoto ? isLightHex(themeColor) : false;
+  const heroContrast = heroPhoto
+    ? heroIsLight
+      ? 'var(--ds-ink-strong)'
+      : 'var(--ds-ink-inverse)'
+    : undefined;
+  const heroContrastMuted = heroPhoto
+    ? heroIsLight
+      ? 'rgb(var(--ds-ink-strong-rgb) / 0.9)'
+      : 'rgb(var(--ds-ink-inverse-rgb) / 0.95)'
+    : undefined;
+  const heroTitleShadow = heroPhoto
+    ? heroIsLight
+      ? '0 4px 20px rgb(var(--ds-ink-strong-rgb) / 0.08)'
+      : '0 4px 30px rgb(var(--ds-ink-strong-rgb) / 0.6), 0 2px 10px rgb(var(--ds-accent-rgb) / 0.3)'
+    : 'none';
+  const heroSubtitleShadow = heroPhoto
+    ? heroIsLight
+      ? '0 2px 10px rgb(var(--ds-ink-strong-rgb) / 0.1)'
+      : '0 2px 15px rgb(var(--ds-ink-strong-rgb) / 0.5)'
+    : 'none';
 
   useEffect(() => {
     loadHomePage();
@@ -85,15 +112,20 @@ export default function HomePage() {
   return (
     <div className="relative">
       {/* Hero Section - Fashion Editorial Style */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[100svh] md:min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image or Empty State */}
         {heroPhoto ? (
           <div className="absolute inset-0">
             <img
-              src={getImageUrl(heroPhoto.fileKey, heroPhoto.isPublic, { width: 1920, quality: 90 })}
+              src={heroSrc || undefined}
+              srcSet={heroSrcSet}
+              sizes="100vw"
               alt="Hero"
               className="w-full h-full object-cover scale-105 animate-fade-in"
               style={{ animationDuration: '1.2s' }}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
             {/* Sophisticated gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" />
@@ -101,7 +133,7 @@ export default function HomePage() {
             {/* Subtle grain texture */}
             <div className="hidden md:block absolute inset-0 bg-noise opacity-[0.08] mix-blend-overlay pointer-events-none" />
             {/* Accent color tint */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#e63946]/10 via-transparent to-[#d4af37]/5 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--ds-accent-10)] via-transparent to-[var(--ds-luxury-5)] mix-blend-multiply" />
           </div>
         ) : (
           /* Empty State - Elegant Minimal Design */
@@ -111,18 +143,18 @@ export default function HomePage() {
               {/* Large camera lens illustration */}
               <div className="absolute top-1/4 right-1/4 w-96 h-96 opacity-[0.03] dark:opacity-[0.08]">
                 <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="100" cy="100" r="80" stroke="currentColor" strokeWidth="2" className="text-[#e63946]"/>
-                  <circle cx="100" cy="100" r="60" stroke="currentColor" strokeWidth="1.5" className="text-[#d4af37]"/>
-                  <circle cx="100" cy="100" r="40" stroke="currentColor" strokeWidth="1" className="text-[#e63946]"/>
-                  <path d="M100 40 L130 100 L100 160 L70 100 Z" stroke="currentColor" strokeWidth="1" className="text-[#e63946]"/>
+                  <circle cx="100" cy="100" r="80" stroke="currentColor" strokeWidth="2" className="text-[color:var(--ds-accent)]"/>
+                  <circle cx="100" cy="100" r="60" stroke="currentColor" strokeWidth="1.5" className="text-[color:var(--ds-luxury)]"/>
+                  <circle cx="100" cy="100" r="40" stroke="currentColor" strokeWidth="1" className="text-[color:var(--ds-accent)]"/>
+                  <path d="M100 40 L130 100 L100 160 L70 100 Z" stroke="currentColor" strokeWidth="1" className="text-[color:var(--ds-accent)]"/>
                 </svg>
               </div>
               {/* Frame corners */}
               <div className="absolute top-10 left-10 w-24 h-24 border-l-2 border-t-2 border-stone-300 dark:border-neutral-700 opacity-30"/>
               <div className="absolute bottom-10 right-10 w-24 h-24 border-r-2 border-b-2 border-stone-300 dark:border-neutral-700 opacity-30"/>
               {/* Subtle gradient orbs */}
-              <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-gradient-to-br from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/10 rounded-full blur-3xl"/>
-              <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-gradient-to-tl from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/10 rounded-full blur-3xl"/>
+              <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-gradient-to-br from-[var(--ds-accent-5)] to-transparent dark:from-[var(--ds-accent-soft-10)] rounded-full blur-3xl"/>
+              <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-gradient-to-tl from-[var(--ds-luxury-5)] to-transparent dark:from-[var(--ds-luxury)]/10 rounded-full blur-3xl"/>
             </div>
           </div>
         )}
@@ -135,14 +167,8 @@ export default function HomePage() {
               className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold mb-4 md:mb-6 animate-reveal tracking-tighter leading-none"
               style={{
                 animationDelay: '100ms',
-                color: heroPhoto
-                  ? (themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff')
-                  : 'var(--foreground)',
-                textShadow: heroPhoto
-                  ? (themeColor && isLightHex(themeColor)
-                      ? '0 4px 20px rgba(0,0,0,0.08)'
-                      : '0 4px 30px rgba(0,0,0,0.6), 0 2px 10px rgba(230,57,70,0.3)')
-                  : 'none',
+                color: heroContrast || 'var(--foreground)',
+                textShadow: heroTitleShadow,
                 letterSpacing: '-0.04em',
               }}
             >
@@ -156,14 +182,8 @@ export default function HomePage() {
               className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed tracking-wide max-w-3xl mx-auto font-light animate-reveal text-stone-700 dark:text-stone-300"
               style={{
                 animationDelay: '300ms',
-                color: heroPhoto
-                  ? (themeColor && isLightHex(themeColor) ? 'rgba(10,10,10,0.9)' : 'rgba(255,255,255,0.95)')
-                  : undefined,
-                textShadow: heroPhoto
-                  ? (themeColor && isLightHex(themeColor)
-                      ? '0 2px 10px rgba(0,0,0,0.1)'
-                      : '0 2px 15px rgba(0,0,0,0.5)')
-                  : 'none',
+                color: heroContrastMuted,
+                textShadow: heroSubtitleShadow,
                 letterSpacing: '0.05em',
               }}
             >
@@ -175,18 +195,17 @@ export default function HomePage() {
                 className={`px-6 py-2.5 rounded-full font-medium text-sm tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
                   heroPhoto
                     ? 'btn-glass'
-                    : 'bg-[#e63946] text-white hover:bg-[#c1121f] dark:bg-[#ff6b7a] dark:hover:bg-[#ff8fa3] shadow-lg hover:shadow-xl'
+                    : 'bg-[color:var(--ds-accent)] text-white hover:bg-[color:var(--ds-accent-strong)] shadow-lg hover:shadow-xl'
                 }`}
                 style={(() => {
                   if (!heroPhoto || !themeColor) return {};
-                  const light = isLightHex(themeColor);
-                  if (light) {
+                  if (heroIsLight) {
                     return {
-                      color: '#0a0a0a',
-                      borderColor: 'rgba(10,10,10,0.3)',
+                      color: 'var(--ds-ink-strong)',
+                      borderColor: 'rgb(var(--ds-ink-strong-rgb) / 0.3)',
                       boxShadow:
-                        'inset 0 1px 0 rgba(255,255,255,0.5), 0 10px 30px rgba(10,10,10,0.15)',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
+                        'inset 0 1px 0 rgb(var(--ds-ink-inverse-rgb) / 0.5), 0 10px 30px rgb(var(--ds-ink-strong-rgb) / 0.15)',
+                      backgroundColor: 'rgb(var(--ds-ink-inverse-rgb) / 0.7)',
                     };
                   }
                   return {};
@@ -199,16 +218,15 @@ export default function HomePage() {
                 className={`px-6 py-2.5 rounded-full font-medium text-sm tracking-wide uppercase hover:scale-105 active:scale-100 transition-all duration-300 ${
                   heroPhoto
                     ? 'text-white btn-outline-light'
-                    : 'border-2 border-[#e63946] text-[#e63946] hover:bg-[#e63946] hover:text-white dark:border-[#ff6b7a] dark:text-[#ff6b7a] dark:hover:bg-[#ff6b7a] dark:hover:text-neutral-900'
+                    : 'border-2 border-[color:var(--ds-accent)] text-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent)] hover:text-white dark:hover:text-neutral-900'
                 }`}
                 style={(() => {
                   if (!heroPhoto || !themeColor) return {};
-                  const light = isLightHex(themeColor);
-                  if (light) {
+                  if (heroIsLight) {
                     return {
-                      color: '#0a0a0a',
-                      borderColor: 'rgba(10,10,10,0.3)',
-                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      color: 'var(--ds-ink-strong)',
+                      borderColor: 'rgb(var(--ds-ink-strong-rgb) / 0.3)',
+                      backgroundColor: 'rgb(var(--ds-ink-inverse-rgb) / 0.3)',
                     };
                   }
                   return {};
@@ -225,9 +243,7 @@ export default function HomePage() {
           <span
             className="text-xs uppercase tracking-widest font-light text-stone-600 dark:text-stone-400"
             style={{
-              color: heroPhoto
-                ? (themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff')
-                : undefined,
+              color: heroContrast,
             }}
           >
             Scroll
@@ -235,9 +251,7 @@ export default function HomePage() {
           <div
             className="w-px h-12 opacity-50 bg-stone-600 dark:bg-stone-400"
             style={{
-              backgroundColor: heroPhoto
-                ? (themeColor && isLightHex(themeColor) ? '#0a0a0a' : '#ffffff')
-                : undefined,
+              backgroundColor: heroContrast,
             }}
           />
         </div>
@@ -246,8 +260,8 @@ export default function HomePage() {
       {/* Fashion Editorial Section */}
       <section className="relative py-24 md:py-32 bg-stone-50 dark:bg-neutral-950 overflow-hidden">
         {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-1/3 h-64 bg-gradient-to-bl from-[#e63946]/5 to-transparent dark:from-[#ff6b7a]/10" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-96 bg-gradient-to-tr from-[#d4af37]/5 to-transparent dark:from-[#d4af37]/8" />
+        <div className="absolute top-0 right-0 w-1/3 h-64 bg-gradient-to-bl from-[var(--ds-accent-5)] to-transparent dark:from-[var(--ds-accent-soft-10)]" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-96 bg-gradient-to-tr from-[var(--ds-luxury-5)] to-transparent dark:from-[var(--ds-luxury-8)]" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header - Personal Style */}
@@ -263,9 +277,9 @@ export default function HomePage() {
           {/* Feature Grid - Clean Icon Design */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             <div className="group text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[#e63946]/10 to-[#e63946]/5 dark:from-[#ff6b7a]/15 dark:to-[#ff6b7a]/5 group-hover:scale-105 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[var(--ds-accent-10)] to-[var(--ds-accent-5)] group-hover:scale-105 transition-all duration-300">
                 {/* Camera Icon */}
-                <svg className="w-8 h-8 text-[#e63946] dark:text-[#ff6b7a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-8 h-8 text-[color:var(--ds-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
                 </svg>
@@ -279,9 +293,9 @@ export default function HomePage() {
             </div>
 
             <div className="group text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[#d4af37]/10 to-[#d4af37]/5 dark:from-[#d4af37]/15 dark:to-[#d4af37]/5 group-hover:scale-105 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[var(--ds-luxury-10)] to-[var(--ds-luxury-5)] group-hover:scale-105 transition-all duration-300">
                 {/* Tags Icon */}
-                <svg className="w-8 h-8 text-[#d4af37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-8 h-8 text-[color:var(--ds-luxury)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
                 </svg>

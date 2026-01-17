@@ -29,10 +29,10 @@ export function AdminNav() {
           <div className="flex items-center space-x-10">
             {/* Brand */}
             <Link href="/" className="group flex items-center space-x-3">
-              <span className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[#e63946] dark:group-hover:text-[#ff6b7a] transition-colors duration-300">
+              <span className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
                 CCFrame
               </span>
-              <span className="text-xs uppercase tracking-[0.15em] font-medium text-[#e63946] dark:text-[#ff6b7a]">
+              <span className="text-xs uppercase tracking-[0.15em] font-medium text-[color:var(--ds-accent)]">
                 Admin
               </span>
             </Link>
@@ -45,7 +45,7 @@ export function AdminNav() {
                   href={item.href}
                   className={`px-4 py-2 rounded-xl text-sm font-medium tracking-wide transition-all duration-300 ${
                     pathname === item.href
-                      ? 'bg-[#e63946]/10 dark:bg-[#ff6b7a]/10 text-[#e63946] dark:text-[#ff6b7a] ring-1 ring-[#e63946]/20 dark:ring-[#ff6b7a]/20'
+                      ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-[color:var(--ds-accent-20)]'
                       : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -58,7 +58,7 @@ export function AdminNav() {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="px-5 py-2.5 text-sm font-medium tracking-wide text-[#e63946] dark:text-[#ff6b7a] hover:bg-[#e63946]/10 dark:hover:bg-[#ff6b7a]/10 rounded-xl transition-all duration-300 hover:ring-1 hover:ring-[#e63946]/20 dark:hover:ring-[#ff6b7a]/20"
+            className="px-5 py-2.5 text-sm font-medium tracking-wide text-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent-10)] rounded-xl transition-all duration-300 hover:ring-1 hover:ring-[color:var(--ds-accent-20)]"
           >
             登出
           </button>

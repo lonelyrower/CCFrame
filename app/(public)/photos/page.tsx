@@ -141,8 +141,8 @@ export default function PhotosPage() {
                 <div className="mb-8 flex justify-center">
                   <div className="relative w-32 h-32 opacity-20">
                     <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="64" cy="64" r="40" stroke="currentColor" strokeWidth="2" className="text-[#e63946] dark:text-[#ff6b7a]"/>
-                      <circle cx="64" cy="64" r="28" stroke="currentColor" strokeWidth="1.5" className="text-[#d4af37]"/>
+                      <circle cx="64" cy="64" r="40" stroke="currentColor" strokeWidth="2" className="text-[color:var(--ds-accent)]"/>
+                      <circle cx="64" cy="64" r="28" stroke="currentColor" strokeWidth="1.5" className="text-[color:var(--ds-luxury)]"/>
                       <path d="M24 24 L24 40 M24 24 L40 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-stone-400 dark:text-stone-600"/>
                       <path d="M104 104 L104 88 M104 104 L88 104" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-stone-400 dark:text-stone-600"/>
                     </svg>
@@ -165,7 +165,7 @@ export default function PhotosPage() {
           <div ref={loadMoreRef} className="mt-12 text-center py-12">
             {isLoading && (
               <div className="inline-flex flex-col items-center gap-4">
-                <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[#e63946] dark:border-t-[#ff6b7a]" />
+                <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
                 <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
                   Loading
                 </span>

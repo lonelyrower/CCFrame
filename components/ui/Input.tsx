@@ -22,16 +22,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             border-stone-200 dark:border-neutral-700
             text-stone-900 dark:text-stone-100
             placeholder-stone-400 dark:placeholder-neutral-500
-            focus:outline-none focus:ring-2 focus:ring-[#e63946]/20 dark:focus:ring-[#ff6b7a]/20 focus:border-[#e63946] dark:focus:border-[#ff6b7a]
+            focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)]
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-all duration-300
-            ${error ? 'border-[#e63946] dark:border-[#ff6b7a] focus:ring-[#e63946]/30 dark:focus:ring-[#ff6b7a]/30' : ''}
+            ${error ? 'border-[color:var(--ds-accent)] focus:ring-[color:var(--ds-accent-30)]' : ''}
             ${className}
           `}
           {...props}
         />
         {error && (
-          <p className="mt-2 text-sm text-[#e63946] dark:text-[#ff6b7a]">{error}</p>
+          <p className="mt-2 text-sm text-[color:var(--ds-accent)]">{error}</p>
         )}
       </div>
     );

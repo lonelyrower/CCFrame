@@ -13,8 +13,10 @@ export async function GET(
     const isAdmin = Boolean(session);
     const { id } = await params;
 
-    const series = await prisma.series.findUnique({
-      where: { id },
+    const series = await prisma.series.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
       include: {
         albums: {
           include: {
@@ -22,6 +24,7 @@ export async function GET(
               // 非管理员仅预览公开照片
               where: isAdmin ? {} : { isPublic: true },
               take: 1,
+              orderBy: { createdAt: 'desc' },
             },
             // Prisma 不支持在 _count 中使用 where 过滤，这里仅取总数
             _count: { select: { photos: true } },
@@ -37,6 +40,34 @@ export async function GET(
       );
     }
 
+    const coverIds = series.albums
+      .map((album) => album.coverId)
+      .filter((id): id is string => Boolean(id));
+    const coverPhotos = coverIds.length
+      ? await prisma.photo.findMany({
+          where: {
+            id: { in: coverIds },
+            ...(isAdmin ? {} : { isPublic: true }),
+          },
+          select: {
+            id: true,
+            fileKey: true,
+            isPublic: true,
+            dominantColor: true,
+            width: true,
+            height: true,
+          },
+        })
+      : [];
+    const coverMap = new Map(coverPhotos.map((photo) => [photo.id, photo]));
+    const seriesWithCovers = {
+      ...series,
+      albums: series.albums.map((album) => ({
+        ...album,
+        coverPhoto: album.coverId ? coverMap.get(album.coverId) || null : null,
+      })),
+    };
+
     // 非管理员需要将 _count.photos 替换为“公开照片数量”
     if (series && !isAdmin) {
       const albumIds = series.albums.map((a) => a.id);
@@ -48,8 +79,8 @@ export async function GET(
         });
         const map = new Map<string, number>(counts.map((c) => [c.albumId as string, c._count._all]));
         const seriesSanitized = {
-          ...series,
-          albums: series.albums.map((a) => ({
+          ...seriesWithCovers,
+          albums: seriesWithCovers.albums.map((a) => ({
             ...a,
             _count: { ...a._count, photos: map.get(a.id) || 0 },
           })),
@@ -58,7 +89,7 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({ series });
+    return NextResponse.json({ series: seriesWithCovers });
   } catch (error) {
     console.error('Error fetching series:', error);
     return NextResponse.json(

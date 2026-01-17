@@ -8,7 +8,44 @@ export interface UploadResult {
   height: number;
   size: number;
   dominantColor?: string;
+  takenAt?: Date;
 }
+
+const parseExifDate = (value: string): Date | null => {
+  const match = /^(\d{4})[:\-](\d{2})[:\-](\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(
+    value.trim()
+  );
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second] = match;
+  const date = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  );
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const extractTakenAtFromExif = (exif: Buffer): Date | null => {
+  const text = exif.toString('latin1');
+  const taggedPatterns = [
+    /DateTimeOriginal\x00+(\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2})/,
+    /DateTimeDigitized\x00+(\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2})/,
+    /DateTime\x00+(\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2})/,
+  ];
+
+  for (const pattern of taggedPatterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) {
+      const parsed = parseExifDate(match[1]);
+      if (parsed) return parsed;
+    }
+  }
+
+  return null;
+};
 
 /**
  * Save uploaded file to disk
@@ -39,6 +76,20 @@ export async function saveUploadedFile(
 
   // Get image metadata using sharp
   const metadata = await sharp(buffer).metadata();
+
+  // Best-effort EXIF takenAt extraction
+  let takenAt: Date | undefined;
+  try {
+    if (metadata.exif) {
+      const exifBuffer = Buffer.isBuffer(metadata.exif)
+        ? metadata.exif
+        : Buffer.from(metadata.exif);
+      const parsed = extractTakenAtFromExif(exifBuffer);
+      if (parsed) takenAt = parsed;
+    }
+  } catch {
+    // Ignore EXIF parsing errors
+  }
 
   // Save original file through storage provider
   const { storedKey: fileKey } = await storageProvider.putObject({
@@ -100,6 +151,7 @@ export async function saveUploadedFile(
     height: metadata.height || 0,
     size: buffer.length,
     dominantColor,
+    takenAt,
   };
 }
 
