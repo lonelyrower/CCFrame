@@ -1,4 +1,4 @@
-export type ThemeId = 'atelier' | 'noir' | 'sage' | 'ocean' | 'custom';
+export type ThemeId = 'atelier' | 'noir' | 'sage' | 'ocean' | 'rose' | 'violet' | 'amber' | 'slate' | 'custom';
 
 interface ThemePalette {
   accent: string;
@@ -84,6 +84,74 @@ export const THEME_PRESETS: ThemePreset[] = [
       accentSoft: '#82aad0',
       accentStrong: '#82aad0',
       luxury: '#d4af37',
+    },
+  },
+  {
+    id: 'rose',
+    label: 'Rose',
+    description: 'Soft romantic pinks with warm undertones',
+    light: {
+      accent: '#d4708f',
+      accentSoft: '#e899af',
+      accentStrong: '#b5486a',
+      luxury: '#c9a86c',
+    },
+    dark: {
+      accent: '#e899af',
+      accentSoft: '#f0b8c8',
+      accentStrong: '#f0b8c8',
+      luxury: '#c9a86c',
+    },
+  },
+  {
+    id: 'violet',
+    label: 'Violet',
+    description: 'Rich purples with elegant depth',
+    light: {
+      accent: '#7c4dff',
+      accentSoft: '#a47aff',
+      accentStrong: '#5e35b1',
+      luxury: '#c9b458',
+    },
+    dark: {
+      accent: '#a47aff',
+      accentSoft: '#c4a8ff',
+      accentStrong: '#c4a8ff',
+      luxury: '#c9b458',
+    },
+  },
+  {
+    id: 'amber',
+    label: 'Amber',
+    description: 'Warm sunset tones with golden glow',
+    light: {
+      accent: '#d97706',
+      accentSoft: '#f59e0b',
+      accentStrong: '#b45309',
+      luxury: '#d4af37',
+    },
+    dark: {
+      accent: '#f59e0b',
+      accentSoft: '#fbbf24',
+      accentStrong: '#fbbf24',
+      luxury: '#d4af37',
+    },
+  },
+  {
+    id: 'slate',
+    label: 'Slate',
+    description: 'Modern minimalist with cool grays',
+    light: {
+      accent: '#475569',
+      accentSoft: '#64748b',
+      accentStrong: '#334155',
+      luxury: '#94a3b8',
+    },
+    dark: {
+      accent: '#94a3b8',
+      accentSoft: '#cbd5e1',
+      accentStrong: '#cbd5e1',
+      luxury: '#94a3b8',
     },
   },
 ];

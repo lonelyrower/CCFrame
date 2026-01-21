@@ -193,6 +193,32 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
+/* 主题切换平滑过渡 */
+html {
+  transition: 
+    --ds-accent-rgb 0.3s ease-out,
+    --ds-accent-soft-rgb 0.3s ease-out,
+    --ds-accent-strong-rgb 0.3s ease-out,
+    --ds-luxury-rgb 0.3s ease-out;
+}
+
+/* 全局颜色过渡 */
+*,
+*::before,
+*::after {
+  transition-property: color, background-color, border-color, fill, stroke, box-shadow;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-out;
+}
+
+/* 排除特定动画元素 */
+.no-transition,
+.no-transition *,
+[data-no-transition],
+[data-no-transition] * {
+  transition: none !important;
+}
+
 @layer utilities {
   .text-balance {
     -webkit-text-wrap: balance;

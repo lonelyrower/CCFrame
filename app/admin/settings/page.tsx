@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { DEFAULT_HOME_COPY } from '@/lib/constants';
-import { DEFAULT_THEME_ID, THEME_PRESETS, ThemeId, resolveThemeId } from '@/lib/themes';
+import { DEFAULT_THEME_ID, THEME_PRESETS, ThemeId, resolveThemeId, themeToCssVars } from '@/lib/themes';
 
 export default function SettingsPage() {
   const [homeCopy, setHomeCopy] = useState('');
@@ -12,9 +12,26 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // 实时预览主题
+  const applyThemePreview = useCallback((preset: ThemeId, color: string) => {
+    const vars = themeToCssVars(preset, preset === 'custom' ? color : null);
+    const html = document.documentElement;
+    html.dataset.theme = preset;
+    Object.entries(vars).forEach(([key, value]) => {
+      html.style.setProperty(key, value);
+    });
+  }, []);
+
   useEffect(() => {
     loadSettings();
   }, []);
+
+  // 主题变化时实时预览
+  useEffect(() => {
+    if (!isLoading) {
+      applyThemePreview(themePreset, themeColor);
+    }
+  }, [themePreset, themeColor, isLoading, applyThemePreview]);
 
   const loadSettings = async () => {
     try {
@@ -151,13 +168,40 @@ export default function SettingsPage() {
 
           {/* Theme Settings */}
           <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8">
-            <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">主题设置</h2>
-            <div className="space-y-5">
+            <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">主题设置</h2>
+            <p className="text-sm text-stone-600 dark:text-stone-400 mb-6">选择一个主题，更改将实时预览</p>
+            
+            <div className="space-y-6">
+              {/* Theme Preview Card */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-800 dark:to-neutral-900 ring-1 ring-stone-200/50 dark:ring-neutral-700/50">
+                <p className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">Preview</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex -space-x-2">
+                    <div className="h-10 w-10 rounded-full bg-[color:var(--ds-accent)] ring-2 ring-white dark:ring-neutral-900" />
+                    <div className="h-10 w-10 rounded-full bg-[color:var(--ds-accent-soft)] ring-2 ring-white dark:ring-neutral-900" />
+                    <div className="h-10 w-10 rounded-full bg-[color:var(--ds-accent-strong)] ring-2 ring-white dark:ring-neutral-900" />
+                    <div className="h-10 w-10 rounded-full bg-[color:var(--ds-luxury)] ring-2 ring-white dark:ring-neutral-900" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-serif font-semibold text-stone-900 dark:text-stone-50">
+                      {THEME_PRESETS.find(p => p.id === themePreset)?.label || 'Custom'}
+                    </p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                      {THEME_PRESETS.find(p => p.id === themePreset)?.description || '自定义主题色'}
+                    </p>
+                  </div>
+                  <Button variant="primary" size="sm" className="shrink-0">
+                    示例按钮
+                  </Button>
+                </div>
+              </div>
+
+              {/* Theme Grid */}
               <div>
                 <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-3">
-                  主题选择
+                  主题选择 <span className="text-stone-400 font-normal">({THEME_PRESETS.length} 个预设)</span>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {THEME_PRESETS.map((preset) => {
                     const selected = themePreset === preset.id;
                     return (
@@ -165,118 +209,122 @@ export default function SettingsPage() {
                         key={preset.id}
                         type="button"
                         onClick={() => setThemePreset(preset.id)}
-                        className={`w-full text-left p-4 rounded-2xl border-2 transition-all duration-300 ${
+                        className={`group relative text-left p-4 rounded-2xl border-2 transition-all duration-300 ${
                           selected
-                            ? 'border-[color:var(--ds-accent)] bg-[color:var(--ds-accent-5)] shadow-md'
-                            : 'border-stone-200 dark:border-neutral-700 hover:border-[color:var(--ds-accent-30)]'
+                            ? 'border-[color:var(--ds-accent)] bg-[color:var(--ds-accent-5)] shadow-lg scale-[1.02]'
+                            : 'border-stone-200 dark:border-neutral-700 hover:border-[color:var(--ds-accent-30)] hover:shadow-md'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <div>
-                            <p className="text-base font-semibold text-stone-900 dark:text-stone-50">
-                              {preset.label}
-                            </p>
-                            <p className="text-xs text-stone-500 dark:text-stone-400">
-                              {preset.description}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10"
-                              style={{ backgroundColor: preset.light.accent }}
-                            />
-                            <span
-                              className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10"
-                              style={{ backgroundColor: preset.light.luxury }}
-                            />
-                          </div>
+                        {/* Color Swatches */}
+                        <div className="flex gap-1.5 mb-3">
+                          <span
+                            className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 transition-transform group-hover:scale-110"
+                            style={{ backgroundColor: preset.light.accent }}
+                          />
+                          <span
+                            className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 transition-transform group-hover:scale-110"
+                            style={{ backgroundColor: preset.light.accentSoft }}
+                          />
+                          <span
+                            className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 transition-transform group-hover:scale-110"
+                            style={{ backgroundColor: preset.light.luxury }}
+                          />
                         </div>
+                        <p className="text-sm font-semibold text-stone-900 dark:text-stone-50 mb-0.5">
+                          {preset.label}
+                        </p>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed">
+                          {preset.description}
+                        </p>
+                        {/* Selected Indicator */}
+                        {selected && (
+                          <div className="absolute top-2 right-2">
+                            <svg className="h-5 w-5 text-[color:var(--ds-accent)]" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </button>
                     );
                   })}
+                  {/* Custom Theme Option */}
                   <button
                     type="button"
                     onClick={() => setThemePreset('custom')}
-                    className={`w-full text-left p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    className={`group relative text-left p-4 rounded-2xl border-2 border-dashed transition-all duration-300 ${
                       themePreset === 'custom'
-                        ? 'border-[color:var(--ds-accent)] bg-[color:var(--ds-accent-5)] shadow-md'
-                        : 'border-stone-200 dark:border-neutral-700 hover:border-[color:var(--ds-accent-30)]'
+                        ? 'border-[color:var(--ds-accent)] bg-[color:var(--ds-accent-5)] shadow-lg scale-[1.02]'
+                        : 'border-stone-300 dark:border-neutral-600 hover:border-[color:var(--ds-accent-30)] hover:shadow-md'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-base font-semibold text-stone-900 dark:text-stone-50">Custom</p>
-                        <p className="text-xs text-stone-500 dark:text-stone-400">Use a custom accent color</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 bg-[color:var(--ds-accent)]" />
-                        <span className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 bg-[color:var(--ds-luxury)]" />
-                      </div>
+                    <div className="flex gap-1.5 mb-3">
+                      <span className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500" />
+                      <span className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 flex items-center justify-center bg-stone-100 dark:bg-neutral-700">
+                        <svg className="h-3 w-3 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </span>
                     </div>
+                    <p className="text-sm font-semibold text-stone-900 dark:text-stone-50 mb-0.5">Custom</p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed">自定义专属颜色</p>
+                    {themePreset === 'custom' && (
+                      <div className="absolute top-2 right-2">
+                        <svg className="h-5 w-5 text-[color:var(--ds-accent)]" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
                   </button>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
-                  自定义主色 (仅 Custom 主题)
-                </label>
-                <p className="text-sm text-stone-600 dark:text-stone-400 mb-3 leading-relaxed">
-                  仅在 Custom 主题下生效，留空则使用默认主色
-                </p>
-                <div className={`flex flex-col gap-3 sm:flex-row sm:items-center ${themePreset === 'custom' ? '' : 'opacity-50'}`}>
-                  <label htmlFor="theme-color-picker" className="sr-only">选择主题色</label>
-                  <input
-                    id="theme-color-picker"
-                    type="color"
-                    value={themeColor || '#e63946'}
-                    onChange={(e) => setThemeColor(e.target.value)}
-                    title="选择主题色"
-                    className="h-12 w-24 rounded-xl border-2 border-stone-200 dark:border-neutral-700 cursor-pointer"
-                    disabled={themePreset !== 'custom'}
-                  />
-                  <label htmlFor="theme-color-text" className="sr-only">输入主题色代码</label>
-                  <input
-                    id="theme-color-text"
-                    type="text"
-                    value={themeColor}
-                    onChange={(e) => setThemeColor(e.target.value)}
-                    placeholder="#e63946"
-                    className="flex-1 px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
-                    disabled={themePreset !== 'custom'}
-                  />
-                  {themeColor && (
-                    <Button
-                      type="button"
-                      onClick={() => setThemeColor('')}
-                      variant="secondary"
-                      size="sm"
-                      disabled={themePreset !== 'custom'}
-                    >
-                      清除
-                    </Button>
-                  )}
+              {/* Custom Color Picker */}
+              {themePreset === 'custom' && (
+                <div className="p-5 rounded-2xl bg-stone-50 dark:bg-neutral-800/50 ring-1 ring-stone-200/50 dark:ring-neutral-700/50 animate-fade-in-200">
+                  <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-3">
+                    自定义主色
+                  </label>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <label htmlFor="theme-color-picker" className="sr-only">选择主题色</label>
+                    <input
+                      id="theme-color-picker"
+                      type="color"
+                      value={themeColor || '#e63946'}
+                      onChange={(e) => setThemeColor(e.target.value)}
+                      title="选择主题色"
+                      className="h-12 w-20 rounded-xl border-2 border-stone-200 dark:border-neutral-700 cursor-pointer"
+                    />
+                    <label htmlFor="theme-color-text" className="sr-only">输入主题色代码</label>
+                    <input
+                      id="theme-color-text"
+                      type="text"
+                      value={themeColor || '#e63946'}
+                      onChange={(e) => setThemeColor(e.target.value)}
+                      placeholder="#e63946"
+                      className="flex-1 px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300 font-mono"
+                    />
+                    {themeColor && (
+                      <Button
+                        type="button"
+                        onClick={() => setThemeColor('')}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        重置
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-5 border-2 border-stone-200 dark:border-neutral-700 rounded-2xl">
-                <div>
-                  <p className="font-medium text-stone-900 dark:text-stone-50">自动主题色</p>
-                  <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
-                    从封面图自动提取主题色
-                  </p>
-                </div>
-                <div className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">已启用</div>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-5 border-2 border-stone-200 dark:border-neutral-700 rounded-2xl">
-                <div>
-                  <p className="font-medium text-stone-900 dark:text-stone-50">深浅色模式</p>
-                  <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
-                    跟随系统设置 + 手动切换
-                  </p>
-                </div>
-                <div className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">已启用</div>
+              <div className="flex gap-3 pt-2">
+                <Button
+                  onClick={handleSave}
+                  variant="primary"
+                  isLoading={isSaving}
+                >
+                  保存主题
+                </Button>
               </div>
             </div>
           </div>
