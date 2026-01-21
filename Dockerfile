@@ -44,33 +44,26 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
-# Copy Prisma CLI and seed script dependencies
-# Include all Prisma-related modules and their transitive dependencies
+# Copy Prisma client (generated)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Copy seed script dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 
-# Copy Prisma transitive dependencies (required by @prisma/config and others)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/fast-check ./node_modules/fast-check
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pure-rand ./node_modules/pure-rand
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_modules/effect
-
 # Copy package.json for npm commands
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-# Copy .bin directory for npx and npm commands
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
+# Install runtime dependencies needed by Prisma on Alpine
+RUN apk add --no-cache openssl libc6-compat
+
+# Install Prisma CLI with all dependencies (needed for migrations at runtime)
+RUN npm install prisma@6.17.0 --save-dev --ignore-scripts && \
+    chown -R nextjs:nodejs ./node_modules
 
 # Create uploads directory structure for public/private separation
 RUN mkdir -p ./uploads/original ./public/uploads ./private/uploads && \
     chown -R nextjs:nodejs ./uploads ./public/uploads ./private/uploads
-
-# Install runtime dependencies needed by Prisma on Alpine
-USER root
-RUN apk add --no-cache openssl libc6-compat
 
 USER nextjs
 
