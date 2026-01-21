@@ -5,6 +5,7 @@
 - `SMOKE_BASE_URL=http://localhost:3000 npm run smoke`
 - Provide admin credentials to include auth checks:
   - `SMOKE_ADMIN_EMAIL=... SMOKE_ADMIN_PASSWORD=... npm run smoke`
+- The smoke test uploads a generated 1x1 PNG and deletes it afterward.
 
 ## Public Site
 - `/` hero loads, theme colors match settings.

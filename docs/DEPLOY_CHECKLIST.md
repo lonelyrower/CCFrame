@@ -13,6 +13,7 @@
 2. `docker compose up -d`
 3. Check logs: `docker compose logs -f app`
 4. Run smoke tests: `SMOKE_BASE_URL=https://your-domain npm run smoke`
+   - To include upload checks: set `SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD`.
 
 ## Manual Deploy
 1. `npm ci`
@@ -22,6 +23,7 @@
 5. First deploy only: `node scripts/seed-admin.js`
 6. `npm run start`
 7. Run smoke tests: `SMOKE_BASE_URL=https://your-domain npm run smoke`
+   - To include upload checks: set `SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD`.
 
 ## Post-deploy
 - Verify admin login and public pages load.

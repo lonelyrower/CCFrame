@@ -1,6 +1,9 @@
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
 const adminEmail = process.env.SMOKE_ADMIN_EMAIL || process.env.ADMIN_EMAIL || '';
 const adminPassword = process.env.SMOKE_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || '';
+const smokeTag = `smoke-${Date.now()}`;
+const tinyPngBase64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO0n1N8AAAAASUVORK5CYII=';
 
 function url(pathname) {
   return new URL(pathname, baseUrl).toString();
@@ -52,6 +55,37 @@ async function login() {
     throw new Error('Missing session cookie on login');
   }
   return cookie.split(';')[0];
+}
+
+async function uploadImage(authHeaders) {
+  const buffer = Buffer.from(tinyPngBase64, 'base64');
+  const blob = new Blob([buffer], { type: 'image/png' });
+  const formData = new FormData();
+  formData.append('file', blob, 'smoke.png');
+  formData.append('title', `smoke-${smokeTag}`);
+  formData.append('tags', JSON.stringify([smokeTag]));
+  formData.append('isPublic', 'true');
+  formData.append('skipDuplicateCheck', 'true');
+
+  const res = await fetch(url('/api/upload/local'), {
+    method: 'POST',
+    headers: authHeaders,
+    body: formData,
+  });
+  await expectStatus(res, 200, '/api/upload/local');
+  const data = await res.json();
+  if (!data?.photo?.id) {
+    throw new Error('Upload missing photo id');
+  }
+  return data.photo.id;
+}
+
+async function deleteImage(photoId, authHeaders) {
+  const res = await fetch(url(`/api/photos/${photoId}`), {
+    method: 'DELETE',
+    headers: authHeaders,
+  });
+  await expectStatus(res, 200, `/api/photos/${photoId}`);
 }
 
 async function runCheck(name, fn, results) {
@@ -122,6 +156,12 @@ async function main() {
 
       await runCheck('Photos auth', async () => {
         await fetchJson('/api/photos', { headers: authHeaders }, 200);
+      }, results);
+
+      await runCheck('Upload image', async () => {
+        const photoId = await uploadImage(authHeaders);
+        await fetchJson(`/api/photos/${photoId}`, { headers: authHeaders }, 200);
+        await deleteImage(photoId, authHeaders);
       }, results);
     }
   } else {
