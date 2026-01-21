@@ -1,31 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Noto_Sans_SC, Noto_Serif_SC, Playfair_Display } from 'next/font/google';
 import { PwaRegister } from '@/components/PwaRegister';
 import { prisma } from '@/lib/db';
 import { resolveThemeId, themeToCssVars } from '@/lib/themes';
-
-const sans = Noto_Sans_SC({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  weight: ['400', '500', '700'],
-  display: 'swap',
-});
-
-const serif = Noto_Serif_SC({
-  subsets: ['latin'],
-  variable: '--font-serif',
-  weight: ['400', '500', '700'],
-  display: 'swap',
-});
-
-// Ensure Playfair Display is bundled for Latin headlines fallback
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-playfair',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: 'CCFrame - Personal Photography Showcase',
@@ -45,6 +22,8 @@ export const metadata: Metadata = {
     apple: '/logo.svg',
   },
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({
   children,
@@ -74,7 +53,7 @@ export default async function RootLayout({
       data-theme={themeId}
       style={themeVars as React.CSSProperties}
     >
-      <body className={`${sans.variable} ${serif.variable} ${playfair.variable} antialiased`}>
+      <body className="antialiased">
         <PwaRegister />
         {children}
       </body>

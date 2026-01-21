@@ -1,3 +1,13 @@
+@import "@fontsource/noto-sans-sc/400.css";
+@import "@fontsource/noto-sans-sc/500.css";
+@import "@fontsource/noto-sans-sc/700.css";
+@import "@fontsource/noto-serif-sc/400.css";
+@import "@fontsource/noto-serif-sc/500.css";
+@import "@fontsource/noto-serif-sc/700.css";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/500.css";
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
 @import "tailwindcss";
 
 @theme {
@@ -76,6 +86,9 @@
 }
 
 :root {
+  --font-sans: "Noto Sans SC";
+  --font-serif: "Noto Serif SC";
+  --font-playfair: "Playfair Display";
   --ds-accent-rgb-light: 230 57 70;
   --ds-accent-soft-rgb-light: 255 107 122;
   --ds-accent-strong-rgb-light: 193 18 31;

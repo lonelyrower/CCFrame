@@ -1,4 +1,4 @@
-.PHONY: help install dev build start clean docker-up docker-down docker-logs migrate seed backup restore
+.PHONY: help install dev build start clean docker-up docker-down docker-logs migrate seed backup restore preflight smoke
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -58,6 +58,12 @@ type-check: ## Run TypeScript type check
 	npm run type-check
 
 test: lint type-check ## Run all tests
+
+preflight: ## Run deployment preflight checks
+	npm run preflight
+
+smoke: ## Run smoke tests (app must be running)
+	npm run smoke
 
 setup: install migrate seed ## Complete initial setup
 	@echo "✅ Setup complete! Run 'make dev' to start development server"

@@ -13,9 +13,14 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:deploy": "prisma migrate deploy",
-    "seed": "node scripts/seed-admin.js"
+    "seed": "node scripts/seed-admin.js",
+    "preflight": "node scripts/preflight.mjs",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "dependencies": {
+    "@fontsource/noto-sans-sc": "^5.2.9",
+    "@fontsource/noto-serif-sc": "^5.2.9",
+    "@fontsource/playfair-display": "^5.2.8",
     "@prisma/client": "^6.17.0",
     "bcryptjs": "^3.0.2",
     "effect": "^3.18.4",

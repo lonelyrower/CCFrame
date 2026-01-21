@@ -90,6 +90,8 @@ make migrate
 make migrate-deploy
 make seed
 make prisma-studio
+make preflight
+make smoke
 make docker-up
 make docker-down
 make docker-logs
@@ -134,6 +136,10 @@ Quick deploy scripts:
 - `bash deploy.sh` (Docker update after `git pull`)
 - `ccframe.sh` (one-click install/update on Linux; run `./ccframe.sh` for options)
 
+Checklists:
+- `docs/DEPLOY_CHECKLIST.md`
+- `docs/ACCEPTANCE_CHECKLIST.md`
+
 Manual build:
 
 ```bash
@@ -164,6 +170,7 @@ npm run start
 - TypeScript strict mode; ESLint + Prettier (2-space, single quotes, 100 cols)
 - Path aliases: `@/components`, `@/lib`
 - CI runs lint, type-check, and build
+- Fonts are bundled locally via `@fontsource`
 - Branch naming: `feature/*`, `fix/*`, `docs/*`, `refactor/*`
 - Conventional commits
 

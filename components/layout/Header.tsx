@@ -4,15 +4,41 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
+type TagSummary = {
+  id: string;
+  name: string;
+  count: number;
+};
+
+type SeriesSuggestion = {
+  id: string;
+  slug: string;
+  title: string;
+  photoCount: number;
+};
+
+type TagsResponse = {
+  tags?: TagSummary[];
+};
+
+type SeriesResponseItem = {
+  id: string;
+  slug: string;
+  title: string;
+  photoCount?: number | null;
+};
+
+type SeriesResponse = {
+  series?: SeriesResponseItem[];
+};
+
 export function Header() {
   const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
-  const [hotTags, setHotTags] = useState<{ id: string; name: string; count: number }[]>([]);
-  const [topSeries, setTopSeries] = useState<
-    { id: string; slug: string; title: string; photoCount: number }[]
-  >([]);
+  const [hotTags, setHotTags] = useState<TagSummary[]>([]);
+  const [topSeries, setTopSeries] = useState<SeriesSuggestion[]>([]);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -109,25 +135,25 @@ export function Header() {
         ]);
         if (!cancelled) {
           if (tagsRes.ok) {
-            const data = await tagsRes.json();
-            const top = (data.tags || []).slice(0, 12);
+            const data = (await tagsRes.json()) as TagsResponse;
+            const top = (data.tags ?? []).slice(0, 12);
             setHotTags(top);
           }
           if (seriesRes.ok) {
-            const data = await seriesRes.json();
-            const list = (data.series || [])
-              .sort((a: any, b: any) => (b.photoCount || 0) - (a.photoCount || 0))
+            const data = (await seriesRes.json()) as SeriesResponse;
+            const list = (data.series ?? [])
+              .sort((a, b) => (b.photoCount ?? 0) - (a.photoCount ?? 0))
               .slice(0, 6)
-              .map((s: any) => ({
-                id: s.id,
-                slug: s.slug,
-                title: s.title,
-                photoCount: s.photoCount,
+              .map((series) => ({
+                id: series.id,
+                slug: series.slug,
+                title: series.title,
+                photoCount: series.photoCount ?? 0,
               }));
             setTopSeries(list);
           }
         }
-      } catch (e) {
+      } catch {
         // silent fail
       } finally {
         if (!cancelled) setLoadingSuggest(false);
