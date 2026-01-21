@@ -20,6 +20,7 @@ export function AdminNav() {
     { href: '/admin/tags', label: '标签' },
     { href: '/admin/settings', label: '设置' },
     { href: '/admin/analytics', label: '统计' },
+    { href: '/admin/account', label: '账户' },
   ];
 
   return (
