@@ -189,9 +189,11 @@ function PhotoCard({
         </>
       )}
 
-      {/* Premium loading skeleton */}
+      {/* Premium loading skeleton with shimmer */}
       {!isLoaded && isVisible && (
-        <div className="absolute inset-0 bg-gradient-to-br from-stone-300 via-stone-200 to-stone-300 dark:from-neutral-700 dark:via-neutral-800 dark:to-neutral-700 animate-pulse" />
+        <div className="absolute inset-0 bg-stone-200 dark:bg-neutral-800 overflow-hidden">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_ease-in-out_infinite] shimmer-effect" />
+        </div>
       )}
     </div>
   );

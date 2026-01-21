@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Masonry } from '@/components/gallery/Masonry';
 import { Lightbox } from '@/components/gallery/Lightbox';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { PHOTOS_PER_PAGE } from '@/lib/constants';
 
 interface Photo {
@@ -101,6 +102,13 @@ export default function PhotosPage() {
     setSelectedIndex(index);
   };
 
+  const handleRefresh = async () => {
+    setPage(1);
+    setHasMore(true);
+    setPhotos([]);
+    await loadPhotos(1);
+  };
+
   const handlePrevious = () => {
     if (selectedIndex > 0) {
       const prevIndex = selectedIndex - 1;
@@ -118,17 +126,18 @@ export default function PhotosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Clean Style */}
-        <div className="mb-12 md:mb-16">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
-            全部作品
-          </h1>
-          <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light">
-            {photos.length > 0 ? `${photos.length} 张作品` : '加载中...'}
-          </p>
-        </div>
+    <PullToRefresh onRefresh={handleRefresh} disabled={isLoading}>
+      <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header - Clean Style */}
+          <div className="mb-12 md:mb-16">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
+              全部作品
+            </h1>
+            <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light">
+              {photos.length > 0 ? `${photos.length} 张作品` : '加载中...'}
+            </p>
+          </div>
 
         {/* Masonry Grid */}
         {photos.length > 0 ? (
@@ -174,16 +183,17 @@ export default function PhotosPage() {
           </div>
         )}
 
-        {!hasMore && photos.length > 0 && (
-          <div className="mt-12 text-center py-12">
-            <div className="inline-block">
-              <div className="w-16 h-px bg-stone-300 dark:bg-neutral-700 mb-4" />
-              <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400 font-light">
-                已加载全部作品
-              </p>
+          {!hasMore && photos.length > 0 && (
+            <div className="mt-12 text-center py-12">
+              <div className="inline-block">
+                <div className="w-16 h-px bg-stone-300 dark:bg-neutral-700 mb-4" />
+                <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400 font-light">
+                  已加载全部作品
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Lightbox */}
@@ -198,6 +208,6 @@ export default function PhotosPage() {
           onNext={selectedIndex < photos.length - 1 ? handleNext : undefined}
         />
       )}
-    </div>
+    </PullToRefresh>
   );
 }

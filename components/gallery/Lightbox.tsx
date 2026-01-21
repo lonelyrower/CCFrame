@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { WebGLImageViewer } from '@/components/media/WebGLImageViewer';
 
 interface Photo {
@@ -22,6 +22,69 @@ interface LightboxProps {
 
 export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) {
   const [showInfo, setShowInfo] = useState(true);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const SWIPE_THRESHOLD = 80;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current || isAnimating) return;
+
+    const deltaX = e.touches[0].clientX - touchStartRef.current.x;
+    const deltaY = e.touches[0].clientY - touchStartRef.current.y;
+
+    // Only handle horizontal swipes
+    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      // Apply resistance at edges
+      const canSwipeLeft = onPrevious && deltaX > 0;
+      const canSwipeRight = onNext && deltaX < 0;
+
+      if (canSwipeLeft || canSwipeRight) {
+        setSwipeOffset(deltaX * 0.5);
+      } else {
+        setSwipeOffset(deltaX * 0.15); // Resistance when can't swipe
+      }
+    }
+  }, [isAnimating, onPrevious, onNext]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStartRef.current) return;
+
+    if (Math.abs(swipeOffset) > SWIPE_THRESHOLD) {
+      setIsAnimating(true);
+      if (swipeOffset > 0 && onPrevious) {
+        setSwipeOffset(window.innerWidth);
+        setTimeout(() => {
+          onPrevious();
+          setSwipeOffset(0);
+          setIsAnimating(false);
+        }, 200);
+      } else if (swipeOffset < 0 && onNext) {
+        setSwipeOffset(-window.innerWidth);
+        setTimeout(() => {
+          onNext();
+          setSwipeOffset(0);
+          setIsAnimating(false);
+        }, 200);
+      } else {
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }
+    } else {
+      setSwipeOffset(0);
+    }
+
+    touchStartRef.current = null;
+  }, [swipeOffset, onPrevious, onNext]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -83,7 +146,17 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
         </button>
       )}
 
-      <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 animate-zoom-in-200">
+      <div
+        ref={containerRef}
+        className="relative mx-auto flex max-w-7xl flex-col items-center px-4 animate-zoom-in-200 touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform: `translateX(${swipeOffset}px)`,
+          transition: isAnimating ? 'transform 200ms ease-out' : swipeOffset === 0 ? 'transform 200ms ease-out' : 'none',
+        }}
+      >
         <div className="relative mx-auto h-[60vh] w-full min-h-[320px] overflow-hidden rounded-[1.8rem] md:h-[72vh]">
           <WebGLImageViewer
             fileKey={photo.fileKey}
@@ -92,6 +165,26 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
             className="h-full"
           />
         </div>
+
+        {/* Swipe indicators */}
+        {swipeOffset !== 0 && (
+          <>
+            {swipeOffset > 0 && onPrevious && (
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+            )}
+            {swipeOffset < 0 && onNext && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            )}
+          </>
+        )}
 
         {showInfo && (
           <div className="pointer-events-none relative -mt-6 w-full px-4 md:-mt-8">
