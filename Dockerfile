@@ -55,6 +55,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modu
 
 # Copy Prisma transitive dependencies (required by @prisma/config and others)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/fast-check ./node_modules/fast-check
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pure-rand ./node_modules/pure-rand
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_modules/effect
 
 # Copy package.json for npm commands
