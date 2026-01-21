@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 // GET all albums
 export async function GET(request: NextRequest) {
@@ -63,6 +64,12 @@ export async function GET(request: NextRequest) {
 // POST create album (admin only)
 export async function POST(request: NextRequest) {
   try {
+    // 双重认证检查（防御性编程）
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { title, summary, seriesId, coverId } = await request.json();
 
     const album = await prisma.album.create({

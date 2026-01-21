@@ -37,6 +37,9 @@ model Album {
   series    Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   photos    Photo[]
   createdAt DateTime @default(now())
+
+  @@index([seriesId, createdAt(sort: Desc)])  // Series album listing
+  @@index([createdAt(sort: Desc)])            // Default chronological listing
 }
 
 model Photo {
@@ -56,12 +59,19 @@ model Photo {
   album         Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
   tags          PhotoTag[]
   createdAt     DateTime   @default(now())
+
+  // Performance indexes for large datasets (10k+ photos)
+  @@index([isPublic, createdAt(sort: Desc)])  // Public gallery listing
+  @@index([albumId, createdAt(sort: Desc)])   // Album photo listing
+  @@index([createdAt(sort: Desc)])            // Default chronological listing
 }
 
 model Tag {
   id     String     @id @default(cuid())
   name   String     @unique
   photos PhotoTag[]
+
+  @@index([name])  // Fast tag lookup
 }
 
 model PhotoTag {

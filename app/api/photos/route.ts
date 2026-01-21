@@ -13,8 +13,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || String(PHOTOS_PER_PAGE));
+    // 分页参数验证与安全限制
+    const rawPage = parseInt(searchParams.get('page') || '1');
+    const rawLimit = parseInt(searchParams.get('limit') || String(PHOTOS_PER_PAGE));
+    const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+    const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? PHOTOS_PER_PAGE : Math.min(rawLimit, 100);  // 最大100条防止DoS
+
     const tag = searchParams.get('tag');
     const albumId = searchParams.get('albumId');
     const seriesId = searchParams.get('seriesId');

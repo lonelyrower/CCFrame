@@ -74,6 +74,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 双重认证检查（middleware已检查，此处为防御性编程）
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { title, isPublic, albumId, tags, dominantColor } = body;
     const { id } = await params;
@@ -144,79 +150,88 @@ export async function PUT(
       if (!existsSync(newDir)) await mkdir(newDir, { recursive: true });
       if (!existsSync(newThumbDir)) await mkdir(newThumbDir, { recursive: true });
 
-      // Move files
+      // Move files - 如果失败则回滚，不更新数据库
       try {
         if (existsSync(oldPath)) await rename(oldPath, newPath);
         if (existsSync(oldThumbPath)) await rename(oldThumbPath, newThumbPath);
         updateData.fileKey = newFileKey;
       } catch (error) {
         console.error('Error moving files:', error);
-        // Continue with update even if file move fails
+        // 文件移动失败时，尝试回滚已移动的文件
+        try {
+          if (existsSync(newPath)) await rename(newPath, oldPath);
+        } catch { /* 回滚失败，记录日志 */ }
+        return NextResponse.json(
+          { error: 'Failed to move files, visibility change aborted' },
+          { status: 500 }
+        );
       }
     }
 
-    const _photo = await prisma.photo.update({
-      where: { id },
-      data: updateData,
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
-    });
-
-    // Update tags if provided
-    if (tags && Array.isArray(tags)) {
-      // Remove existing tags
-      await prisma.photoTag.deleteMany({
-        where: { photoId: id },
+    // 使用事务确保标签更新的原子性
+    const updatedPhoto = await prisma.$transaction(async (tx) => {
+      // 更新照片基本信息
+      await tx.photo.update({
+        where: { id },
+        data: updateData,
       });
 
-      // Add new tags
-      if (tags.length > 0) {
-        const tagRecords = await Promise.all(
-          tags.map((tagName: string) =>
-            prisma.tag.upsert({
-              where: { name: tagName },
-              update: {},
-              create: { name: tagName },
-            })
-          )
-        );
-
-        await prisma.photoTag.createMany({
-          data: tagRecords.map((tag: { id: string }) => ({
-            photoId: id,
-            tagId: tag.id,
-          })),
+      // Update tags if provided
+      if (tags && Array.isArray(tags)) {
+        // Remove existing tags
+        await tx.photoTag.deleteMany({
+          where: { photoId: id },
         });
-      }
-    }
 
-    // Fetch updated photo with tags
-    const updatedPhoto = await prisma.photo.findUnique({
-      where: { id },
-      include: {
-        tags: {
-          include: {
-            tag: true,
+        // Add new tags (batch upsert for performance)
+        if (tags.length > 0) {
+          // 批量处理标签
+          const tagRecords = await Promise.all(
+            tags.map((tagName: string) =>
+              tx.tag.upsert({
+                where: { name: tagName },
+                update: {},
+                create: { name: tagName },
+              })
+            )
+          );
+
+          await tx.photoTag.createMany({
+            data: tagRecords.map((tag: { id: string }) => ({
+              photoId: id,
+              tagId: tag.id,
+            })),
+          });
+        }
+      }
+
+      // Fetch updated photo with tags
+      return tx.photo.findUnique({
+        where: { id },
+        include: {
+          tags: {
+            include: {
+              tag: true,
+            },
           },
+          album: true,
         },
-        album: true,
-      },
+      });
     });
+
+    if (!updatedPhoto) {
+      return NextResponse.json({ error: 'Photo not found after update' }, { status: 404 });
+    }
 
     return NextResponse.json({
       message: 'Photo updated successfully',
       photo: {
-        id: updatedPhoto!.id,
-        title: updatedPhoto!.title,
-        fileKey: updatedPhoto!.fileKey,
-        isPublic: updatedPhoto!.isPublic,
-        tags: updatedPhoto!.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
-        album: updatedPhoto!.album,
+        id: updatedPhoto.id,
+        title: updatedPhoto.title,
+        fileKey: updatedPhoto.fileKey,
+        isPublic: updatedPhoto.isPublic,
+        tags: updatedPhoto.tags.map((pt: { tag: { name: string } }) => pt.tag.name),
+        album: updatedPhoto.album,
       },
     });
   } catch (error) {
@@ -234,6 +249,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 双重认证检查
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     // Get photo to delete files
     const photo = await prisma.photo.findUnique({

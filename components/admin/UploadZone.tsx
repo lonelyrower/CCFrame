@@ -88,22 +88,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    addFiles(droppedFiles);
-  }, []);
-
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      addFiles(selectedFiles);
-    }
-  }, []);
-
-  const addFiles = (newFiles: File[]) => {
+  // 将addFiles提升为useCallback以避免依赖问题
+  const addFiles = useCallback((newFiles: File[]) => {
     const uploadFiles: UploadFile[] = newFiles
       .filter((file) => file.type.startsWith('image/'))
       .map((file) => ({
@@ -114,7 +100,22 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       }));
 
     setFiles((prev) => [...prev, ...uploadFiles]);
-  };
+  }, []);
+
+  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    addFiles(droppedFiles);
+  }, [addFiles]);
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      addFiles(selectedFiles);
+    }
+  }, [addFiles]);
 
   const uploadFile = async (fileToUpload: UploadFile, retryCount = 0): Promise<void> => {
     const MAX_RETRIES = 2;
