@@ -1,38 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { PHOTOS_PER_PAGE } from '@/lib/constants';
 
-// GET single album
+// GET single album with paginated photos
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { searchParams } = new URL(request.url);
+
+    // 分页参数
+    const rawPage = parseInt(searchParams.get('page') || '1');
+    const rawLimit = parseInt(searchParams.get('limit') || String(PHOTOS_PER_PAGE));
+    const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+    const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? PHOTOS_PER_PAGE : Math.min(rawLimit, 100);
+
     // Check if user is authenticated (admin)
     const session = await getSession();
     const isAdmin = Boolean(session);
     const { id } = await params;
 
-    const album = await prisma.album.findUnique({
-      where: { id },
-      include: {
-        series: true,
-        photos: {
-          // Only filter by isPublic for non-admin users
-          where: isAdmin ? {} : { isPublic: true },
-          include: {
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
+    // 分别查询专辑信息和照片（支持分页）
+    const [album, photoCount] = await Promise.all([
+      prisma.album.findUnique({
+        where: { id },
+        include: {
+          series: true,
         },
-      },
-    });
+      }),
+      prisma.photo.count({
+        where: {
+          albumId: id,
+          ...(isAdmin ? {} : { isPublic: true }),
+        },
+      }),
+    ]);
 
     if (!album) {
       return NextResponse.json(
@@ -41,13 +45,39 @@ export async function GET(
       );
     }
 
+    // 分页查询照片
+    const photos = await prisma.photo.findMany({
+      where: {
+        albumId: id,
+        ...(isAdmin ? {} : { isPublic: true }),
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
     return NextResponse.json({
       album: {
         ...album,
-        photos: album.photos.map((photo) => ({
+        photos: photos.map((photo) => ({
           ...photo,
           tags: photo.tags.map((pt) => pt.tag.name),
         })),
+      },
+      pagination: {
+        page,
+        limit,
+        total: photoCount,
+        totalPages: Math.ceil(photoCount / limit),
       },
     });
   } catch (error) {

@@ -18,7 +18,7 @@ interface Photo {
 
 export default function PhotosPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [page, setPage] = useState(1);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
@@ -27,14 +27,21 @@ export default function PhotosPage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  const loadPhotos = useCallback(async (pageNum: number) => {
+  // 使用游标分页加载照片（O(1) 性能）
+  const loadPhotos = useCallback(async (cursor?: string | null, isRefresh = false) => {
     if (isLoading) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/photos?isPublic=true&page=${pageNum}&limit=${PHOTOS_PER_PAGE}`
-      );
+      const params = new URLSearchParams({
+        isPublic: 'true',
+        limit: String(PHOTOS_PER_PAGE),
+      });
+      if (cursor) {
+        params.set('cursor', cursor);
+      }
+
+      const response = await fetch(`/api/photos?${params}`);
 
       if (!response.ok) {
         console.error('Failed to fetch photos:', response.status);
@@ -49,8 +56,9 @@ export default function PhotosPage() {
         return;
       }
 
-      setPhotos((prev) => (pageNum === 1 ? data.photos : [...prev, ...data.photos]));
-      setHasMore(data.pagination?.page < data.pagination?.totalPages);
+      setPhotos((prev) => (isRefresh ? data.photos : [...prev, ...data.photos]));
+      setNextCursor(data.pagination?.nextCursor || null);
+      setHasMore(data.pagination?.hasMore ?? false);
     } catch (error) {
       console.error('Error loading photos:', error);
       setHasMore(false);
@@ -59,11 +67,13 @@ export default function PhotosPage() {
     }
   }, [isLoading]);
 
+  // 初始加载
   useEffect(() => {
-    loadPhotos(1);
+    loadPhotos(null, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 无限滚动观察器
   useEffect(() => {
     if (observerRef.current) {
       observerRef.current.disconnect();
@@ -71,8 +81,8 @@ export default function PhotosPage() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          setPage((prev) => prev + 1);
+        if (entries[0].isIntersecting && hasMore && !isLoading && nextCursor) {
+          loadPhotos(nextCursor);
         }
       },
       { threshold: 0.5 }
@@ -87,14 +97,7 @@ export default function PhotosPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, isLoading]);
-
-  useEffect(() => {
-    if (page > 1) {
-      loadPhotos(page);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [hasMore, isLoading, nextCursor, loadPhotos]);
 
   const handlePhotoClick = (photo: Photo) => {
     const index = photos.findIndex((p) => p.id === photo.id);
@@ -103,10 +106,10 @@ export default function PhotosPage() {
   };
 
   const handleRefresh = async () => {
-    setPage(1);
+    setNextCursor(null);
     setHasMore(true);
     setPhotos([]);
-    await loadPhotos(1);
+    await loadPhotos(null, true);
   };
 
   const handlePrevious = () => {
