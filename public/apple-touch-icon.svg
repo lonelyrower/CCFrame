@@ -1,0 +1,50 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentGradientA" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e63946"/>
+      <stop offset="100%" style="stop-color:#ff6b7a"/>
+    </linearGradient>
+    <linearGradient id="goldGradientA" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37"/>
+      <stop offset="100%" style="stop-color:#f4d03f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background with rounded corners (iOS will clip) -->
+  <rect width="180" height="180" fill="#fafaf9"/>
+
+  <!-- Outer lens ring -->
+  <circle cx="90" cy="90" r="50" stroke="url(#accentGradientA)" stroke-width="5" fill="none"/>
+
+  <!-- Inner lens ring -->
+  <circle cx="90" cy="90" r="36" stroke="url(#goldGradientA)" stroke-width="2.5" fill="none" opacity="0.9"/>
+
+  <!-- Aperture pattern -->
+  <g opacity="0.2">
+    <path d="M90 54 L104 90 L90 126 L76 90 Z" fill="url(#accentGradientA)"/>
+    <path d="M54 90 L90 76 L126 90 L90 104 Z" fill="url(#accentGradientA)"/>
+  </g>
+
+  <!-- Inner circle -->
+  <circle cx="90" cy="90" r="22" fill="url(#accentGradientA)" opacity="0.1"/>
+
+  <!-- Center focus point -->
+  <circle cx="90" cy="90" r="6" fill="url(#accentGradientA)"/>
+  <circle cx="90" cy="90" r="2" fill="#fafaf9"/>
+
+  <!-- Frame corners -->
+  <g stroke="#1a1a1a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M26 26 L26 42 M26 26 L42 26"/>
+    <path d="M154 26 L154 42 M154 26 L138 26"/>
+    <path d="M26 154 L26 138 M26 154 L42 154"/>
+    <path d="M154 154 L154 138 M154 154 L138 154"/>
+  </g>
+
+  <!-- Corner accents -->
+  <g fill="url(#accentGradientA)" opacity="0.6">
+    <circle cx="26" cy="26" r="2.5"/>
+    <circle cx="154" cy="26" r="2.5"/>
+    <circle cx="26" cy="154" r="2.5"/>
+    <circle cx="154" cy="154" r="2.5"/>
+  </g>
+</svg>

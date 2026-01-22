@@ -1,22 +1,59 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Camera lens outer ring -->
-  <circle cx="32" cy="32" r="20" stroke="#e63946" stroke-width="2.5" fill="none"/>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for premium feel -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e63946"/>
+      <stop offset="100%" style="stop-color:#ff6b7a"/>
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37"/>
+      <stop offset="100%" style="stop-color:#f4d03f"/>
+    </linearGradient>
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
 
-  <!-- Camera lens inner elements -->
-  <circle cx="32" cy="32" r="14" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.8"/>
-  <circle cx="32" cy="32" r="8" fill="#e63946" opacity="0.15"/>
+  <!-- Background circle (optional for maskable) -->
+  <circle cx="256" cy="256" r="240" fill="#fafaf9"/>
 
-  <!-- Aperture blades effect -->
-  <path d="M32 24 L38 32 L32 40 L26 32 Z" fill="#e63946" opacity="0.3"/>
+  <!-- Outer lens ring - premium thick stroke -->
+  <circle cx="256" cy="256" r="140" stroke="url(#accentGradient)" stroke-width="12" fill="none" filter="url(#shadow)"/>
 
-  <!-- Frame corners (top-left and bottom-right) -->
-  <path d="M12 12 L12 20 M12 12 L20 12" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M52 52 L52 44 M52 52 L44 52" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Inner lens ring - gold accent -->
+  <circle cx="256" cy="256" r="100" stroke="url(#goldGradient)" stroke-width="6" fill="none" opacity="0.9"/>
 
-  <!-- Frame corners (top-right and bottom-left) -->
-  <path d="M52 12 L52 20 M52 12 L44 12" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M12 52 L12 44 M12 52 L20 52" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Aperture blades - elegant geometric pattern -->
+  <g opacity="0.2">
+    <path d="M256 156 L296 256 L256 356 L216 256 Z" fill="url(#accentGradient)"/>
+    <path d="M156 256 L256 216 L356 256 L256 296 Z" fill="url(#accentGradient)"/>
+  </g>
 
-  <!-- Center dot (focus point) -->
-  <circle cx="32" cy="32" r="2" fill="#e63946"/>
+  <!-- Inner circle - subtle fill -->
+  <circle cx="256" cy="256" r="60" fill="url(#accentGradient)" opacity="0.1"/>
+
+  <!-- Center focus point -->
+  <circle cx="256" cy="256" r="16" fill="url(#accentGradient)"/>
+  <circle cx="256" cy="256" r="6" fill="#fafaf9"/>
+
+  <!-- Frame corners - refined photographer's viewfinder -->
+  <g stroke="#1a1a1a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top-left -->
+    <path d="M76 76 L76 116 M76 76 L116 76"/>
+    <!-- Top-right -->
+    <path d="M436 76 L436 116 M436 76 L396 76"/>
+    <!-- Bottom-left -->
+    <path d="M76 436 L76 396 M76 436 L116 436"/>
+    <!-- Bottom-right -->
+    <path d="M436 436 L436 396 M436 436 L396 436"/>
+  </g>
+
+  <!-- Subtle corner accents -->
+  <g fill="url(#accentGradient)" opacity="0.6">
+    <circle cx="76" cy="76" r="6"/>
+    <circle cx="436" cy="76" r="6"/>
+    <circle cx="76" cy="436" r="6"/>
+    <circle cx="436" cy="436" r="6"/>
+  </g>
 </svg>

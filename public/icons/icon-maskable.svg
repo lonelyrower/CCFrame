@@ -1,0 +1,51 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentGradientM" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e63946"/>
+      <stop offset="100%" style="stop-color:#ff6b7a"/>
+    </linearGradient>
+    <linearGradient id="goldGradientM" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37"/>
+      <stop offset="100%" style="stop-color:#f4d03f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full background for maskable (will be cropped) -->
+  <rect width="512" height="512" fill="#fafaf9"/>
+
+  <!-- Content in safe zone (center 80% = 409.6px, margins ~51px each side) -->
+  <!-- Outer lens ring -->
+  <circle cx="256" cy="256" r="120" stroke="url(#accentGradientM)" stroke-width="10" fill="none"/>
+
+  <!-- Inner lens ring -->
+  <circle cx="256" cy="256" r="85" stroke="url(#goldGradientM)" stroke-width="5" fill="none" opacity="0.9"/>
+
+  <!-- Aperture pattern -->
+  <g opacity="0.2">
+    <path d="M256 171 L290 256 L256 341 L222 256 Z" fill="url(#accentGradientM)"/>
+    <path d="M171 256 L256 222 L341 256 L256 290 Z" fill="url(#accentGradientM)"/>
+  </g>
+
+  <!-- Inner circle -->
+  <circle cx="256" cy="256" r="50" fill="url(#accentGradientM)" opacity="0.1"/>
+
+  <!-- Center focus point -->
+  <circle cx="256" cy="256" r="14" fill="url(#accentGradientM)"/>
+  <circle cx="256" cy="256" r="5" fill="#fafaf9"/>
+
+  <!-- Frame corners (within safe zone) -->
+  <g stroke="#1a1a1a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M106 106 L106 140 M106 106 L140 106"/>
+    <path d="M406 106 L406 140 M406 106 L372 106"/>
+    <path d="M106 406 L106 372 M106 406 L140 406"/>
+    <path d="M406 406 L406 372 M406 406 L372 406"/>
+  </g>
+
+  <!-- Corner accents -->
+  <g fill="url(#accentGradientM)" opacity="0.6">
+    <circle cx="106" cy="106" r="5"/>
+    <circle cx="406" cy="106" r="5"/>
+    <circle cx="106" cy="406" r="5"/>
+    <circle cx="406" cy="406" r="5"/>
+  </g>
+</svg>

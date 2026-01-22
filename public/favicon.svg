@@ -1,13 +1,29 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Simplified camera lens for favicon -->
-  <circle cx="16" cy="16" r="10" stroke="#e63946" stroke-width="2" fill="none"/>
-  <circle cx="16" cy="16" r="7" stroke="#d4af37" stroke-width="1.5" fill="none"/>
-  <circle cx="16" cy="16" r="4" fill="#e63946" opacity="0.2"/>
+  <defs>
+    <linearGradient id="accentF" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e63946"/>
+      <stop offset="100%" style="stop-color:#ff6b7a"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Frame corners -->
-  <path d="M4 4 L4 8 M4 4 L8 4" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round"/>
-  <path d="M28 28 L28 24 M28 28 L24 28" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round"/>
+  <!-- Outer lens ring with gradient -->
+  <circle cx="16" cy="16" r="9" stroke="url(#accentF)" stroke-width="2" fill="none"/>
 
-  <!-- Center point -->
-  <circle cx="16" cy="16" r="1.5" fill="#e63946"/>
+  <!-- Inner lens ring - gold -->
+  <circle cx="16" cy="16" r="6" stroke="#d4af37" stroke-width="1" fill="none" opacity="0.9"/>
+
+  <!-- Aperture hint -->
+  <circle cx="16" cy="16" r="3.5" fill="url(#accentF)" opacity="0.15"/>
+
+  <!-- Center focus point -->
+  <circle cx="16" cy="16" r="2" fill="url(#accentF)"/>
+  <circle cx="16" cy="16" r="0.8" fill="#fafaf9"/>
+
+  <!-- Frame corners - all four -->
+  <g stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round">
+    <path d="M4 4 L4 7.5 M4 4 L7.5 4"/>
+    <path d="M28 4 L28 7.5 M28 4 L24.5 4"/>
+    <path d="M4 28 L4 24.5 M4 28 L7.5 28"/>
+    <path d="M28 28 L28 24.5 M28 28 L24.5 28"/>
+  </g>
 </svg>

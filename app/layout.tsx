@@ -8,18 +8,23 @@ export const metadata: Metadata = {
   title: 'CCFrame - Personal Photography Showcase',
   description: 'Artistic photography portfolio with elegant design and fast loading',
   manifest: '/manifest.json',
-  themeColor: '#fafaf9',
+  themeColor: '#e63946',
   appleWebApp: {
     capable: true,
     title: 'CCFrame',
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
   },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/logo.svg', sizes: '64x64', type: 'image/svg+xml' }
+      { url: '/logo.svg', sizes: 'any', type: 'image/svg+xml' }
     ],
-    apple: '/logo.svg',
+    apple: [
+      { url: '/apple-touch-icon.svg', type: 'image/svg+xml' },
+    ],
+    other: [
+      { rel: 'mask-icon', url: '/logo.svg', color: '#e63946' },
+    ],
   },
 };
 
