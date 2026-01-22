@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { WebGLImageViewer } from '@/components/media/WebGLImageViewer';
+import {
+  CloseIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  InfoIcon,
+} from '@/components/ui/Icons';
 
 interface Photo {
   id: string;
@@ -117,9 +123,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
         className="absolute top-6 right-6 z-10 rounded-full bg-white/10 p-3 text-white transition-all duration-300 ease-out hover:scale-110 hover:bg-white/15 hover:text-white/90 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
         aria-label="关闭"
       >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <CloseIcon size={24} />
       </button>
 
       {onPrevious && (
@@ -128,9 +132,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
           className="absolute left-6 rounded-full bg-white/10 p-4 text-white transition-all duration-300 ease-out hover:scale-110 hover:bg-white/15 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
           aria-label="上一张"
         >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeftIcon size={24} />
         </button>
       )}
 
@@ -140,9 +142,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
           className="absolute right-6 rounded-full bg-white/10 p-4 text-white transition-all duration-300 ease-out hover:scale-110 hover:bg-white/15 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
           aria-label="下一张"
         >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRightIcon size={24} />
         </button>
       )}
 
@@ -170,17 +170,13 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
         {swipeOffset !== 0 && (
           <>
             {swipeOffset > 0 && onPrevious && (
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white">
+                <ChevronLeftIcon size={24} />
               </div>
             )}
             {swipeOffset < 0 && onNext && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white">
+                <ChevronRightIcon size={24} />
               </div>
             )}
           </>
@@ -240,9 +236,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
         className="absolute bottom-6 right-6 rounded-full bg-white/10 p-3 text-white/90 transition-all duration-300 ease-out hover:scale-110 hover:bg-white/15 hover:text-white active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
         aria-label="切换信息面板"
       >
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
-        </svg>
+        <InfoIcon size={20} filled={showInfo} />
       </button>
 
       <div className="absolute inset-0 -z-10" onClick={onClose} aria-label="关闭灯箱" />

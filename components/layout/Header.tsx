@@ -3,6 +3,16 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import {
+  SearchIcon,
+  SunIcon,
+  MoonIcon,
+  UserIcon,
+  LoginIcon,
+  MenuIcon,
+  CloseIcon,
+  LogoIcon,
+} from '@/components/ui/Icons';
 
 type TagSummary = {
   id: string;
@@ -180,19 +190,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo - Fashion Editorial Style */}
           <Link href="/" className="group flex items-center space-x-2.5">
-            <div className="relative w-9 h-9 md:w-10 md:h-10">
-              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-[color:var(--ds-accent)] group-hover:text-[color:var(--ds-accent-strong)] transition-colors duration-300"/>
-                <circle cx="32" cy="32" r="14" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7" className="text-[color:var(--ds-luxury)]"/>
-                <circle cx="32" cy="32" r="8" fill="currentColor" opacity="0.15" className="text-[color:var(--ds-accent)]"/>
-                <path d="M32 24 L38 32 L32 40 L26 32 Z" fill="currentColor" opacity="0.3" className="text-[color:var(--ds-accent)]"/>
-                <path d="M12 12 L12 20 M12 12 L20 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
-                <path d="M52 52 L52 44 M52 52 L44 52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
-                <path d="M52 12 L52 20 M52 12 L44 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
-                <path d="M12 52 L12 44 M12 52 L20 52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-stone-900 dark:text-stone-50"/>
-                <circle cx="32" cy="32" r="2" fill="currentColor" className="text-[color:var(--ds-accent)]"/>
-              </svg>
-            </div>
+            <LogoIcon size={40} className="w-9 h-9 md:w-10 md:h-10 group-hover:scale-105 transition-transform duration-300" />
             <span className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
               CCFrame
             </span>
@@ -239,28 +237,14 @@ export function Header() {
               className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
               aria-label="Search"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <SearchIcon size={20} />
             </button>
             <button
               onClick={toggleTheme}
               className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
               aria-label="Toggle theme"
             >
-              {isDark ? (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
-              )}
+              {isDark ? <SunIcon size={20} /> : <MoonIcon size={20} />}
             </button>
 
             {/* User Menu */}
@@ -275,9 +259,7 @@ export function Header() {
                   className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
                   aria-label="User menu"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+                  <UserIcon size={20} />
                 </button>
 
                 {showUserMenu && (
@@ -304,9 +286,7 @@ export function Header() {
                 className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
                 aria-label="Login"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
+                <LoginIcon size={20} />
               </Link>
             )}
             <button
@@ -316,15 +296,7 @@ export function Header() {
               aria-expanded={showMobileNav}
               aria-controls="mobile-nav"
             >
-              {showMobileNav ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
-                </svg>
-              )}
+              {showMobileNav ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
             </button>
           </div>
 

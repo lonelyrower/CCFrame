@@ -5,6 +5,7 @@ import { Masonry } from '@/components/gallery/Masonry';
 import { Lightbox } from '@/components/gallery/Lightbox';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { PHOTOS_PER_PAGE } from '@/lib/constants';
+import { EmptyPhotosIcon } from '@/components/ui/Icons';
 
 interface Photo {
   id: string;
@@ -151,14 +152,7 @@ export default function PhotosPage() {
               <div className="max-w-md mx-auto">
                 {/* Empty state icon */}
                 <div className="mb-8 flex justify-center">
-                  <div className="relative w-32 h-32 opacity-20">
-                    <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="64" cy="64" r="40" stroke="currentColor" strokeWidth="2" className="text-[color:var(--ds-accent)]"/>
-                      <circle cx="64" cy="64" r="28" stroke="currentColor" strokeWidth="1.5" className="text-[color:var(--ds-luxury)]"/>
-                      <path d="M24 24 L24 40 M24 24 L40 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-stone-400 dark:text-stone-600"/>
-                      <path d="M104 104 L104 88 M104 104 L88 104" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-stone-400 dark:text-stone-600"/>
-                    </svg>
-                  </div>
+                  <EmptyPhotosIcon size={128} className="opacity-20" />
                 </div>
 
                 <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
