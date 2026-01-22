@@ -25,25 +25,24 @@ export default function AccountPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
-    try {
-      const response = await fetch('/api/auth/profile');
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setEmail(data.user.email);
-      } else if (response.status === 401) {
-        router.push('/admin/login');
+    const loadProfile = async () => {
+      try {
+        const response = await fetch('/api/auth/profile');
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          setEmail(data.user.email);
+        } else if (response.status === 401) {
+          router.push('/admin/login');
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    loadProfile();
+  }, [router]);
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();

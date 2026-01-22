@@ -1,14 +1,21 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { PwaRegister } from '@/components/PwaRegister';
 import { prisma } from '@/lib/db';
 import { resolveThemeId, themeToCssVars } from '@/lib/themes';
 
+export const viewport: Viewport = {
+  themeColor: '#e63946',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
   title: 'CCFrame - Personal Photography Showcase',
   description: 'Artistic photography portfolio with elegant design and fast loading',
   manifest: '/manifest.json',
-  themeColor: '#e63946',
   appleWebApp: {
     capable: true,
     title: 'CCFrame',
