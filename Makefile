@@ -1,4 +1,4 @@
-.PHONY: help install dev build start clean docker-up docker-down docker-logs migrate seed backup restore preflight smoke
+.PHONY: help install dev build start clean docker-up docker-down docker-logs migrate seed backup restore preflight smoke test test-unit test-e2e test-coverage
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -57,7 +57,30 @@ lint: ## Run linter
 type-check: ## Run TypeScript type check
 	npm run type-check
 
-test: lint type-check ## Run all tests
+test: test-unit ## Run unit tests (alias)
+
+test-unit: ## Run unit tests with Vitest
+	npm run test:run
+
+test-watch: ## Run unit tests in watch mode
+	npm run test
+
+test-ui: ## Run unit tests with Vitest UI
+	npm run test:ui
+
+test-coverage: ## Run unit tests with coverage report
+	npm run test:coverage
+
+test-e2e: ## Run E2E tests with Playwright
+	npm run test:e2e
+
+test-e2e-ui: ## Run E2E tests with Playwright UI
+	npm run test:e2e:ui
+
+test-e2e-headed: ## Run E2E tests in headed mode
+	npm run test:e2e:headed
+
+test-all: lint type-check test-unit test-e2e ## Run all tests (lint, type-check, unit, e2e)
 
 preflight: ## Run deployment preflight checks
 	npm run preflight
@@ -67,3 +90,5 @@ smoke: ## Run smoke tests (app must be running)
 
 setup: install migrate seed ## Complete initial setup
 	@echo "✅ Setup complete! Run 'make dev' to start development server"
+
+ci: lint type-check test-unit ## Run CI checks (lint, type-check, unit tests)
