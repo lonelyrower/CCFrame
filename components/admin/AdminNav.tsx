@@ -33,8 +33,8 @@ export function AdminNav() {
               <span className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
                 CCFrame
               </span>
-              <span className="text-xs uppercase tracking-[0.15em] font-medium text-[color:var(--ds-accent)]">
-                Admin
+              <span className="text-xs tracking-[0.15em] font-medium text-[color:var(--ds-accent)]">
+                管理
               </span>
             </Link>
 

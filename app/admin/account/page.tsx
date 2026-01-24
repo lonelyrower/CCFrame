@@ -132,8 +132,8 @@ export default function AccountPage() {
         <div className="text-center py-20">
           <div className="inline-flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              Loading
+            <span className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">
+              加载中
             </span>
           </div>
         </div>
@@ -145,8 +145,8 @@ export default function AccountPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <div className="inline-block mb-3">
-          <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-            Account
+          <span className="text-xs tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
+            账户
           </span>
         </div>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">

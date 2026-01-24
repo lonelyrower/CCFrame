@@ -48,8 +48,8 @@ export default function AnalyticsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <div className="inline-block mb-3">
-            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-              Analytics
+            <span className="text-xs tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
+              统计
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
@@ -74,8 +74,8 @@ export default function AnalyticsPage() {
         <div className="text-center py-20">
           <div className="inline-flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              Loading
+            <span className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">
+              加载中
             </span>
           </div>
         </div>

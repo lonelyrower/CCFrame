@@ -21,19 +21,19 @@ export default function UploadPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
               <div className="inline-block mb-3">
-                <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-                  Upload
+                <span className="text-xs tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
+                  上传
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
-                Upload Photos
+                上传照片
               </h1>
               <p className="text-stone-600 dark:text-stone-400 font-light">
-                Batch upload photos with progress tracking and automatic retry
+                批量上传照片，支持进度跟踪和自动重试
               </p>
             </div>
             <Button onClick={() => router.push('/admin/library')} variant="secondary" className="w-full sm:w-auto">
-              Go to Library
+              前往照片库
             </Button>
           </div>
         </div>
@@ -46,14 +46,14 @@ export default function UploadPage() {
         {/* Instructions */}
         <div className="p-6 bg-gradient-to-br from-[var(--ds-accent-5)] to-[var(--ds-accent-soft-5)] dark:from-[var(--ds-accent-10)] dark:to-[var(--ds-accent-soft-10)] rounded-3xl ring-1 ring-[color:var(--ds-accent-10)]">
           <h3 className="font-medium text-[color:var(--ds-accent)] mb-3 text-lg tracking-wide">
-            Upload Tips
+            上传提示
           </h3>
           <ul className="text-sm text-stone-700 dark:text-stone-300 space-y-2 list-disc list-inside">
-            <li>Upload up to 4 files concurrently for faster processing</li>
-            <li>Failed uploads will automatically retry up to 2 times</li>
-            <li>Maximum file size: 50MB per image</li>
-            <li>Supported formats: JPEG, PNG, WebP, HEIC</li>
-            <li>Photos are set to public by default (you can change this later)</li>
+            <li>支持最多 4 个文件同时上传，加快处理速度</li>
+            <li>上传失败时会自动重试最多 2 次</li>
+            <li>单个文件最大 50MB</li>
+            <li>支持格式：JPEG、PNG、WebP、HEIC</li>
+            <li>照片默认设为公开（之后可以修改）</li>
           </ul>
         </div>
       </div>

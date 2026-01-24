@@ -85,8 +85,8 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <div className="inline-block mb-3">
-          <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-            Configuration
+          <span className="text-xs tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
+            配置
           </span>
         </div>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">网站设置</h1>
@@ -99,8 +99,8 @@ export default function SettingsPage() {
         <div className="text-center py-20">
           <div className="inline-flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              Loading
+            <span className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">
+              加载中
             </span>
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function SettingsPage() {
             <div className="space-y-6">
               {/* Theme Preview Card */}
               <div className="p-6 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-800 dark:to-neutral-900 ring-1 ring-stone-200/50 dark:ring-neutral-700/50">
-                <p className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">Preview</p>
+                <p className="text-xs tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">预览</p>
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-2">
                     <div className="h-10 w-10 rounded-full bg-[color:var(--ds-accent)] ring-2 ring-white dark:ring-neutral-900" />
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                         </svg>
                       </span>
                     </div>
-                    <p className="text-sm font-semibold text-stone-900 dark:text-stone-50 mb-0.5">Custom</p>
+                    <p className="text-sm font-semibold text-stone-900 dark:text-stone-50 mb-0.5">自定义</p>
                     <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed">自定义专属颜色</p>
                     {themePreset === 'custom' && (
                       <div className="absolute top-2 right-2">

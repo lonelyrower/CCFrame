@@ -87,7 +87,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
         <div className="p-8 border-b border-stone-200 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
-              Bulk Edit <span className="text-[color:var(--ds-accent)]">{selectedCount}</span> Photos
+              批量编辑 <span className="text-[color:var(--ds-accent)]">{selectedCount}</span> 张照片
             </h2>
             <button
               onClick={onClose}
@@ -113,7 +113,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                 className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[color:var(--ds-accent)] focus:ring-[color:var(--ds-accent-20)] focus:ring-2"
               />
               <label htmlFor="update-album" className="text-sm font-medium tracking-wide text-stone-900 dark:text-stone-50 cursor-pointer">
-                Update Album
+                更新相册
               </label>
             </div>
             {updateAlbum && (
@@ -122,7 +122,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                 onChange={(e) => setSelectedAlbumId(e.target.value)}
                 className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
               >
-                <option value="">No Album</option>
+                <option value="">不选择相册</option>
                 {albums.map((album) => (
                   <option key={album.id} value={album.id}>
                     {album.title}
@@ -143,7 +143,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                 className="w-4 h-4 rounded border-2 border-stone-300 dark:border-neutral-700 text-[color:var(--ds-accent)] focus:ring-[color:var(--ds-accent-20)] focus:ring-2"
               />
               <label htmlFor="update-tags" className="text-sm font-medium tracking-wide text-stone-900 dark:text-stone-50 cursor-pointer">
-                Update Tags
+                更新标签
               </label>
             </div>
             {updateTags && (
@@ -153,7 +153,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type tag and press Enter"
+                  placeholder="输入标签后按回车"
                   className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
                 <div className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                   ))}
                 </div>
                 <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
-                  Note: This will replace existing tags on selected photos
+                  注意：这将替换所选照片的现有标签
                 </p>
               </>
             )}
@@ -183,7 +183,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
         {/* Footer */}
         <div className="p-8 border-t border-stone-200 dark:border-neutral-800 flex justify-end gap-3">
           <Button onClick={onClose} variant="secondary" disabled={isLoading}>
-            Cancel
+            取消
           </Button>
           <Button
             onClick={handleSave}
@@ -191,7 +191,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
             isLoading={isLoading}
             disabled={isLoading || (!updateTags && !updateAlbum)}
           >
-            Save Changes
+            保存更改
           </Button>
         </div>
       </div>

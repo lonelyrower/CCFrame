@@ -81,7 +81,7 @@ export default function LibraryPage() {
   };
 
   const deletePhoto = async (photoId: string) => {
-    if (!confirm('Are you sure you want to delete this photo?')) return;
+    if (!confirm('确定要删除这张照片吗？')) return;
 
     try {
       await fetch(`/api/photos/${photoId}`, {
@@ -135,14 +135,14 @@ export default function LibraryPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
               <h1 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
-                Photo Library
+                照片库
               </h1>
               <p className="text-stone-600 dark:text-stone-400">
-                {photos.length} photos loaded
+                已加载 {photos.length} 张照片
               </p>
             </div>
             <Button onClick={() => router.push('/admin/upload')} variant="primary" className="w-full sm:w-auto">
-              Upload Photos
+              上传照片
             </Button>
           </div>
 
@@ -150,35 +150,35 @@ export default function LibraryPage() {
           {selectedPhotos.size > 0 && (
             <div className="flex items-center gap-3 p-5 bg-[color:var(--ds-accent-10)] rounded-2xl flex-wrap ring-1 ring-[color:var(--ds-accent-20)]">
               <span className="text-sm font-semibold text-[color:var(--ds-accent)]">
-                {selectedPhotos.size} selected
+                已选择 {selectedPhotos.size} 张
               </span>
               <Button
                 onClick={() => setShowBulkEdit(true)}
                 variant="secondary"
                 size="sm"
               >
-                Edit Tags/Album
+                编辑标签/相册
               </Button>
               <Button
                 onClick={() => batchTogglePublic(true)}
                 variant="secondary"
                 size="sm"
               >
-                Make Public
+                设为公开
               </Button>
               <Button
                 onClick={() => batchTogglePublic(false)}
                 variant="secondary"
                 size="sm"
               >
-                Make Private
+                设为私密
               </Button>
               <Button
                 onClick={() => setSelectedPhotos(new Set())}
                 variant="ghost"
                 size="sm"
               >
-                Clear
+                清除选择
               </Button>
             </div>
           )}
@@ -189,7 +189,7 @@ export default function LibraryPage() {
               onClick={selectAll}
               className="text-sm font-medium text-[color:var(--ds-accent)] hover:text-[color:var(--ds-accent-strong)] transition-colors"
             >
-              {selectedPhotos.size === photos.length ? 'Deselect All' : 'Select All'}
+              {selectedPhotos.size === photos.length ? '取消全选' : '全选'}
             </button>
           </div>
         </div>
@@ -199,14 +199,14 @@ export default function LibraryPage() {
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
               <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-              <p className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">Loading</p>
+              <p className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">加载中</p>
             </div>
           </div>
         ) : photos.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">No photos yet</p>
+            <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无照片</p>
             <Button onClick={() => router.push('/admin/upload')} variant="primary">
-              Upload Your First Photos
+              上传第一张照片
             </Button>
           </div>
         ) : (
@@ -232,7 +232,7 @@ export default function LibraryPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <p className="text-white text-sm font-medium truncate">
-                      {photo.title || 'Untitled'}
+                      {photo.title || '未命名'}
                     </p>
                     <div className="flex gap-2 mt-2">
                       {photo.tags.slice(0, 2).map((tag) => (
@@ -263,7 +263,7 @@ export default function LibraryPage() {
                       }
                     `}
                   >
-                    {photo.isPublic ? 'Public' : 'Private'}
+                    {photo.isPublic ? '公开' : '私密'}
                   </button>
                   <button
                     onClick={(e) => {
@@ -272,7 +272,7 @@ export default function LibraryPage() {
                     }}
                     className="px-3 py-1.5 bg-[color:var(--ds-accent-90)] text-white rounded-lg text-xs font-medium hover:bg-[color:var(--ds-accent-strong)] transition-all backdrop-blur-sm"
                   >
-                    Delete
+                    删除
                   </button>
                 </div>
 
@@ -309,17 +309,17 @@ export default function LibraryPage() {
               disabled={page === 1}
               variant="secondary"
             >
-              Previous
+              上一页
             </Button>
             <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
-              Page {page} of {totalPages}
+              第 {page} / {totalPages} 页
             </span>
             <Button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               variant="secondary"
             >
-              Next
+              下一页
             </Button>
           </div>
         )}

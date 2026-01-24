@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -32,9 +30,8 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Redirect to admin dashboard
-      router.push('/admin/library');
-      router.refresh();
+      // Redirect to admin dashboard - use window.location for full page refresh
+      window.location.href = '/admin/library';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -56,7 +53,7 @@ export default function LoginPage() {
           </h1>
           <div className="inline-block">
             <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-              Admin Portal
+              管理后台
             </span>
           </div>
         </div>
@@ -71,7 +68,7 @@ export default function LoginPage() {
             )}
 
             <Input
-              label="Email"
+              label="邮箱"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -82,11 +79,11 @@ export default function LoginPage() {
             />
 
             <Input
-              label="Password"
+              label="密码"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder="请输入密码"
               required
               disabled={isLoading}
               autoComplete="current-password"
@@ -99,14 +96,14 @@ export default function LoginPage() {
               className="w-full"
               isLoading={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? '登录中...' : '登录'}
             </Button>
           </form>
         </div>
 
         {/* Footer Note */}
-        <p className="mt-8 text-center text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
-          Protected Area - Authorized Access Only
+        <p className="mt-8 text-center text-xs tracking-widest text-stone-500 dark:text-stone-400">
+          受保护区域 - 仅授权用户可访问
         </p>
       </div>
     </div>

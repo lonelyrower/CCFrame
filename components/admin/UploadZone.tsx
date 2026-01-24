@@ -184,7 +184,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
       // Success
       const duplicateMessage = response.duplicate
-        ? response.message || 'Photo already exists in the library'
+        ? response.message || '照片已存在于库中'
         : undefined;
 
       setFiles((prev) =>
@@ -277,12 +277,12 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     <div className="space-y-6">
       {/* Upload Settings */}
       <div className="p-4 sm:p-6 bg-stone-50 dark:bg-neutral-950 rounded-2xl space-y-5 ring-1 ring-stone-200/50 dark:ring-neutral-800/50">
-        <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-50 tracking-tight">Upload Settings</h3>
+        <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-50 tracking-tight">上传设置</h3>
 
         {/* Album Selection */}
         <div>
           <label htmlFor="album-select" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
-            Album (Optional)
+            相册（可选）
           </label>
           <select
             id="album-select"
@@ -290,7 +290,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             onChange={(e) => setSelectedAlbumId(e.target.value)}
             className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
           >
-            <option value="">No Album</option>
+            <option value="">不选择相册</option>
             {albums.map((album) => (
               <option key={album.id} value={album.id}>
                 {album.title}
@@ -302,14 +302,14 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         {/* Tags */}
         <div>
           <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
-            Tags (Optional)
+            标签（可选）
           </label>
           <input
             type="text"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
-            placeholder="Type tag and press Enter"
+            placeholder="输入标签后按回车"
             className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
           />
           <div className="flex flex-wrap gap-2 mt-3">
@@ -345,9 +345,9 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       >
         <UploadIcon size={56} className="mx-auto text-stone-400 dark:text-neutral-500" />
         <p className="mt-5 text-base sm:text-lg text-stone-700 dark:text-stone-300 font-light">
-          Drag and drop images here, or{' '}
+          拖放图片到这里，或{' '}
           <label className="text-[color:var(--ds-accent)] hover:underline cursor-pointer font-medium">
-            browse
+            点击选择
             <input
               type="file"
               multiple
@@ -358,7 +358,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
           </label>
         </p>
         <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
-          Supports: JPG, PNG, WebP, HEIC (Max 50MB each)
+          支持格式：JPG、PNG、WebP、HEIC（单个最大 50MB）
         </p>
       </div>
 
@@ -367,11 +367,11 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
-              Files ({files.length}) <span className="text-[color:var(--ds-accent)]">/ {files.filter((f) => f.status === 'success').length} uploaded</span>
+              文件 ({files.length}) <span className="text-[color:var(--ds-accent)]">/ 已上传 {files.filter((f) => f.status === 'success').length}</span>
             </h3>
             <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
               <Button onClick={clearCompleted} variant="secondary" size="sm" className="flex-1 sm:flex-none">
-                Clear Completed
+                清除已完成
               </Button>
               <Button
                 onClick={startUpload}
@@ -381,7 +381,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 disabled={isUploading || files.every((f) => f.status === 'success')}
                 className="flex-1 sm:flex-none"
               >
-                {isUploading ? 'Uploading...' : 'Start Upload'}
+                {isUploading ? '上传中...' : '开始上传'}
               </Button>
             </div>
           </div>
@@ -423,10 +423,10 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
                 <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4">
                   <div className={`text-sm font-medium ${getStatusColor(file.status)}`}>
-                    {file.status === 'success' && 'Uploaded'}
-                    {file.status === 'error' && 'Failed'}
-                    {file.status === 'uploading' && 'Uploading...'}
-                    {file.status === 'pending' && 'Pending'}
+                    {file.status === 'success' && '已上传'}
+                    {file.status === 'error' && '失败'}
+                    {file.status === 'uploading' && '上传中...'}
+                    {file.status === 'pending' && '等待中'}
                   </div>
 
                   {file.status !== 'uploading' && (
