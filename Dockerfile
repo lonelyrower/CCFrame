@@ -24,6 +24,8 @@ RUN npx prisma generate
 # Build Next.js application
 # Use dummy DATABASE_URL to avoid hardcoding localhost during build
 ENV NEXT_TELEMETRY_DISABLED=1
+# Disable Cloudflare Image Resizing (requires Pro plan)
+ENV NEXT_PUBLIC_DISABLE_CF=true
 RUN npm run build
 
 # Production image, copy all the files and run next
