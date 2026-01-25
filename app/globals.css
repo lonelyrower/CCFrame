@@ -10,6 +10,9 @@
 @import "@fontsource/playfair-display/700.css";
 @import "tailwindcss";
 
+/* Enable dark mode via media query (prefers-color-scheme) */
+@variant dark (@media (prefers-color-scheme: dark));
+
 @theme {
   /* Fashion-forward color palette */
   --color-background: var(--background);
