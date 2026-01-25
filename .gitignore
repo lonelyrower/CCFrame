@@ -19,11 +19,13 @@ build/
 # Production
 dist/
 
-# Debug
+# Debug & Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+job.log
 
 # Environment Variables
 .env
