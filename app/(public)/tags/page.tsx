@@ -12,6 +12,7 @@ interface Tag {
 export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   useEffect(() => {
     loadTags();
@@ -32,6 +33,7 @@ export default function TagsPage() {
       console.error('Error loading tags:', error);
     } finally {
       setIsLoading(false);
+      setTimeout(() => setIsPageLoaded(true), 100);
     }
   };
 
@@ -47,22 +49,28 @@ export default function TagsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
+    <div className="min-h-[100dvh] bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Clean Style */}
-        <div className="mb-16 text-center">
+        {/* Header with animation */}
+        <div className={`mb-16 text-center transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">
+            Discover
+          </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
             标签
           </h1>
-          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400">
-            按主题分类浏览照片
+          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400 max-w-xl mx-auto">
+            按主题分类探索照片，发现感兴趣的内容
           </p>
         </div>
 
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
+                <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
+              </div>
               <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
                 Loading
               </span>
@@ -71,7 +79,6 @@ export default function TagsPage() {
         ) : tags.length === 0 ? (
           <div className="text-center py-32">
             <div className="max-w-md mx-auto">
-              {/* Empty state icon */}
               <div className="mb-8 flex justify-center">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--ds-luxury)]/10 to-[var(--ds-luxury-5)] dark:from-[var(--ds-luxury)]/15 dark:to-[var(--ds-luxury-5)] flex items-center justify-center">
                   <svg className="w-10 h-10 text-[color:var(--ds-luxury)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -80,7 +87,6 @@ export default function TagsPage() {
                   </svg>
                 </div>
               </div>
-
               <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
                 暂无标签
               </h3>
@@ -91,18 +97,25 @@ export default function TagsPage() {
           </div>
         ) : (
           <>
-            {/* Interactive Tag Cloud - Fashion Magazine Style */}
-            <div className="relative mb-20 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-stone-200/50 dark:ring-neutral-800/50 shadow-xl px-8 py-12 md:px-16 md:py-16">
-              {/* Decorative gradient */}
+            {/* Interactive Tag Cloud */}
+            <div 
+              className={`relative mb-20 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-stone-200/50 dark:ring-neutral-800/50 shadow-xl px-8 py-12 md:px-16 md:py-16 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+              style={{ transitionDelay: '200ms' }}
+            >
+              {/* Decorative gradients */}
               <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[var(--ds-accent-5)] to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-[var(--ds-luxury-5)] to-transparent pointer-events-none" />
 
               <div className="relative flex flex-wrap justify-center items-center gap-4 md:gap-6">
-                {tags.map((tag) => (
+                {tags.map((tag, index) => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="group inline-block px-6 py-3 rounded-full bg-white dark:bg-neutral-800 ring-1 ring-stone-200 dark:ring-neutral-700 hover:ring-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent)] transition-all duration-300 hover:scale-110 hover:shadow-lg"
-                    style={{ fontSize: getFontSize(tag.count) }}
+                    className="group inline-block px-6 py-3 rounded-full bg-white dark:bg-neutral-800 ring-1 ring-stone-200 dark:ring-neutral-700 hover:ring-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent)] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[var(--ds-accent-20)]"
+                    style={{ 
+                      fontSize: getFontSize(tag.count),
+                      animationDelay: `${index * 30}ms`
+                    }}
                   >
                     <span className="font-serif tracking-tight text-stone-900 dark:text-stone-50 group-hover:text-white transition-colors duration-300">
                       {tag.name}
@@ -115,19 +128,22 @@ export default function TagsPage() {
               </div>
             </div>
 
-            {/* Elegant Tag List */}
-            <div>
-              <div className="mb-10">
+            {/* Tag List */}
+            <div className={`transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`} style={{ transitionDelay: '400ms' }}>
+              <div className="mb-10 flex items-center gap-4">
                 <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50">
                   全部标签
                 </h2>
+                <div className="flex-1 h-px bg-stone-200 dark:bg-neutral-800" />
+                <span className="text-sm text-stone-500 dark:text-stone-400">{tags.length} 个</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tags.map((tag) => (
+                {tags.map((tag, index) => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
                     className="group block p-8 bg-white dark:bg-neutral-900 rounded-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 hover:ring-[color:var(--ds-accent-30)] transition-all duration-300 hover:shadow-xl hover:-translate-y-1 card-soft"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-center justify-between">
                       <h3 className="text-xl md:text-2xl font-serif font-semibold tracking-tight text-stone-900 dark:text-stone-50 group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">

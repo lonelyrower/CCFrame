@@ -1,7 +1,14 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { ProgressiveImage } from '@/components/media/ProgressiveImage';
+
+// Haptic feedback for photo selection
+const triggerHaptic = (duration = 10) => {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(duration);
+  }
+};
 
 interface Photo {
   id: string;
@@ -90,7 +97,14 @@ function PhotoCard({
   const [isVisible, setIsVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
-  const handleClick = () => onClick?.(photo);
+
+  const handleClick = useCallback(() => {
+    triggerHaptic(12);
+    onClick?.(photo);
+  }, [onClick, photo]);
+
+  // View Transition name for seamless hero animations
+  const viewTransitionName = `photo-${photo.id}`;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -118,8 +132,13 @@ function PhotoCard({
   return (
     <div
       ref={imgRef}
-      className="group relative overflow-hidden rounded-2xl bg-stone-200 dark:bg-neutral-800 cursor-pointer ring-1 ring-inset ring-stone-300/30 dark:ring-neutral-700/30 transform-gpu will-change-transform transition-all duration-400 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/25 dark:hover:shadow-black/50 hover:ring-[color:var(--ds-accent-20)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-accent-60)] focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 dark:focus-visible:ring-offset-neutral-950"
-      style={{ aspectRatio: `1 / ${aspectRatio}` }}
+      className="group relative overflow-hidden rounded-2xl bg-stone-200 dark:bg-neutral-800 cursor-pointer ring-1 ring-inset ring-stone-300/30 dark:ring-neutral-700/30 transform-gpu will-change-transform transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98] hover:shadow-2xl hover:shadow-black/25 dark:hover:shadow-black/50 hover:ring-[color:var(--ds-accent-20)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-accent-60)] focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 dark:focus-visible:ring-offset-neutral-950 touch-manipulation select-none"
+      style={{
+        aspectRatio: `1 / ${aspectRatio}`,
+        viewTransitionName,
+        contentVisibility: 'auto',
+        containIntrinsicSize: `auto 300px`,
+      }}
       onClick={handleClick}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -138,16 +157,18 @@ function PhotoCard({
             isPublic={photo.isPublic}
             alt={photo.title || 'Photo'}
             className="absolute inset-0"
-            imgClassName="transform-gpu transition-transform duration-500 group-hover:scale-110"
+            imgClassName="transform-gpu transition-transform duration-500 group-hover:scale-105 group-active:scale-100"
             highResOptions={{ width: 900, quality: 88 }}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
-            onHighResLoad={() => setIsLoaded(true)}
-            onHighResError={() => setIsLoaded(true)}
+            onHighResLoad={() => startTransition(() => setIsLoaded(true))}
+            onHighResError={() => startTransition(() => setIsLoaded(true))}
+            viewTransition
+            viewTransitionName={viewTransitionName}
           />
 
-          {/* Sophisticated overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 md:group-hover:opacity-100 transition-all duration-400 ease-out">
-            <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-4 md:group-hover:translate-y-0 transition-transform duration-400 ease-out">
+          {/* Sophisticated overlay on hover - Desktop */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 md:group-hover:opacity-100 transition-all duration-300 ease-out">
+            <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-4 md:group-hover:translate-y-0 transition-transform duration-300 ease-out">
               {photo.title && (
                 <p className="text-white text-base font-serif font-semibold mb-3 tracking-tight leading-tight">{photo.title}</p>
               )}
@@ -166,24 +187,24 @@ function PhotoCard({
             </div>
           </div>
 
-          {/* Mobile overlay for metadata */}
+          {/* Mobile overlay for metadata - always visible on mobile */}
           {hasMeta && (
-            <div className="absolute inset-x-0 bottom-0 md:hidden">
-              <div className="bg-gradient-to-t from-black/70 via-black/30 to-transparent px-4 pb-4 pt-6">
+            <div className="absolute inset-x-0 bottom-0 md:hidden pointer-events-none">
+              <div className="bg-gradient-to-t from-black/60 via-black/20 to-transparent px-3 pb-3 pt-8">
                 {photo.title && (
-                  <p className="text-white text-sm font-serif font-semibold tracking-tight truncate">
+                  <p className="text-white text-sm font-serif font-semibold tracking-tight truncate drop-shadow-sm">
                     {photo.title}
                   </p>
                 )}
                 {photo.tags.length > 0 && (
-                  <p className="mt-1 text-xs text-white/70 truncate">{photo.tags[0]}</p>
+                  <p className="mt-0.5 text-[11px] text-white/70 truncate">{photo.tags[0]}</p>
                 )}
               </div>
             </div>
           )}
 
-          {/* Accent glow effect */}
-          <div className="absolute inset-0 opacity-0 md:group-hover:opacity-100 transition-opacity duration-400 pointer-events-none">
+          {/* Accent glow effect - Desktop only */}
+          <div className="hidden md:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-br from-[var(--ds-accent-10)] via-transparent to-[var(--ds-luxury-10)] mix-blend-overlay" />
           </div>
         </>
@@ -191,9 +212,7 @@ function PhotoCard({
 
       {/* Premium loading skeleton with shimmer */}
       {!isLoaded && isVisible && (
-        <div className="absolute inset-0 bg-stone-200 dark:bg-neutral-800 overflow-hidden">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_ease-in-out_infinite] shimmer-effect" />
-        </div>
+        <div className="absolute inset-0 skeleton" />
       )}
     </div>
   );

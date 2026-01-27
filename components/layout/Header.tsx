@@ -185,13 +185,13 @@ export function Header() {
   }, [showSearch]);
 
   return (
-    <header className="sticky top-0 z-50 relative bg-stone-50/70 dark:bg-neutral-950/70 backdrop-blur-xl border-b border-stone-200/50 dark:border-neutral-800/50 pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-50 relative bg-stone-50/95 dark:bg-neutral-950/95 backdrop-blur-2xl border-b border-stone-200/30 dark:border-neutral-800/30 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-14 md:h-20">
           {/* Logo - Fashion Editorial Style */}
-          <Link href="/" className="group flex items-center space-x-2.5">
-            <LogoIcon size={40} className="w-9 h-9 md:w-10 md:h-10 group-hover:scale-105 transition-transform duration-300" />
-            <span className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
+          <Link href="/" className="group flex items-center space-x-2 touch-manipulation">
+            <LogoIcon size={40} className="w-8 h-8 md:w-10 md:h-10 group-hover:scale-105 group-active:scale-95 transition-transform duration-300" />
+            <span className="text-xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
               CCFrame
             </span>
           </Link>
@@ -231,20 +231,31 @@ export function Header() {
           </div>
 
           {/* Search & Theme & User - Minimal Icons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={toggleSearch}
-              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
+              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
               aria-label="Search"
             >
               <SearchIcon size={20} />
             </button>
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
-              aria-label="Toggle theme"
+              className="group relative p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation overflow-hidden"
+              aria-label={isDark ? '切换到浅色模式' : '切换到深色模式'}
+              title={isDark ? '浅色模式' : '深色模式'}
             >
-              {isDark ? <SunIcon size={20} /> : <MoonIcon size={20} />}
+              {/* 切换动画容器 */}
+              <span className="relative block w-5 h-5">
+                {/* 太阳图标 */}
+                <span className={`absolute inset-0 transition-all duration-300 ${isDark ? 'rotate-0 scale-100 opacity-100' : 'rotate-90 scale-0 opacity-0'}`}>
+                  <SunIcon size={20} />
+                </span>
+                {/* 月亮图标 */}
+                <span className={`absolute inset-0 transition-all duration-300 ${isDark ? '-rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'}`}>
+                  <MoonIcon size={20} />
+                </span>
+              </span>
             </button>
 
             {/* User Menu */}
@@ -256,24 +267,24 @@ export function Header() {
                     setShowMobileNav(false);
                     setShowSearch(false);
                   }}
-                  className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
+                  className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
                   aria-label="User menu"
                 >
                   <UserIcon size={20} />
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-3 w-52 bg-stone-50/95 dark:bg-neutral-900/95 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 py-2 z-50 animate-fade-in-200">
+                  <div className="absolute right-0 mt-3 w-52 bg-stone-50/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 py-2 z-50 animate-fade-in-200">
                     <Link
                       href="/admin"
-                      className="block px-5 py-3 text-sm font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-colors duration-200"
+                      className="block px-5 py-3.5 text-sm font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 active:bg-stone-300/60 dark:active:bg-neutral-700/60 transition-colors duration-150"
                       onClick={() => setShowUserMenu(false)}
                     >
                       管理后台
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-5 py-3 text-sm font-medium text-[color:var(--ds-accent)] hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-colors duration-200"
+                      className="w-full text-left px-5 py-3.5 text-sm font-medium text-[color:var(--ds-accent)] hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 active:bg-stone-300/60 dark:active:bg-neutral-700/60 transition-colors duration-150"
                     >
                       退出登录
                     </button>
@@ -283,7 +294,7 @@ export function Header() {
             ) : (
               <Link
                 href="/admin/login"
-                className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
+                className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
                 aria-label="Login"
               >
                 <LoginIcon size={20} />
@@ -291,7 +302,7 @@ export function Header() {
             )}
             <button
               onClick={toggleMobileNav}
-              className="md:hidden p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-300 ease-out hover:scale-110 active:scale-95 text-stone-700 dark:text-stone-300"
+              className="md:hidden p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
               aria-label={showMobileNav ? 'Close menu' : 'Open menu'}
               aria-expanded={showMobileNav}
               aria-controls="mobile-nav"
@@ -349,33 +360,33 @@ export function Header() {
       {showSearch && (
         <div className="absolute top-full left-0 right-0 pt-3 z-50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative rounded-2xl bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl ring-1 ring-inset ring-black/10 dark:ring-white/10 shadow-lg overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 dark:before:bg-white/10 before:pointer-events-none">
+            <div className="relative rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-2xl ring-1 ring-inset ring-stone-200/50 dark:ring-neutral-700/50 shadow-xl overflow-hidden">
               <div className="p-4 sm:p-5 md:p-6">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索照片、标签、相册..."
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[color:var(--ds-accent-40)] focus:border-[color:var(--ds-accent)]"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-neutral-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-[color:var(--ds-accent-30)] focus:border-[color:var(--ds-accent)] transition-all duration-200"
                   autoFocus
                 />
-                <p className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-xs sm:text-sm text-stone-500 dark:text-stone-400">
                   提示：输入标签名、照片标题或相册名称进行搜索
                 </p>
               </div>
 
               {/* Suggestions */}
-              <div className="border-t border-gray-200/80 dark:border-white/10 max-h-[60svh] overflow-y-auto md:max-h-none md:overflow-visible">
+              <div className="border-t border-stone-200/50 dark:border-neutral-700/50 max-h-[60svh] overflow-y-auto md:max-h-none md:overflow-visible">
                 <div className="p-4 sm:p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* 推荐关键词 */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">推荐关键词</h4>
+                    <h4 className="text-sm font-medium text-stone-900 dark:text-stone-100 mb-3">推荐关键词</h4>
                     <div className="flex flex-wrap gap-2">
                       {['人像', '风景', '街拍', '黑白', '旅行', '城市', '自然', '夜景'].map((k) => (
                         <button
                           key={k}
                           onClick={() => setSearchQuery(k)}
-                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-[color:var(--ds-accent)]/10 /15 transition-colors"
+                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] text-stone-700 dark:text-stone-300 transition-colors duration-200"
                         >
                           {k}
                         </button>
@@ -385,7 +396,7 @@ export function Header() {
 
                   {/* 热门标签 */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">热门标签</h4>
+                    <h4 className="text-sm font-medium text-stone-900 dark:text-stone-100 mb-3">热门标签</h4>
                     <div className="flex flex-wrap gap-2 min-h-[44px]" aria-busy={loadingSuggest}>
                       {hotTags.length === 0 ? (
                         <>
@@ -394,7 +405,7 @@ export function Header() {
                             {Array.from({ length: 10 }).map((_, i) => (
                               <span
                                 key={i}
-                                className="h-8 w-[4.5rem] rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-gray-200/80 dark:bg-white/10"
+                                className="h-8 w-[4.5rem] rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-stone-100 dark:bg-neutral-800"
                               />
                             ))}
                           </div>
@@ -404,10 +415,10 @@ export function Header() {
                           <Link
                             key={tag.id}
                             href={`/tags/${encodeURIComponent(tag.name)}`}
-                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-white/10 hover:bg-[color:var(--ds-accent)]/10 /15 transition-colors"
+                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] text-stone-700 dark:text-stone-300 transition-colors duration-200"
                           >
                             {tag.name}
-                            <span className="ml-1 text-xs text-gray-500">({tag.count})</span>
+                            <span className="ml-1 text-xs text-stone-400 dark:text-stone-500">({tag.count})</span>
                           </Link>
                         ))
                       )}
@@ -416,14 +427,14 @@ export function Header() {
 
                   {/* 系列推荐 */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">系列推荐</h4>
+                    <h4 className="text-sm font-medium text-stone-900 dark:text-stone-100 mb-3">系列推荐</h4>
                     <div className="grid grid-cols-1 gap-2 min-h-[116px]" aria-busy={loadingSuggest}>
                       {topSeries.length === 0 ? (
                         <div className="grid grid-cols-1 gap-2 animate-pulse">
                           {Array.from({ length: 3 }).map((_, i) => (
                             <div
                               key={i}
-                              className="h-9 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/60 dark:bg-white/10"
+                              className="h-9 rounded-xl ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-stone-100 dark:bg-neutral-800"
                             />
                           ))}
                           <span className="sr-only">{loadingSuggest ? '加载中…' : '暂无数据'}</span>
@@ -433,10 +444,10 @@ export function Header() {
                           <Link
                             key={s.id}
                             href={`/series/${s.slug || s.id}`}
-                            className="flex items-center justify-between px-3 py-2 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10 bg-white/60 dark:bg-white/10 hover:bg-[color:var(--ds-accent)]/10 /15 transition-colors"
+                            className="flex items-center justify-between px-3 py-2 rounded-xl ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] transition-colors duration-200"
                           >
-                            <span className="truncate text-sm text-gray-900 dark:text-gray-100">{s.title}</span>
-                            <span className="ml-3 shrink-0 text-xs text-gray-500">{s.photoCount} 张</span>
+                            <span className="truncate text-sm text-stone-900 dark:text-stone-100">{s.title}</span>
+                            <span className="ml-3 shrink-0 text-xs text-stone-400 dark:text-stone-500">{s.photoCount} 张</span>
                           </Link>
                         ))
                       )}

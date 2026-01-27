@@ -33,33 +33,41 @@ export function SearchIcon({ size = 20, className, ...props }: IconProps) {
   );
 }
 
-// 太阳图标 - 浅色模式
+// 太阳图标 - 浅色模式（带动画支持）
 export function SunIcon({ size = 20, className, ...props }: IconProps) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      className={className}
+      className={`transition-transform duration-300 ${className || ''}`}
       {...defaultProps}
       {...props}
     >
-      <circle cx="12" cy="12" r="4" stroke="currentColor" fill="currentColor" fillOpacity={0.1} />
-      <g stroke="currentColor">
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+      <circle 
+        cx="12" 
+        cy="12" 
+        r="4" 
+        stroke="currentColor" 
+        fill="currentColor" 
+        fillOpacity={0.15}
+        className="origin-center"
+      />
+      <g stroke="currentColor" className="origin-center">
+        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
       </g>
     </svg>
   );
 }
 
-// 月亮图标 - 深色模式
+// 月亮图标 - 深色模式（带动画支持）
 export function MoonIcon({ size = 20, className, ...props }: IconProps) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      className={className}
+      className={`transition-transform duration-300 ${className || ''}`}
       {...defaultProps}
       {...props}
     >
@@ -67,11 +75,15 @@ export function MoonIcon({ size = 20, className, ...props }: IconProps) {
         d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
         stroke="currentColor"
         fill="currentColor"
-        fillOpacity={0.1}
+        fillOpacity={0.15}
+        className="origin-center"
       />
       {/* 星星点缀 */}
-      <circle cx="19" cy="5" r="0.5" fill="currentColor" opacity="0.6" />
-      <circle cx="17" cy="8" r="0.3" fill="currentColor" opacity="0.4" />
+      <g className="animate-pulse">
+        <circle cx="19" cy="5" r="0.8" fill="currentColor" opacity="0.7" />
+        <circle cx="16" cy="7" r="0.5" fill="currentColor" opacity="0.5" />
+        <circle cx="20" cy="9" r="0.4" fill="currentColor" opacity="0.4" />
+      </g>
     </svg>
   );
 }

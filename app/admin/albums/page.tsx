@@ -240,10 +240,11 @@ export default function AlbumsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+                <label htmlFor="album-series" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
                   所属系列（可选）
                 </label>
                 <select
+                  id="album-series"
                   value={selectedSeriesId}
                   onChange={(e) => setSelectedSeriesId(e.target.value)}
                   className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"

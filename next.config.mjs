@@ -12,12 +12,21 @@ const nextConfig = {
       hostname,
     })),
     unoptimized: true, // Use Cloudflare image optimization instead
+    // Next.js 16+ requires explicit qualities
+    qualities: [25, 50, 75, 88, 90, 95, 100],
+    // Enable AVIF for modern browsers with WebP fallback
+    formats: ['image/avif', 'image/webp'],
   },
   experimental: {
+    // Enable View Transitions API (Next.js 16+)
+    viewTransition: true,
     serverActions: {
       bodySizeLimit: '50mb',
     },
   },
+  // React Compiler moved to top-level in Next.js 16
+  // Disabled by default as it requires babel-plugin-react-compiler
+  // reactCompiler: true,
   async headers() {
     return [
       {

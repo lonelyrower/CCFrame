@@ -82,7 +82,7 @@ export default function SeriesDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
+    <div className="min-h-[100dvh] bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-8">

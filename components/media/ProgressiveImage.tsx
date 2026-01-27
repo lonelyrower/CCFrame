@@ -1,6 +1,6 @@
 'use client';
 
-import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
+import { KeyboardEvent, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { getImageSrcSet, getImageUrl } from '@/lib/image/utils';
 
 export interface ProgressiveImageProps {
@@ -20,11 +20,18 @@ export interface ProgressiveImageProps {
   objectFit?: 'cover' | 'contain';
   className?: string;
   imgClassName?: string;
+  /** @deprecated Use preload instead (Next.js 16+) */
   priority?: boolean;
+  /** Preload the image for LCP optimization (Next.js 16+) */
+  preload?: boolean;
   sizes?: string;
   onClick?: () => void;
   onHighResLoad?: () => void;
   onHighResError?: () => void;
+  /** Enable View Transitions API for smooth image swaps */
+  viewTransition?: boolean;
+  /** Unique name for View Transition */
+  viewTransitionName?: string;
 }
 
 /**
@@ -41,15 +48,22 @@ export function ProgressiveImage({
   className,
   imgClassName,
   priority = false,
+  preload,
   sizes,
   onClick,
   onHighResLoad,
   onHighResError,
+  viewTransition = false,
+  viewTransitionName,
 }: ProgressiveImageProps) {
   const [lowResLoaded, setLowResLoaded] = useState(false);
   const [highResLoaded, setHighResLoaded] = useState(false);
   const [highResError, setHighResError] = useState(false);
+  const highResRef = useRef<HTMLImageElement>(null);
   const fitClass = objectFit === 'contain' ? 'object-contain' : 'object-cover';
+  
+  // Resolve preload (Next.js 16+) vs deprecated priority
+  const shouldPreload = preload ?? priority;
 
   const containerClassName = useMemo(() => {
     const base = ['relative', 'overflow-hidden', 'h-full', 'w-full'];
@@ -115,7 +129,15 @@ export function ProgressiveImage({
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={handleKeyDown}
     >
-      {/* Low-res placeholder */}
+      {/* 骨架屏占位符 */}
+      <div 
+        className={`absolute inset-0 skeleton transition-opacity duration-500 ${
+          lowResLoaded || highResLoaded ? 'opacity-0' : 'opacity-100'
+        }`}
+        aria-hidden
+      />
+
+      {/* Low-res placeholder with LQIP blur */}
       <img
         src={lowResUrl}
         alt=""
@@ -124,18 +146,20 @@ export function ProgressiveImage({
         }`}
         onLoad={() => setLowResLoaded(true)}
         aria-hidden
-        loading={priority ? 'eager' : 'lazy'}
+        loading={shouldPreload ? 'eager' : 'lazy'}
         decoding="async"
       />
 
-      {/* High-res image */}
+      {/* High-res image with modern loading hints */}
       <img
+        ref={highResRef}
         src={highResUrl}
         srcSet={highResSrcSet}
         alt={alt}
         className={`relative h-full w-full ${fitClass} transition-opacity duration-500 ${
           highResLoaded ? 'opacity-100' : 'opacity-0'
         } ${imgClassName || ''}`}
+        style={viewTransition && viewTransitionName ? { viewTransitionName } : undefined}
         onLoad={() => {
           setHighResLoaded(true);
           onHighResLoad?.();
@@ -144,8 +168,8 @@ export function ProgressiveImage({
           setHighResError(true);
           onHighResError?.();
         }}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchPriority={priority ? 'high' : 'auto'}
+        loading={shouldPreload ? 'eager' : 'lazy'}
+        fetchPriority={shouldPreload ? 'high' : 'auto'}
         decoding="async"
         sizes={sizes}
       />

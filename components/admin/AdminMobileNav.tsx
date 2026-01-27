@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   PhotoIcon,
   UploadIcon,
@@ -15,6 +15,13 @@ import {
   HomeIcon,
   MoreIcon,
 } from '@/components/ui/Icons';
+
+// Haptic feedback for navigation actions
+const triggerHaptic = (duration = 10) => {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(duration);
+  }
+};
 
 const primaryNavItems = [
   {
@@ -66,7 +73,7 @@ export function AdminMobileNav() {
 
       {/* More menu sheet */}
       <div
-        className={`md:hidden fixed bottom-16 left-0 right-0 z-50 bg-white dark:bg-neutral-900 rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out pb-[env(safe-area-inset-bottom)] ${
+        className={`md:hidden fixed bottom-[4.5rem] left-0 right-0 z-50 bg-white dark:bg-neutral-900 rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out supports-[padding:env(safe-area-inset-bottom)]:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] ${
           showMore ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
@@ -77,7 +84,10 @@ export function AdminMobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setShowMore(false)}
+                onClick={() => {
+                  triggerHaptic(8);
+                  setShowMore(false);
+                }}
                 className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-200 active:scale-95 ${
                   pathname === item.href
                     ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)]'
@@ -93,8 +103,8 @@ export function AdminMobileNav() {
       </div>
 
       {/* Bottom navigation bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-t border-stone-200/50 dark:border-neutral-800/50 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-16 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-2xl border-t border-stone-200/50 dark:border-neutral-800/50 supports-[padding:env(safe-area-inset-bottom)]:pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-[4.5rem] px-2">
           {primaryNavItems.map((item) => {
             const isActive = pathname === item.href;
 
@@ -102,6 +112,7 @@ export function AdminMobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => triggerHaptic(6)}
                 className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 active:scale-95 ${
                   isActive
                     ? 'text-[color:var(--ds-accent)]'
@@ -125,7 +136,10 @@ export function AdminMobileNav() {
 
           {/* More button */}
           <button
-            onClick={() => setShowMore(!showMore)}
+            onClick={() => {
+              triggerHaptic(10);
+              setShowMore(!showMore);
+            }}
             className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 active:scale-95 ${
               showMore || isMoreActive
                 ? 'text-[color:var(--ds-accent)]'

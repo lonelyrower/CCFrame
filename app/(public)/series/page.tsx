@@ -25,6 +25,7 @@ interface Series {
 export default function SeriesPage() {
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   useEffect(() => {
     loadSeries();
@@ -45,27 +46,34 @@ export default function SeriesPage() {
       console.error('Error loading series:', error);
     } finally {
       setIsLoading(false);
+      setTimeout(() => setIsPageLoaded(true), 100);
     }
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
+    <div className="min-h-[100dvh] bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Clean Style */}
-        <div className="mb-16 text-center">
+        {/* Header with animation */}
+        <div className={`mb-16 text-center transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-luxury)] mb-3">
+            Collections
+          </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
             系列
           </h1>
-          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400">
-            按主题浏览作品集
+          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400 max-w-xl mx-auto">
+            精心策划的主题作品集，探索不同的视觉故事
           </p>
         </div>
 
-        {/* Series Grid - Large Card Layout */}
+        {/* Series Grid */}
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
+                <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
+              </div>
               <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
                 Loading
               </span>
@@ -74,7 +82,6 @@ export default function SeriesPage() {
         ) : seriesList.length === 0 ? (
           <div className="text-center py-32">
             <div className="max-w-md mx-auto">
-              {/* Empty state icon */}
               <div className="mb-8 flex justify-center">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-stone-400/10 to-stone-400/5 dark:from-stone-400/15 dark:to-stone-400/5 flex items-center justify-center">
                   <svg className="w-10 h-10 text-stone-700 dark:text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -82,7 +89,6 @@ export default function SeriesPage() {
                   </svg>
                 </div>
               </div>
-
               <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
                 暂无系列
               </h3>
@@ -92,14 +98,18 @@ export default function SeriesPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {seriesList.map((series) => (
+          <div 
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+            style={{ transitionDelay: '200ms' }}
+          >
+            {seriesList.map((series, index) => (
               <Link
                 key={series.id}
                 href={`/series/${series.slug || series.id}`}
                 className="group block bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden hover:ring-[color:var(--ds-accent-30)] transition-all duration-400 hover:shadow-2xl hover:-translate-y-2 card-soft"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                {/* Cover Image - Premium Style */}
+                {/* Cover Image */}
                 <div className="relative aspect-[4/3] bg-stone-200 dark:bg-neutral-800 overflow-hidden">
                   {series.coverPhoto ? (
                     <>
@@ -108,13 +118,17 @@ export default function SeriesPage() {
                         isPublic={series.coverPhoto.isPublic}
                         alt={series.title}
                         className="absolute inset-0"
-                        imgClassName="transition-transform duration-500 group-hover:scale-110"
+                        imgClassName="transition-transform duration-700 group-hover:scale-110"
                         highResOptions={{ width: 1200, quality: 88 }}
                         lowResOptions={{ width: 96, quality: 40 }}
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
-                      {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+                      {/* View indicator */}
+                      <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        查看系列 →
+                      </div>
                     </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-stone-200 to-stone-300 dark:from-neutral-800 dark:to-neutral-900">
@@ -135,7 +149,7 @@ export default function SeriesPage() {
                   )}
                 </div>
 
-                {/* Content - Refined Typography */}
+                {/* Content */}
                 <div className="p-8">
                   <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-3 group-hover:text-[color:var(--ds-accent)] transition-colors duration-300 leading-tight">
                     {series.title}
@@ -147,11 +161,11 @@ export default function SeriesPage() {
                   )}
                   <div className="flex items-center gap-4 text-sm font-sans text-stone-500 dark:text-stone-400">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[color:var(--ds-accent)]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--ds-accent)]" />
                       {series.albumCount} 相册
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[color:var(--ds-luxury)]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--ds-luxury)]" />
                       {series.photoCount} 作品
                     </span>
                   </div>

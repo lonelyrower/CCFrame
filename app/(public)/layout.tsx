@@ -10,7 +10,7 @@ export default function PublicLayout({
   return (
     <>
       <Header />
-      <main className="min-h-[calc(100vh-8rem)] pb-20 md:pb-0">{children}</main>
+      <main className="min-h-[calc(100dvh-4rem)] pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 md:min-h-[calc(100vh-8rem)]">{children}</main>
       <Footer />
       <MobileNav />
     </>

@@ -21,6 +21,7 @@ export default function LibraryPage() {
   const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,6 +44,7 @@ export default function LibraryPage() {
       console.error('Error loading photos:', error);
     } finally {
       setIsLoading(false);
+      setTimeout(() => setIsPageLoaded(true), 100);
     }
   };
 
@@ -128,17 +130,20 @@ export default function LibraryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-neutral-950">
+    <div className="min-h-[100dvh] bg-stone-50 dark:bg-neutral-950">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
+        {/* Header with animation */}
+        <div className={`mb-8 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
+              <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-2">
+                Library
+              </span>
               <h1 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 照片库
               </h1>
-              <p className="text-stone-600 dark:text-stone-400">
-                已加载 {photos.length} 张照片
+              <p className="text-stone-600 dark:text-stone-400 font-light">
+                已加载 <span className="font-medium text-stone-900 dark:text-stone-100">{photos.length}</span> 张照片
               </p>
             </div>
             <Button onClick={() => router.push('/admin/upload')} variant="primary" className="w-full sm:w-auto">
@@ -198,27 +203,43 @@ export default function LibraryPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-              <p className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">加载中</p>
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
+                <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
+              </div>
+              <p className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light uppercase">Loading</p>
             </div>
           </div>
         ) : photos.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无照片</p>
-            <Button onClick={() => router.push('/admin/upload')} variant="primary">
-              上传第一张照片
-            </Button>
+            <div className="max-w-sm mx-auto">
+              <div className="mb-6 flex justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--ds-accent-10)] to-[var(--ds-accent-5)] flex items-center justify-center">
+                  <svg className="w-8 h-8 text-[color:var(--ds-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无照片</p>
+              <Button onClick={() => router.push('/admin/upload')} variant="primary">
+                上传第一张照片
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map((photo) => (
+          <div 
+            className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            style={{ transitionDelay: '200ms' }}
+          >
+            {photos.map((photo, index) => (
               <div
                 key={photo.id}
                 className={`
                   relative group rounded-2xl overflow-hidden bg-stone-200 dark:bg-neutral-800
                   aspect-square cursor-pointer transition-all duration-300
-                  ${selectedPhotos.has(photo.id) ? 'ring-4 ring-[color:var(--ds-accent)] scale-[0.97]' : 'hover:scale-[1.02]'}
+                  ${selectedPhotos.has(photo.id) ? 'ring-4 ring-[color:var(--ds-accent)] scale-[0.97]' : 'hover:scale-[1.02] hover:shadow-xl'}
                 `}
+                style={{ animationDelay: `${index * 30}ms` }}
                 onClick={() => togglePhotoSelection(photo.id)}
               >
                 {/* Photo */}
