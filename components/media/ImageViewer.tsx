@@ -331,8 +331,8 @@ export function ImageViewer({
       const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, transform.scale * (1 + delta)));
 
       const scaleDiff = newScale / transform.scale;
-      let newX = transform.translateX - centerX * (scaleDiff - 1);
-      let newY = transform.translateY - centerY * (scaleDiff - 1);
+      const newX = transform.translateX - centerX * (scaleDiff - 1);
+      const newY = transform.translateY - centerY * (scaleDiff - 1);
 
       const constrained = constrainTranslation(newX, newY, newScale);
       setTransform({
