@@ -28,7 +28,7 @@ export default function UploadPage() {
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 上传照片
               </h1>
-              <p className="text-stone-600 dark:text-stone-400 font-light">
+              <p className="text-[color:var(--ds-muted)] font-light">
                 批量上传照片，支持进度跟踪和自动重试
               </p>
             </div>
@@ -48,7 +48,7 @@ export default function UploadPage() {
           <h3 className="font-medium text-[color:var(--ds-accent)] mb-3 text-lg tracking-wide">
             上传提示
           </h3>
-          <ul className="text-sm text-stone-700 dark:text-stone-300 space-y-2 list-disc list-inside">
+          <ul className="text-sm text-[color:var(--ds-muted)] space-y-2 list-disc list-inside">
             <li>支持最多 4 个文件同时上传，加快处理速度</li>
             <li>上传失败时会自动重试最多 2 次</li>
             <li>单个文件最大 50MB</li>

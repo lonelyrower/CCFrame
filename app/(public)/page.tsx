@@ -195,7 +195,7 @@ export default function HomePage() {
               src={heroSrc || undefined}
               srcSet={heroSrcSet}
               sizes="100vw"
-              alt="Hero"
+              alt="主视觉"
               className="w-full h-full object-cover scale-105"
               style={{
                 animation: isLoaded ? 'heroZoom 20s ease-out forwards' : 'none',
@@ -234,7 +234,7 @@ export default function HomePage() {
               className="inline-block text-xs md:text-sm uppercase tracking-[0.3em] font-medium mb-4"
               style={{ color: heroContrast || 'var(--ds-accent)', transitionDelay: '200ms' }}
             >
-              Photography Portfolio
+              摄影作品集
             </span>
           </div>
 
@@ -288,7 +288,7 @@ export default function HomePage() {
               className={`px-8 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-300 ${
                 heroPhoto
                   ? 'text-white/90 border border-white/20 hover:border-white/40 hover:text-white'
-                  : 'border-2 border-stone-300 dark:border-neutral-600 text-stone-700 dark:text-stone-300 hover:border-[var(--ds-accent)] hover:text-[var(--ds-accent)]'
+                  : 'border-2 border-stone-300 dark:border-neutral-600 text-[color:var(--ds-muted)] hover:border-[var(--ds-accent)] hover:text-[var(--ds-accent)]'
               }`}
             >
               浏览系列
@@ -368,14 +368,14 @@ export default function HomePage() {
         {/* Scroll Indicator */}
         <button
           onClick={scrollToContent}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer group"
-          aria-label="Scroll to content"
+          className="absolute bottom-[calc(4.5rem+env(safe-area-inset-bottom)+1rem)] md:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer group"
+          aria-label="滚动到内容"
         >
           <span
             className="text-[10px] uppercase tracking-[0.2em] font-medium opacity-60 group-hover:opacity-100 transition-opacity"
             style={{ color: heroContrast || 'var(--foreground)' }}
           >
-            Scroll
+            下滑
           </span>
           <div className="relative w-6 h-10 rounded-full border-2 opacity-60 group-hover:opacity-100 transition-opacity" style={{ borderColor: heroContrast || 'var(--foreground)' }}>
             <div
@@ -405,7 +405,7 @@ export default function HomePage() {
             >
               <div>
                 <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">
-                  Featured
+                  精选
                 </span>
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight">
                   精选作品
@@ -413,7 +413,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/photos"
-                className="group inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-[var(--ds-accent)] transition-colors"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ds-muted)] hover:text-[var(--ds-accent)] transition-colors"
               >
                 查看全部
                 <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -450,7 +450,7 @@ export default function HomePage() {
                     <ProgressiveImage
                       fileKey={photo.fileKey}
                       isPublic={photo.isPublic}
-                      alt={photo.title || 'Photo'}
+                      alt={photo.title || '照片'}
                       highResOptions={{
                         width: index === 0 ? 1200 : 600,
                         quality: 85,
@@ -496,12 +496,12 @@ export default function HomePage() {
               className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('series') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
             >
               <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-luxury)] mb-3">
-                Collections
+                系列
               </span>
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight mb-4">
                 探索系列
               </h2>
-              <p className="text-stone-600 dark:text-stone-400 font-light max-w-xl mx-auto">
+              <p className="text-[color:var(--ds-muted)] font-light max-w-xl mx-auto">
                 精心策划的摄影系列，每个系列都讲述独特的视觉故事
               </p>
             </div>
@@ -570,7 +570,7 @@ export default function HomePage() {
             <div className="text-center mt-12">
               <Link
                 href="/series"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 border-stone-300 dark:border-neutral-600 text-stone-700 dark:text-stone-300 font-medium text-sm hover:border-[var(--ds-accent)] hover:text-[var(--ds-accent)] transition-all duration-300"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 border-stone-300 dark:border-neutral-600 text-[color:var(--ds-muted)] font-medium text-sm hover:border-[var(--ds-accent)] hover:text-[var(--ds-accent)] transition-all duration-300"
               >
                 查看全部系列
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -600,12 +600,12 @@ export default function HomePage() {
               className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('tags') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
             >
               <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">
-                Discover
+                探索
               </span>
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tight mb-4">
                 按标签探索
               </h2>
-              <p className="text-stone-600 dark:text-stone-400 font-light max-w-xl mx-auto">
+              <p className="text-[color:var(--ds-muted)] font-light max-w-xl mx-auto">
                 通过标签快速找到感兴趣的内容
               </p>
             </div>
@@ -629,7 +629,7 @@ export default function HomePage() {
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className={`group relative rounded-full bg-white dark:bg-neutral-800 border border-stone-200 dark:border-neutral-700 font-medium text-stone-700 dark:text-stone-300 hover:border-[var(--ds-accent)] hover:text-[var(--ds-accent)] transition-all duration-300 hover:shadow-lg hover:shadow-[var(--ds-accent-10)] hover:-translate-y-0.5 ${sizeClass}`}
+                    className={`group relative rounded-full bg-white dark:bg-neutral-800 border border-stone-200 dark:border-neutral-700 font-medium text-[color:var(--ds-muted)] hover:border-[var(--ds-accent)] hover:text-[var(--ds-accent)] transition-all duration-300 hover:shadow-lg hover:shadow-[var(--ds-accent-10)] hover:-translate-y-0.5 ${sizeClass}`}
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <span className="relative z-10">#{tag.name}</span>
@@ -645,7 +645,7 @@ export default function HomePage() {
             <div className="text-center mt-12">
               <Link
                 href="/tags"
-                className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-[var(--ds-accent)] transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ds-muted)] hover:text-[var(--ds-accent)] transition-colors"
               >
                 查看全部标签
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

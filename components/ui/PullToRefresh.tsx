@@ -148,7 +148,7 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
           className={`absolute top-full mt-2 text-xs font-medium tracking-wide transition-all duration-300 ${
             readyToRefresh 
               ? 'text-[color:var(--ds-accent)] opacity-100' 
-              : 'text-stone-500 dark:text-stone-400 opacity-70'
+              : 'text-[color:var(--ds-muted-soft)] opacity-70'
           }`}
         >
           {isRefreshing ? '刷新中...' : readyToRefresh ? '松开刷新' : '下拉刷新'}

@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Tag {
   id: string;
@@ -12,6 +15,7 @@ interface Tag {
 export default function TagsManagementPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [fromTag, setFromTag] = useState('');
   const [toTag, setToTag] = useState('');
@@ -22,11 +26,17 @@ export default function TagsManagementPage() {
 
   const loadTags = async () => {
     try {
-      const response = await fetch('/api/tags');
+      setError(null);
+      const response = await fetchWithTimeout('/api/tags');
+      if (!response.ok) {
+        setError('加载失败');
+        return;
+      }
       const data = await response.json();
       setTags(data.tags);
     } catch (error) {
       console.error('Error loading tags:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
     }
@@ -67,13 +77,13 @@ export default function TagsManagementPage() {
         <div>
           <div className="inline-block mb-3">
             <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-              Management
+              管理
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
             标签管理
           </h1>
-          <p className="text-stone-600 dark:text-stone-400 font-light">
+          <p className="text-[color:var(--ds-muted)] font-light">
             管理和合并标签
           </p>
         </div>
@@ -83,27 +93,55 @@ export default function TagsManagementPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20">
-          <div className="inline-flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              Loading
-            </span>
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden">
+          <div className="divide-y divide-stone-200 dark:divide-neutral-800">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="px-6 py-4 flex items-center justify-between">
+                <Skeleton className="h-4 w-40 rounded-lg" />
+                <Skeleton className="h-4 w-20 rounded-lg" />
+              </div>
+            ))}
           </div>
         </div>
+      ) : error ? (
+        <EmptyState
+          title="加载失败"
+          description={<>暂时无法获取标签信息，请稍后重试</>}
+          icon={
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          }
+          tone="neutral"
+          size="md"
+          action={
+            <Button onClick={loadTags} variant="primary">
+              重新加载
+            </Button>
+          }
+        />
       ) : tags.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-xl text-stone-600 dark:text-stone-400 font-light">暂无标签</p>
-        </div>
+        <EmptyState
+          title="暂无标签"
+          description={<>上传照片并添加标签后，这里会自动汇总</>}
+          icon={
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+            </svg>
+          }
+          tone="neutral"
+          size="md"
+        />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden">
           <table className="min-w-full divide-y divide-stone-200 dark:divide-neutral-800">
             <thead className="bg-stone-50 dark:bg-neutral-950">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-bold text-[color:var(--ds-muted)] uppercase tracking-wider">
                   标签名称
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-bold text-[color:var(--ds-muted)] uppercase tracking-wider">
                   使用次数
                 </th>
               </tr>
@@ -117,7 +155,7 @@ export default function TagsManagementPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-stone-600 dark:text-stone-400">
+                    <span className="text-sm text-[color:var(--ds-muted)]">
                       {tag.count} 张照片
                     </span>
                   </td>
@@ -135,7 +173,7 @@ export default function TagsManagementPage() {
             <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">合并标签</h2>
             <div className="space-y-5">
               <div>
-                <label htmlFor="from-tag-select" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+                <label htmlFor="from-tag-select" className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
                   源标签（将被删除）
                 </label>
                 <select
@@ -154,7 +192,7 @@ export default function TagsManagementPage() {
               </div>
 
               <div>
-                <label htmlFor="to-tag-input" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+                <label htmlFor="to-tag-input" className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
                   目标标签（保留）
                 </label>
                 <input
@@ -163,7 +201,7 @@ export default function TagsManagementPage() {
                   value={toTag}
                   onChange={(e) => setToTag(e.target.value)}
                   placeholder="输入标签名（可新建）"
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
               </div>
 

@@ -91,7 +91,7 @@ export function MobileNav() {
               className={`group relative flex flex-col items-center justify-center flex-1 h-full py-1.5 touch-manipulation select-none transition-all duration-200 active:scale-[0.92] active:opacity-70 ${
                 isActive
                   ? 'text-[color:var(--ds-accent)]'
-                  : 'text-stone-500 dark:text-stone-400 active:text-stone-700 dark:active:text-stone-300'
+                  : 'text-[color:var(--ds-muted-soft)] active:text-[color:var(--ds-muted)]'
               }`}
             >
               {/* 触摸反馈背景 */}
@@ -122,7 +122,7 @@ export function MobileNav() {
         {/* 明暗模式切换按钮 */}
         <button
           onClick={toggleTheme}
-          className="group relative flex flex-col items-center justify-center flex-1 h-full py-1.5 touch-manipulation select-none transition-all duration-200 active:scale-[0.92] active:opacity-70 text-stone-500 dark:text-stone-400"
+          className="group relative flex flex-col items-center justify-center flex-1 h-full py-1.5 touch-manipulation select-none transition-all duration-200 active:scale-[0.92] active:opacity-70 text-[color:var(--ds-muted-soft)]"
           aria-label={isDark ? '切换到浅色模式' : '切换到深色模式'}
         >
           {/* 触摸反馈背景 */}

@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ProgressiveImage } from '@/components/media/ProgressiveImage';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Album {
   id: string;
@@ -43,6 +47,7 @@ export default function SeriesDetailPage() {
 
   const [series, setSeries] = useState<Series | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSeries();
@@ -51,11 +56,13 @@ export default function SeriesDetailPage() {
 
   const loadSeries = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`/api/series/${seriesSlug}`);
+      const response = await fetchWithTimeout(`/api/series/${seriesSlug}`);
 
       if (!response.ok) {
         console.error('Failed to fetch series:', response.status);
+        setError('加载失败');
         return;
       }
 
@@ -63,6 +70,7 @@ export default function SeriesDetailPage() {
       setSeries(data.series || null);
     } catch (error) {
       console.error('Error loading series:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
     }
@@ -98,38 +106,85 @@ export default function SeriesDetailPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-                Loading
-              </span>
+          <div className="space-y-8">
+            <div>
+              <Skeleton className="h-8 w-24 rounded-full mb-4" />
+              <Skeleton className="h-12 w-2/3 rounded-2xl" />
+              <Skeleton className="h-5 w-1/2 rounded-xl mt-4" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden"
+                >
+                  <Skeleton className="w-full aspect-[4/3]" />
+                  <div className="p-8 space-y-4">
+                    <Skeleton className="h-6 w-2/3 rounded-lg" />
+                    <Skeleton className="h-4 w-full rounded-lg" />
+                    <Skeleton className="h-4 w-1/2 rounded-lg" />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        ) : error ? (
+          <EmptyState
+            title="加载失败"
+            description={<>暂时无法获取该系列，请稍后重试</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            }
+            tone="neutral"
+            size="sm"
+            action={
+              <Button onClick={loadSeries} variant="primary" size="sm">
+                重新加载
+              </Button>
+            }
+          />
         ) : !series ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">系列不存在</p>
-          </div>
+          <EmptyState
+            title="未找到该系列"
+            description={<>可能已被删除或暂时不可用</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            }
+            tone="neutral"
+            size="sm"
+            action={
+              <Link
+                href="/series"
+                className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium bg-[color:var(--ds-accent)] text-white hover:bg-[color:var(--ds-accent-strong)] transition-all"
+              >
+                返回系列列表
+              </Link>
+            }
+          />
         ) : (
           <>
             {/* Header - Editorial Style */}
             <div className="mb-16">
               <div className="inline-block mb-4">
                 <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-                  Series
+                  系列
                 </span>
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight leading-tight">
                 {series.title}
               </h1>
               {series.summary && (
-                <p className="text-xl md:text-2xl text-stone-600 dark:text-stone-400 max-w-4xl mb-6 font-light leading-relaxed">
+                <p className="text-xl md:text-2xl text-[color:var(--ds-muted)] max-w-4xl mb-6 font-light leading-relaxed">
                   {series.summary}
                 </p>
               )}
               <div className="inline-flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[color:var(--ds-accent)]" />
-                <p className="text-base text-stone-500 dark:text-stone-400">
+                <p className="text-base text-[color:var(--ds-muted-soft)]">
                   {series.albums.length} 个相册
                 </p>
               </div>
@@ -137,9 +192,25 @@ export default function SeriesDetailPage() {
 
             {/* Albums Grid - Premium Layout */}
             {series.albums.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-xl text-stone-600 dark:text-stone-400 font-light">该系列暂无相册</p>
-              </div>
+              <EmptyState
+                title="该系列暂无相册"
+                description={<>稍后再来看看，或前往其他系列</>}
+                icon={
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 7.5h16.5m-16.5 4.5h16.5m-16.5 4.5h10.5" />
+                  </svg>
+                }
+                tone="neutral"
+                size="sm"
+                action={
+                  <Link
+                    href="/series"
+                    className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium bg-[color:var(--ds-accent)] text-white hover:bg-[color:var(--ds-accent-strong)] transition-all"
+                  >
+                    浏览其他系列
+                  </Link>
+                }
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {series.albums.map((album) => {
@@ -170,7 +241,7 @@ export default function SeriesDetailPage() {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-stone-200 to-stone-300 dark:from-neutral-800 dark:to-neutral-900">
                             <svg
-                              className="w-16 h-16 text-stone-400 dark:text-neutral-600"
+                              className="w-16 h-16 text-[color:var(--ds-muted-soft)]"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -192,11 +263,11 @@ export default function SeriesDetailPage() {
                         {album.title}
                       </h3>
                       {album.summary && (
-                        <p className="text-base font-sans leading-relaxed text-stone-600 dark:text-stone-400 mb-4 line-clamp-2">
+                        <p className="text-base font-sans leading-relaxed text-[color:var(--ds-muted)] mb-4 line-clamp-2">
                           {album.summary}
                         </p>
                       )}
-                      <div className="inline-flex items-center gap-1.5 text-sm text-stone-500 dark:text-stone-400">
+                      <div className="inline-flex items-center gap-1.5 text-sm text-[color:var(--ds-muted-soft)]">
                         <span className="w-1 h-1 rounded-full bg-[color:var(--ds-luxury)]" />
                         {album._count.photos} 张作品
                       </div>

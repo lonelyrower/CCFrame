@@ -148,14 +148,14 @@ function PhotoCard({
       }}
       role="button"
       tabIndex={0}
-      aria-label={photo.title ? `Open photo: ${photo.title}` : 'Open photo'}
+      aria-label={photo.title ? `打开照片：${photo.title}` : '打开照片'}
     >
       {isVisible && (
         <>
           <ProgressiveImage
             fileKey={photo.fileKey}
             isPublic={photo.isPublic}
-            alt={photo.title || 'Photo'}
+            alt={photo.title || '照片'}
             className="absolute inset-0"
             imgClassName="transform-gpu transition-transform duration-500 group-hover:scale-105 group-active:scale-100"
             highResOptions={{ width: 900, quality: 88 }}

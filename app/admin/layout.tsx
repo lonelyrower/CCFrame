@@ -1,5 +1,6 @@
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav';
+import { AdminThemeSync } from '@/components/admin/AdminThemeSync';
 
 export default function AdminLayout({
   children,
@@ -8,6 +9,7 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-[100dvh] bg-stone-50 dark:bg-neutral-950">
+      <AdminThemeSync />
       <AdminNav />
       <main className="pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
       <AdminMobileNav />

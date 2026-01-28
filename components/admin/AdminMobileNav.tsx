@@ -91,7 +91,7 @@ export function AdminMobileNav() {
                 className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-200 active:scale-95 ${
                   pathname === item.href
                     ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)]'
-                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-neutral-800'
+                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100 dark:hover:bg-neutral-800'
                 }`}
               >
                 <item.Icon size={24} filled={pathname === item.href} className="mb-1" />
@@ -116,7 +116,7 @@ export function AdminMobileNav() {
                 className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 active:scale-95 ${
                   isActive
                     ? 'text-[color:var(--ds-accent)]'
-                    : 'text-stone-500 dark:text-stone-400'
+                    : 'text-[color:var(--ds-muted-soft)]'
                 }`}
               >
                 <div className={`relative transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
@@ -143,7 +143,7 @@ export function AdminMobileNav() {
             className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 active:scale-95 ${
               showMore || isMoreActive
                 ? 'text-[color:var(--ds-accent)]'
-                : 'text-stone-500 dark:text-stone-400'
+                : 'text-[color:var(--ds-muted-soft)]'
             }`}
           >
             <div className={`relative transition-transform duration-200 ${showMore ? 'scale-110' : ''}`}>

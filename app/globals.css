@@ -10,8 +10,8 @@
 @import "@fontsource/playfair-display/700.css";
 @import "tailwindcss";
 
-/* Enable dark mode via media query (prefers-color-scheme) */
-@variant dark (@media (prefers-color-scheme: dark));
+/* Enable dark mode via class toggling on <html> */
+@variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* Fashion-forward color palette */
@@ -227,6 +227,8 @@
   --ds-ink-inverse-rgb: 255 255 255;
   --ds-ink-strong: rgb(var(--ds-ink-strong-rgb));
   --ds-ink-inverse: rgb(var(--ds-ink-inverse-rgb));
+  --ds-muted: rgb(var(--ds-ink-strong-rgb) / 0.7);
+  --ds-muted-soft: rgb(var(--ds-ink-strong-rgb) / 0.55);
 
   --background: var(--color-neutral-50);
   --foreground: var(--color-neutral-950);

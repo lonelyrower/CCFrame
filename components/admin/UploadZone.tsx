@@ -269,7 +269,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       case 'uploading':
         return 'text-[color:var(--ds-luxury)]';
       default:
-        return 'text-stone-600 dark:text-stone-400';
+        return 'text-[color:var(--ds-muted)]';
     }
   };
 
@@ -281,7 +281,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
         {/* Album Selection */}
         <div>
-          <label htmlFor="album-select" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+          <label htmlFor="album-select" className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
             相册（可选）
           </label>
           <select
@@ -301,7 +301,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+          <label className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
             标签（可选）
           </label>
           <input
@@ -310,7 +310,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             placeholder="输入标签后按回车"
-            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
+            className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
           />
           <div className="flex flex-wrap gap-2 mt-3">
             {tags.map((tag) => (
@@ -323,7 +323,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   type="button"
                   onClick={() => removeTag(tag)}
                   className="hover:scale-110 transition-transform"
-                  aria-label={`Remove tag ${tag}`}
+                  aria-label={`移除标签 ${tag}`}
                 >
                   x
                 </button>
@@ -343,8 +343,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
           ${isDragging ? 'border-[color:var(--ds-accent)] bg-[color:var(--ds-accent-10)] scale-[1.02]' : 'border-stone-300 dark:border-neutral-700 hover:border-[color:var(--ds-accent-50)]'}
         `}
       >
-        <UploadIcon size={56} className="mx-auto text-stone-400 dark:text-neutral-500" />
-        <p className="mt-5 text-base sm:text-lg text-stone-700 dark:text-stone-300 font-light">
+        <UploadIcon size={56} className="mx-auto text-[color:var(--ds-muted-soft)]" />
+        <p className="mt-5 text-base sm:text-lg text-[color:var(--ds-muted)] font-light">
           拖放图片到这里，或{' '}
           <label className="text-[color:var(--ds-accent)] hover:underline cursor-pointer font-medium">
             点击选择
@@ -357,7 +357,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             />
           </label>
         </p>
-        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+        <p className="mt-2 text-sm text-[color:var(--ds-muted-soft)]">
           支持格式：JPG、PNG、WebP、HEIC（单个最大 50MB）
         </p>
       </div>
@@ -394,7 +394,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-stone-900 dark:text-stone-50 truncate">{file.file.name}</p>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                  <p className="text-xs text-[color:var(--ds-muted-soft)] mt-0.5">
                     {(file.file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   {file.error && (
@@ -414,10 +414,10 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                       <div
                         className="bg-gradient-to-r from-[var(--ds-accent)] to-[var(--ds-accent-soft)] h-2 rounded-full transition-all duration-300"
                         style={{ width: `${file.progress}%` }}
-                        aria-label={`Upload progress ${file.progress}%`}
+                        aria-label={`上传进度 ${file.progress}%`}
                       />
                     </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-1.5 font-medium">{file.progress}%</p>
+                    <p className="text-xs text-[color:var(--ds-muted-soft)] mt-1.5 font-medium">{file.progress}%</p>
                   </div>
                 )}
 
@@ -432,8 +432,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   {file.status !== 'uploading' && (
                     <button
                       onClick={() => removeFile(file.id)}
-                      className="text-stone-400 hover:text-[color:var(--ds-accent)] transition-colors"
-                      aria-label="Remove file"
+                      className="text-[color:var(--ds-muted-soft)] hover:text-[color:var(--ds-accent)] transition-colors"
+                      aria-label="移除文件"
                       type="button"
                     >
                       x

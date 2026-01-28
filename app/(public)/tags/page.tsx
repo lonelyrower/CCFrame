@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Tag {
   id: string;
@@ -13,6 +17,7 @@ export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTags();
@@ -20,10 +25,12 @@ export default function TagsPage() {
 
   const loadTags = async () => {
     try {
-      const response = await fetch('/api/tags');
+      setError(null);
+      const response = await fetchWithTimeout('/api/tags');
 
       if (!response.ok) {
         console.error('Failed to fetch tags:', response.status);
+        setError('加载失败');
         return;
       }
 
@@ -31,6 +38,7 @@ export default function TagsPage() {
       setTags(data.tags || []);
     } catch (error) {
       console.error('Error loading tags:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
       setTimeout(() => setIsPageLoaded(true), 100);
@@ -54,52 +62,76 @@ export default function TagsPage() {
         {/* Header with animation */}
         <div className={`mb-16 text-center transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">
-            Discover
+            探索
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-stone-900 dark:text-stone-50 mb-4 leading-tight">
             标签
           </h1>
-          <p className="text-base md:text-lg font-light text-stone-600 dark:text-stone-400 max-w-xl mx-auto">
+          <p className="text-base md:text-lg font-light text-[color:var(--ds-muted)] max-w-xl mx-auto">
             按主题分类探索照片，发现感兴趣的内容
           </p>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
-                <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
+          <div className="space-y-10">
+            <div className="rounded-3xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-stone-200/50 dark:ring-neutral-800/50 px-8 py-12 md:px-16 md:py-16">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+                {Array.from({ length: 14 }).map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    className={`h-11 rounded-full ${index % 4 === 0 ? 'w-32' : index % 3 === 0 ? 'w-28' : 'w-24'}`}
+                  />
+                ))}
               </div>
-              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-                Loading
-              </span>
             </div>
-          </div>
-        ) : tags.length === 0 ? (
-          <div className="text-center py-32">
-            <div className="max-w-md mx-auto">
-              <div className="mb-8 flex justify-center">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--ds-luxury)]/10 to-[var(--ds-luxury-5)] dark:from-[var(--ds-luxury)]/15 dark:to-[var(--ds-luxury-5)] flex items-center justify-center">
-                  <svg className="w-10 h-10 text-[color:var(--ds-luxury)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
-                  </svg>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white dark:bg-neutral-900 rounded-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8"
+                >
+                  <Skeleton className="h-6 w-2/3 rounded-lg" />
+                  <Skeleton className="h-4 w-24 rounded-lg mt-4" />
                 </div>
-              </div>
-              <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
-                暂无标签
-              </h3>
-              <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light leading-relaxed">
-                还没有创建任何标签，<br/>上传照片后可以添加标签进行分类
-              </p>
+              ))}
             </div>
           </div>
+        ) : error ? (
+          <EmptyState
+            title="加载失败"
+            description={<>暂时无法获取标签，请稍后重试</>}
+            icon={
+              <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            }
+            tone="neutral"
+            size="lg"
+            action={
+              <Button onClick={loadTags} variant="primary">
+                重新加载
+              </Button>
+            }
+          />
+        ) : tags.length === 0 ? (
+          <EmptyState
+            title="暂无标签"
+            description={<>还没有创建任何标签，上传照片后可以添加标签进行分类</>}
+            icon={
+              <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+              </svg>
+            }
+            tone="luxury"
+            size="lg"
+          />
         ) : (
           <>
             {/* Interactive Tag Cloud */}
             <div 
-              className={`relative mb-20 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-stone-200/50 dark:ring-neutral-800/50 shadow-xl px-8 py-12 md:px-16 md:py-16 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+              className={`relative mb-20 overflow-visible rounded-3xl bg-gradient-to-br from-stone-100 to-stone-50 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-stone-200/50 dark:ring-neutral-800/50 shadow-xl px-8 py-12 md:px-16 md:py-16 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
               style={{ transitionDelay: '200ms' }}
             >
               {/* Decorative gradients */}
@@ -111,7 +143,7 @@ export default function TagsPage() {
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="group inline-block px-6 py-3 rounded-full bg-white dark:bg-neutral-800 ring-1 ring-stone-200 dark:ring-neutral-700 hover:ring-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent)] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[var(--ds-accent-20)]"
+                    className="group inline-block px-6 py-3 rounded-full bg-white dark:bg-neutral-800 ring-1 ring-stone-200 dark:ring-neutral-700 hover:ring-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent)] transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[var(--ds-accent-20)]"
                     style={{ 
                       fontSize: getFontSize(tag.count),
                       animationDelay: `${index * 30}ms`
@@ -120,7 +152,7 @@ export default function TagsPage() {
                     <span className="font-serif tracking-tight text-stone-900 dark:text-stone-50 group-hover:text-white transition-colors duration-300">
                       {tag.name}
                     </span>
-                    <span className="ml-2 text-xs font-sans text-stone-500 dark:text-stone-400 group-hover:text-white/80 transition-colors duration-300">
+                    <span className="ml-2 text-xs font-sans text-[color:var(--ds-muted-soft)] group-hover:text-white/80 transition-colors duration-300">
                       {tag.count}
                     </span>
                   </Link>
@@ -135,7 +167,7 @@ export default function TagsPage() {
                   全部标签
                 </h2>
                 <div className="flex-1 h-px bg-stone-200 dark:bg-neutral-800" />
-                <span className="text-sm text-stone-500 dark:text-stone-400">{tags.length} 个</span>
+                <span className="text-sm text-[color:var(--ds-muted-soft)]">{tags.length} 个</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tags.map((tag, index) => (
@@ -149,7 +181,7 @@ export default function TagsPage() {
                       <h3 className="text-xl md:text-2xl font-serif font-semibold tracking-tight text-stone-900 dark:text-stone-50 group-hover:text-[color:var(--ds-accent)] transition-colors duration-300">
                         {tag.name}
                       </h3>
-                      <span className="text-sm font-sans text-stone-500 dark:text-stone-400 px-4 py-2 bg-stone-100 dark:bg-neutral-800 rounded-full group-hover:bg-[color:var(--ds-accent-10)] transition-colors duration-300">
+                      <span className="text-sm font-sans text-[color:var(--ds-muted-soft)] px-4 py-2 bg-stone-100 dark:bg-neutral-800 rounded-full group-hover:bg-[color:var(--ds-accent-10)] transition-colors duration-300">
                         {tag.count} 张
                       </span>
                     </div>

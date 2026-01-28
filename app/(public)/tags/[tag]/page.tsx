@@ -5,6 +5,10 @@ import { useParams } from 'next/navigation';
 import { Masonry } from '@/components/gallery/Masonry';
 import { Lightbox } from '@/components/gallery/Lightbox';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Photo {
   id: string;
@@ -22,6 +26,7 @@ export default function TagDetailPage() {
 
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
@@ -32,13 +37,15 @@ export default function TagDetailPage() {
 
   const loadPhotos = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `/api/photos?isPublic=true&tag=${encodeURIComponent(tagName)}&limit=100`
       );
 
       if (!response.ok) {
         console.error('Failed to fetch photos:', response.status);
+        setError('加载失败');
         return;
       }
 
@@ -46,6 +53,7 @@ export default function TagDetailPage() {
       setPhotos(data.photos || []);
     } catch (error) {
       console.error('Error loading photos:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
     }
@@ -93,31 +101,57 @@ export default function TagDetailPage() {
         <div className="mb-16">
           <div className="inline-block mb-4">
             <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-              Tag
+              标签
             </span>
           </div>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
             #{tagName}
           </h1>
-          <p className="text-lg md:text-xl text-stone-600 dark:text-stone-400 font-light">
+          <p className="text-lg md:text-xl text-[color:var(--ds-muted)] font-light">
             {photos.length} 张作品
           </p>
         </div>
 
         {/* Photos */}
         {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-                Loading
-              </span>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className={`rounded-2xl ${index % 3 === 0 ? 'aspect-[4/5]' : 'aspect-square'}`}
+              />
+            ))}
           </div>
+        ) : error ? (
+          <EmptyState
+            title="加载失败"
+            description={<>暂时无法获取该标签的作品，请稍后重试</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            }
+            tone="neutral"
+            size="sm"
+            action={
+              <Button onClick={loadPhotos} variant="primary" size="sm">
+                重新加载
+              </Button>
+            }
+          />
         ) : photos.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">该标签下暂无作品</p>
-          </div>
+          <EmptyState
+            title="该标签下暂无作品"
+            description={<>试试浏览其他标签，或稍后再来看</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+              </svg>
+            }
+            tone="neutral"
+            size="sm"
+          />
         ) : (
           <Masonry photos={photos} onPhotoClick={handlePhotoClick} />
         )}

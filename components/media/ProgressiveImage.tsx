@@ -176,8 +176,8 @@ export function ProgressiveImage({
 
       {/* Fallback when high-res fails */}
       {highResError && (
-        <div className="flex h-full w-full items-center justify-center bg-stone-200 text-stone-500 dark:bg-neutral-800 dark:text-neutral-400">
-          Image failed to load
+        <div className="flex h-full w-full items-center justify-center bg-[color:var(--ds-accent-5)] dark:bg-[color:var(--ds-accent-10)] text-[color:var(--ds-muted)] text-sm tracking-wide">
+          图片加载失败
         </div>
       )}
     </div>

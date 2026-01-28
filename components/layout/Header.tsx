@@ -54,6 +54,7 @@ export function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const isHome = pathname === '/';
 
   useEffect(() => {
     const applyTheme = (darkMode: boolean) => {
@@ -185,7 +186,7 @@ export function Header() {
   }, [showSearch]);
 
   return (
-    <header className="sticky top-0 z-50 relative bg-stone-50/95 dark:bg-neutral-950/95 backdrop-blur-2xl border-b border-stone-200/30 dark:border-neutral-800/30 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
+    <header className={`sticky top-0 z-50 relative ${isHome ? 'bg-stone-50/80 dark:bg-neutral-950/70' : 'bg-stone-50/95 dark:bg-neutral-950/95'} backdrop-blur-2xl border-b border-stone-200/30 dark:border-neutral-800/30 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)]`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 md:h-20">
           {/* Logo - Fashion Editorial Style */}
@@ -203,7 +204,7 @@ export function Header() {
               className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/photos')
                   ? 'text-[color:var(--ds-accent)] after:w-full'
-                  : 'text-stone-700 dark:text-stone-300 hover:text-[color:var(--ds-accent)]'
+                  : 'text-[color:var(--ds-muted)] hover:text-[color:var(--ds-accent)]'
               } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               照片
@@ -213,7 +214,7 @@ export function Header() {
               className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/tags')
                   ? 'text-[color:var(--ds-accent)] after:w-full'
-                  : 'text-stone-700 dark:text-stone-300 hover:text-[color:var(--ds-accent)]'
+                  : 'text-[color:var(--ds-muted)] hover:text-[color:var(--ds-accent)]'
               } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               标签
@@ -223,7 +224,7 @@ export function Header() {
               className={`group relative text-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out ${
                 isActive('/series')
                   ? 'text-[color:var(--ds-accent)] after:w-full'
-                  : 'text-stone-700 dark:text-stone-300 hover:text-[color:var(--ds-accent)]'
+                  : 'text-[color:var(--ds-muted)] hover:text-[color:var(--ds-accent)]'
               } after:absolute after:left-0 after:-bottom-1.5 after:h-0.5 after:w-0 after:bg-current after:transition-all after:duration-300`}
             >
               系列
@@ -234,14 +235,14 @@ export function Header() {
           <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={toggleSearch}
-              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
-              aria-label="Search"
+              className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation"
+              aria-label="搜索"
             >
               <SearchIcon size={20} />
             </button>
             <button
               onClick={toggleTheme}
-              className="group relative p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation overflow-hidden"
+              className="group relative p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation overflow-hidden"
               aria-label={isDark ? '切换到浅色模式' : '切换到深色模式'}
               title={isDark ? '浅色模式' : '深色模式'}
             >
@@ -267,8 +268,8 @@ export function Header() {
                     setShowMobileNav(false);
                     setShowSearch(false);
                   }}
-                  className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
-                  aria-label="User menu"
+                  className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation"
+                  aria-label="用户菜单"
                 >
                   <UserIcon size={20} />
                 </button>
@@ -277,7 +278,7 @@ export function Header() {
                   <div className="absolute right-0 mt-3 w-52 bg-stone-50/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 py-2 z-50 animate-fade-in-200">
                     <Link
                       href="/admin"
-                      className="block px-5 py-3.5 text-sm font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 active:bg-stone-300/60 dark:active:bg-neutral-700/60 transition-colors duration-150"
+                      className="block px-5 py-3.5 text-sm font-medium text-[color:var(--ds-muted)] hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 active:bg-stone-300/60 dark:active:bg-neutral-700/60 transition-colors duration-150"
                       onClick={() => setShowUserMenu(false)}
                     >
                       管理后台
@@ -294,16 +295,16 @@ export function Header() {
             ) : (
               <Link
                 href="/admin/login"
-                className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
-                aria-label="Login"
+                className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation"
+                aria-label="登录"
               >
                 <LoginIcon size={20} />
               </Link>
             )}
             <button
               onClick={toggleMobileNav}
-              className="md:hidden p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-stone-700 dark:text-stone-300 touch-manipulation"
-              aria-label={showMobileNav ? 'Close menu' : 'Open menu'}
+              className="md:hidden p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation"
+              aria-label={showMobileNav ? '关闭菜单' : '打开菜单'}
               aria-expanded={showMobileNav}
               aria-controls="mobile-nav"
             >
@@ -323,7 +324,7 @@ export function Header() {
                 className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                   isActive('/photos')
                     ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
-                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
+                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
                 }`}
                 onClick={() => setShowMobileNav(false)}
               >
@@ -334,7 +335,7 @@ export function Header() {
                 className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                   isActive('/tags')
                     ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
-                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
+                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
                 }`}
                 onClick={() => setShowMobileNav(false)}
               >
@@ -345,7 +346,7 @@ export function Header() {
                 className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                   isActive('/series')
                     ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
-                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
+                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
                 }`}
                 onClick={() => setShowMobileNav(false)}
               >
@@ -367,10 +368,10 @@ export function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索照片、标签、相册..."
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-neutral-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-[color:var(--ds-accent-30)] focus:border-[color:var(--ds-accent)] transition-all duration-200"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-neutral-800 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:ring-2 focus:ring-[color:var(--ds-accent-30)] focus:border-[color:var(--ds-accent)] transition-all duration-200"
                   autoFocus
                 />
-                <p className="mt-2 text-xs sm:text-sm text-stone-500 dark:text-stone-400">
+                <p className="mt-2 text-xs sm:text-sm text-[color:var(--ds-muted-soft)]">
                   提示：输入标签名、照片标题或相册名称进行搜索
                 </p>
               </div>
@@ -386,7 +387,7 @@ export function Header() {
                         <button
                           key={k}
                           onClick={() => setSearchQuery(k)}
-                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] text-stone-700 dark:text-stone-300 transition-colors duration-200"
+                          className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] text-[color:var(--ds-muted)] transition-colors duration-200"
                         >
                           {k}
                         </button>
@@ -415,10 +416,10 @@ export function Header() {
                           <Link
                             key={tag.id}
                             href={`/tags/${encodeURIComponent(tag.name)}`}
-                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] text-stone-700 dark:text-stone-300 transition-colors duration-200"
+                            className="px-3 py-1.5 text-sm rounded-full ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] text-[color:var(--ds-muted)] transition-colors duration-200"
                           >
                             {tag.name}
-                            <span className="ml-1 text-xs text-stone-400 dark:text-stone-500">({tag.count})</span>
+                            <span className="ml-1 text-xs text-[color:var(--ds-muted-soft)]">({tag.count})</span>
                           </Link>
                         ))
                       )}
@@ -447,7 +448,7 @@ export function Header() {
                             className="flex items-center justify-between px-3 py-2 rounded-xl ring-1 ring-inset ring-stone-200 dark:ring-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[color:var(--ds-accent-10)] hover:ring-[color:var(--ds-accent-20)] transition-colors duration-200"
                           >
                             <span className="truncate text-sm text-stone-900 dark:text-stone-100">{s.title}</span>
-                            <span className="ml-3 shrink-0 text-xs text-stone-400 dark:text-stone-500">{s.photoCount} 张</span>
+                            <span className="ml-3 shrink-0 text-xs text-[color:var(--ds-muted-soft)]">{s.photoCount} 张</span>
                           </Link>
                         ))
                       )}

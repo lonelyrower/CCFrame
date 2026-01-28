@@ -186,7 +186,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
           <ImageViewer
             fileKey={photo.fileKey}
             isPublic={photo.isPublic}
-            alt={photo.title || 'Photo'}
+            alt={photo.title || '照片'}
             className="h-full w-full"
           />
         </div>

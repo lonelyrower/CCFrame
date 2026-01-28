@@ -10,7 +10,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+          <label className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
             {label}
           </label>
         )}
@@ -21,7 +21,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             bg-white dark:bg-neutral-900
             border-stone-200 dark:border-neutral-700
             text-stone-900 dark:text-stone-100
-            placeholder-stone-400 dark:placeholder-neutral-500
+            placeholder-[color:var(--ds-muted-soft)]
             focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)]
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-all duration-300

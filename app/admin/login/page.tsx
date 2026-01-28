@@ -27,13 +27,13 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || '登录失败');
       }
 
       // Redirect to admin dashboard - use window.location for full page refresh
       window.location.href = '/admin/library';
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : '登录失败');
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +102,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer Note */}
-        <p className="mt-8 text-center text-xs tracking-widest text-stone-500 dark:text-stone-400">
+        <p className="mt-8 text-center text-xs tracking-widest text-[color:var(--ds-muted-soft)]">
           受保护区域 - 仅授权用户可访问
         </p>
       </div>

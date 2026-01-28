@@ -5,6 +5,10 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Masonry } from '@/components/gallery/Masonry';
 import { Lightbox } from '@/components/gallery/Lightbox';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Photo {
   id: string;
@@ -34,6 +38,7 @@ export default function AlbumDetailPage() {
 
   const [album, setAlbum] = useState<Album | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
@@ -44,11 +49,13 @@ export default function AlbumDetailPage() {
 
   const loadAlbum = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`/api/albums/${albumId}`);
+      const response = await fetchWithTimeout(`/api/albums/${albumId}`);
 
       if (!response.ok) {
         console.error('Failed to fetch album:', response.status);
+        setError('加载失败');
         return;
       }
 
@@ -56,6 +63,7 @@ export default function AlbumDetailPage() {
       setAlbum(data.album || null);
     } catch (error) {
       console.error('Error loading album:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +103,7 @@ export default function AlbumDetailPage() {
               >
                 系列
               </Link>
-              <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-[color:var(--ds-muted-soft)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
               <Link
@@ -104,10 +112,10 @@ export default function AlbumDetailPage() {
               >
                 {album.series.title}
               </Link>
-              <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-[color:var(--ds-muted-soft)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              <span className="text-stone-600 dark:text-stone-400">
+              <span className="text-[color:var(--ds-muted)]">
                 {album.title}
               </span>
             </div>
@@ -125,38 +133,78 @@ export default function AlbumDetailPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-                Loading
-              </span>
+          <div className="space-y-10">
+            <div>
+              <Skeleton className="h-8 w-24 rounded-full mb-4" />
+              <Skeleton className="h-12 w-2/3 rounded-2xl" />
+              <Skeleton className="h-5 w-1/2 rounded-xl mt-4" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 10 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className={`rounded-2xl ${index % 3 === 0 ? 'aspect-[4/5]' : 'aspect-square'}`}
+                />
+              ))}
             </div>
           </div>
+        ) : error ? (
+          <EmptyState
+            title="加载失败"
+            description={<>暂时无法获取该相册，请稍后重试</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            }
+            tone="neutral"
+            size="sm"
+            action={
+              <Button onClick={loadAlbum} variant="primary" size="sm">
+                重新加载
+              </Button>
+            }
+          />
         ) : !album ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-stone-600 dark:text-stone-400 font-light">相册不存在</p>
-          </div>
+          <EmptyState
+            title="未找到该相册"
+            description={<>可能已被删除或暂时不可用</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 7.5h16.5m-16.5 4.5h16.5m-16.5 4.5h10.5" />
+              </svg>
+            }
+            tone="neutral"
+            size="sm"
+            action={
+              <Link
+                href="/photos"
+                className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium bg-[color:var(--ds-accent)] text-white hover:bg-[color:var(--ds-accent-strong)] transition-all"
+              >
+                返回照片
+              </Link>
+            }
+          />
         ) : (
           <>
             {/* Header - Editorial Style */}
             <div className="mb-16">
               <div className="inline-block mb-4">
                 <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-                  Album
+                  相册
                 </span>
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight leading-tight">
                 {album.title}
               </h1>
               {album.summary && (
-                <p className="text-xl md:text-2xl text-stone-600 dark:text-stone-400 max-w-4xl mb-6 font-light leading-relaxed">
+                <p className="text-xl md:text-2xl text-[color:var(--ds-muted)] max-w-4xl mb-6 font-light leading-relaxed">
                   {album.summary}
                 </p>
               )}
               <div className="inline-flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[color:var(--ds-accent)]" />
-                <p className="text-base text-stone-500 dark:text-stone-400">
+                <p className="text-base text-[color:var(--ds-muted-soft)]">
                   {album.photos.length} 张作品
                 </p>
               </div>
@@ -164,9 +212,25 @@ export default function AlbumDetailPage() {
 
             {/* Photos */}
             {album.photos.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-xl text-stone-600 dark:text-stone-400 font-light">相册暂无作品</p>
-              </div>
+              <EmptyState
+                title="相册暂无作品"
+                description={<>稍后再来看看，或浏览其他相册</>}
+                icon={
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                }
+                tone="neutral"
+                size="sm"
+                action={
+                  <Link
+                    href="/photos"
+                    className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium bg-[color:var(--ds-accent)] text-white hover:bg-[color:var(--ds-accent-strong)] transition-all"
+                  >
+                    浏览全部照片
+                  </Link>
+                }
+              />
             ) : (
               <Masonry photos={album.photos} onPhotoClick={handlePhotoClick} />
             )}

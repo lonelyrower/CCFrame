@@ -6,6 +6,10 @@ import { Lightbox } from '@/components/gallery/Lightbox';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { PHOTOS_PER_PAGE } from '@/lib/constants';
 import { EmptyPhotosIcon } from '@/components/ui/Icons';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Photo {
   id: string;
@@ -23,6 +27,7 @@ export default function PhotosPage() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
@@ -34,6 +39,7 @@ export default function PhotosPage() {
     if (isLoading) return;
 
     setIsLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams({
         isPublic: 'true',
@@ -43,10 +49,11 @@ export default function PhotosPage() {
         params.set('cursor', cursor);
       }
 
-      const response = await fetch(`/api/photos?${params}`);
+      const response = await fetchWithTimeout(`/api/photos?${params}`);
 
       if (!response.ok) {
         console.error('Failed to fetch photos:', response.status);
+        setError('加载失败');
         setHasMore(false);
         return;
       }
@@ -68,6 +75,7 @@ export default function PhotosPage() {
       }
     } catch (error) {
       console.error('Error loading photos:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
       setHasMore(false);
     } finally {
       setIsLoading(false);
@@ -142,14 +150,14 @@ export default function PhotosPage() {
           {/* Header with animation */}
           <div className={`mb-12 md:mb-16 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">
-              Gallery
+              画廊
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
               全部作品
             </h1>
             <div className="flex items-center gap-4">
               <div className="w-12 h-0.5 bg-[color:var(--ds-accent)]" />
-              <p className="text-base md:text-lg text-stone-600 dark:text-stone-400 font-light">
+              <p className="text-base md:text-lg text-[color:var(--ds-muted)] font-light">
                 {isLoading && photos.length === 0 ? '加载中...' : `${photos.length} 张作品`}
               </p>
             </div>
@@ -157,40 +165,39 @@ export default function PhotosPage() {
 
         {/* Initial Loading State */}
         {isLoading && photos.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
-                <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
-              </div>
-              <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-                Loading
-              </span>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className={`rounded-2xl ${index % 3 === 0 ? 'aspect-[4/5]' : 'aspect-square'}`}
+              />
+            ))}
           </div>
+        ) : error && photos.length === 0 ? (
+          <EmptyState
+            title="加载失败"
+            description={<>暂时无法获取照片，请稍后重试</>}
+            icon={<EmptyPhotosIcon size={64} className="opacity-70" />}
+            tone="neutral"
+            size="md"
+            action={
+              <Button onClick={() => loadPhotos(null, true)} variant="primary">
+                重新加载
+              </Button>
+            }
+          />
         ) : photos.length > 0 ? (
           <div className={`transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: '200ms' }}>
             <Masonry photos={photos} onPhotoClick={handlePhotoClick} />
           </div>
         ) : (
-          <div className="text-center py-32">
-            <div className="max-w-md mx-auto">
-              {/* Empty state icon */}
-              <div className="mb-8 flex justify-center">
-                <div className="relative">
-                  <EmptyPhotosIcon size={128} className="opacity-20" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-50 dark:from-neutral-950 to-transparent" />
-                </div>
-              </div>
-
-              <h3 className="text-2xl md:text-3xl font-serif font-semibold text-stone-900 dark:text-stone-50 mb-4">
-                暂无公开作品
-              </h3>
-              <p className="text-lg text-stone-600 dark:text-stone-400 font-light leading-relaxed mb-8">
-                这里还没有上传任何照片，<br/>请稍后再来查看精彩内容
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            title="暂无公开作品"
+            description={<>这里还没有上传任何照片，请稍后再来查看精彩内容</>}
+            icon={<EmptyPhotosIcon size={72} className="opacity-70" />}
+            tone="accent"
+            size="lg"
+          />
         )}
 
         {/* Load More Indicator */}
@@ -202,7 +209,7 @@ export default function PhotosPage() {
                   <div className="w-8 h-8 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
                   <div className="absolute inset-0 w-8 h-8 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
                 </div>
-                <span className="text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 font-light">
+                <span className="text-xs uppercase tracking-widest text-[color:var(--ds-muted-soft)] font-light">
                   加载更多
                 </span>
               </div>
@@ -218,7 +225,7 @@ export default function PhotosPage() {
                   <div className="w-2 h-2 rounded-full bg-[color:var(--ds-accent-30)]" />
                   <div className="w-8 h-px bg-stone-300 dark:bg-neutral-700" />
                 </div>
-                <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400 font-light">
+                <p className="text-sm uppercase tracking-widest text-[color:var(--ds-muted-soft)] font-light">
                   已加载全部作品
                 </p>
               </div>

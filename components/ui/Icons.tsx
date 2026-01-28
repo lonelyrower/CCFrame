@@ -417,7 +417,7 @@ export function LogoIcon({ size = 40, className, ...props }: IconProps) {
       <circle cx="32" cy="32" r="1" fill="white" />
 
       {/* 取景框角落 */}
-      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-stone-900 dark:text-stone-50">
+      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[color:var(--foreground)]">
         <path d="M10 10 L10 18 M10 10 L18 10" />
         <path d="M54 10 L54 18 M54 10 L46 10" />
         <path d="M10 54 L10 46 M10 54 L18 54" />
@@ -448,10 +448,10 @@ export function EmptyPhotosIcon({ size = 128, className, ...props }: IconProps) 
 
       {/* 镜头环 */}
       <circle cx="64" cy="64" r="40" stroke="url(#emptyAccent)" strokeWidth="2" opacity="0.3" />
-      <circle cx="64" cy="64" r="28" stroke="currentColor" strokeWidth="1.5" opacity="0.2" className="text-stone-400 dark:text-stone-600" />
+      <circle cx="64" cy="64" r="28" stroke="currentColor" strokeWidth="1.5" opacity="0.2" className="text-[color:var(--ds-muted-soft)]" />
 
       {/* 取景框角落 */}
-      <g stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.3" className="text-stone-400 dark:text-stone-600">
+      <g stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.3" className="text-[color:var(--ds-muted-soft)]">
         <path d="M24 24 L24 40 M24 24 L40 24" />
         <path d="M104 104 L104 88 M104 104 L88 104" />
       </g>

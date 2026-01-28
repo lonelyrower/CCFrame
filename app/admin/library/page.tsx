@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { BulkEditDialog } from '@/components/admin/BulkEditDialog';
 import { getImageUrl } from '@/lib/image/utils';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Photo {
   id: string;
@@ -22,6 +25,7 @@ export default function LibraryPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,14 +38,16 @@ export default function LibraryPage() {
 
   const loadPhotos = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`/api/photos?page=${page}&limit=24`);
+      const response = await fetchWithTimeout(`/api/photos?page=${page}&limit=24`);
       const data = await response.json();
 
       setPhotos(data.photos);
       setTotalPages(data.pagination.totalPages);
     } catch (error) {
       console.error('Error loading photos:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
       setTimeout(() => setIsPageLoaded(true), 100);
@@ -137,12 +143,12 @@ export default function LibraryPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
               <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-2">
-                Library
+                管理
               </span>
               <h1 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
                 照片库
               </h1>
-              <p className="text-stone-600 dark:text-stone-400 font-light">
+              <p className="text-[color:var(--ds-muted)] font-light">
                 已加载 <span className="font-medium text-stone-900 dark:text-stone-100">{photos.length}</span> 张照片
               </p>
             </div>
@@ -201,31 +207,45 @@ export default function LibraryPage() {
 
         {/* Photo Grid */}
         {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full border-2 border-stone-200 dark:border-neutral-800" />
-                <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-[color:var(--ds-accent)] animate-spin" />
-              </div>
-              <p className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light uppercase">Loading</p>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <Skeleton key={index} className="rounded-2xl aspect-square" />
+            ))}
           </div>
+        ) : error ? (
+          <EmptyState
+            title="加载失败"
+            description={<>暂时无法获取照片库，请稍后重试</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            }
+            tone="neutral"
+            size="md"
+            action={
+              <Button onClick={loadPhotos} variant="primary">
+                重新加载
+              </Button>
+            }
+          />
         ) : photos.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="max-w-sm mx-auto">
-              <div className="mb-6 flex justify-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--ds-accent-10)] to-[var(--ds-accent-5)] flex items-center justify-center">
-                  <svg className="w-8 h-8 text-[color:var(--ds-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  </svg>
-                </div>
-              </div>
-              <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无照片</p>
+          <EmptyState
+            title="暂无照片"
+            description={<>开始上传你的第一张作品吧</>}
+            icon={
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+            }
+            tone="accent"
+            size="md"
+            action={
               <Button onClick={() => router.push('/admin/upload')} variant="primary">
                 上传第一张照片
               </Button>
-            </div>
-          </div>
+            }
+          />
         ) : (
           <div 
             className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 transition-all duration-700 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
@@ -245,7 +265,7 @@ export default function LibraryPage() {
                 {/* Photo */}
                 <img
                   src={getImageUrl(photo.fileKey, photo.isPublic, { width: 400, quality: 85 })}
-                  alt={photo.title || 'Photo'}
+                  alt={photo.title || '照片'}
                   className="w-full h-full object-cover"
                 />
 
@@ -269,7 +289,7 @@ export default function LibraryPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-3 right-3 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -332,7 +352,7 @@ export default function LibraryPage() {
             >
               上一页
             </Button>
-            <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
+            <span className="px-4 py-2 text-sm text-[color:var(--ds-muted)]">
               第 {page} / {totalPages} 页
             </span>
             <Button

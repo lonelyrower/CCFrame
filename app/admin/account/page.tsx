@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface User {
   id: string;
@@ -129,13 +130,26 @@ export default function AccountPage() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-20">
-          <div className="inline-flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              加载中
-            </span>
+        <div className="space-y-8">
+          <div>
+            <Skeleton className="h-5 w-24 rounded-full mb-3" />
+            <Skeleton className="h-10 w-2/3 rounded-2xl" />
+            <Skeleton className="h-4 w-1/2 rounded-lg mt-4" />
           </div>
+
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8"
+            >
+              <Skeleton className="h-5 w-32 rounded-lg mb-6" />
+              <div className="space-y-4">
+                <Skeleton className="h-4 w-full rounded-lg" />
+                <Skeleton className="h-4 w-5/6 rounded-lg" />
+                <Skeleton className="h-4 w-2/3 rounded-lg" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -152,7 +166,7 @@ export default function AccountPage() {
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
           账户设置
         </h1>
-        <p className="text-stone-600 dark:text-stone-400 font-light">
+        <p className="text-[color:var(--ds-muted)] font-light">
           管理您的账户信息和安全设置
         </p>
       </div>
@@ -178,12 +192,12 @@ export default function AccountPage() {
           </h2>
           <div className="space-y-4 text-sm">
             <div className="flex justify-between py-3 border-b border-stone-100 dark:border-neutral-800">
-              <span className="text-stone-500 dark:text-stone-400">用户ID</span>
-              <span className="font-mono text-stone-700 dark:text-stone-300">{user?.id}</span>
+              <span className="text-[color:var(--ds-muted-soft)]">用户ID</span>
+              <span className="font-mono text-[color:var(--ds-muted)]">{user?.id}</span>
             </div>
             <div className="flex justify-between py-3 border-b border-stone-100 dark:border-neutral-800">
-              <span className="text-stone-500 dark:text-stone-400">创建时间</span>
-              <span className="text-stone-700 dark:text-stone-300">
+              <span className="text-[color:var(--ds-muted-soft)]">创建时间</span>
+              <span className="text-[color:var(--ds-muted)]">
                 {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('zh-CN') : '-'}
               </span>
             </div>
@@ -252,10 +266,10 @@ export default function AccountPage() {
 
         {/* Security Tips */}
         <div className="bg-stone-50 dark:bg-neutral-800/50 rounded-3xl p-8">
-          <h3 className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-4">
+          <h3 className="text-sm font-medium text-[color:var(--ds-muted)] mb-4">
             🔒 安全提示
           </h3>
-          <ul className="space-y-2 text-sm text-stone-600 dark:text-stone-400">
+          <ul className="space-y-2 text-sm text-[color:var(--ds-muted)]">
             <li>• 密码应至少包含8个字符</li>
             <li>• 建议使用字母、数字和特殊字符的组合</li>
             <li>• 请勿与其他网站使用相同的密码</li>

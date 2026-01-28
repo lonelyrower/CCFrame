@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
 
 interface Album {
   id: string;
@@ -21,6 +24,7 @@ export default function AlbumsManagementPage() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [series, setSeries] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState<Album | null>(null);
 
@@ -35,17 +39,23 @@ export default function AlbumsManagementPage() {
 
   const loadData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [albumsRes, seriesRes] = await Promise.all([
-        fetch('/api/albums'),
-        fetch('/api/series'),
+        fetchWithTimeout('/api/albums'),
+        fetchWithTimeout('/api/series'),
       ]);
+      if (!albumsRes.ok || !seriesRes.ok) {
+        setError('加载失败');
+        return;
+      }
       const albumsData = await albumsRes.json();
       const seriesData = await seriesRes.json();
       setAlbums(albumsData.albums);
       setSeries(seriesData.series);
     } catch (error) {
       console.error('Error loading data:', error);
+      setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
     }
@@ -128,13 +138,13 @@ export default function AlbumsManagementPage() {
         <div>
           <div className="inline-block mb-3">
             <span className="text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)]">
-              Management
+              管理
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">
             相册管理
           </h1>
-          <p className="text-stone-600 dark:text-stone-400 font-light">
+          <p className="text-[color:var(--ds-muted)] font-light">
             创建和管理照片相册
           </p>
         </div>
@@ -145,21 +155,56 @@ export default function AlbumsManagementPage() {
 
       {/* Albums List */}
       {isLoading ? (
-        <div className="text-center py-20">
-          <div className="inline-flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm uppercase tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              Loading
-            </span>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-6"
+            >
+              <Skeleton className="h-6 w-2/3 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded-lg mt-3" />
+              <Skeleton className="h-4 w-1/2 rounded-lg mt-2" />
+              <div className="flex gap-2 mt-5">
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+              </div>
+            </div>
+          ))}
         </div>
+      ) : error ? (
+        <EmptyState
+          title="加载失败"
+          description={<>暂时无法获取相册信息，请稍后重试</>}
+          icon={
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          }
+          tone="neutral"
+          size="md"
+          action={
+            <Button onClick={loadData} variant="primary">
+              重新加载
+            </Button>
+          }
+        />
       ) : albums.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-xl text-stone-600 dark:text-stone-400 font-light mb-6">暂无相册</p>
-          <Button onClick={() => setShowCreateModal(true)} variant="primary">
-            创建第一个相册
-          </Button>
-        </div>
+        <EmptyState
+          title="暂无相册"
+          description={<>创建相册来组织你的照片</>}
+          icon={
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 7.5h16.5m-16.5 4.5h16.5m-16.5 4.5h10.5" />
+            </svg>
+          }
+          tone="accent"
+          size="md"
+          action={
+            <Button onClick={() => setShowCreateModal(true)} variant="primary">
+              创建第一个相册
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {albums.map((album) => (
@@ -171,11 +216,11 @@ export default function AlbumsManagementPage() {
                 {album.title}
               </h3>
               {album.summary && (
-                <p className="text-sm text-stone-600 dark:text-stone-400 mb-3 line-clamp-2 leading-relaxed">
+                <p className="text-sm text-[color:var(--ds-muted)] mb-3 line-clamp-2 leading-relaxed">
                   {album.summary}
                 </p>
               )}
-              <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-4 flex-wrap">
+              <div className="flex items-center gap-2 text-xs text-[color:var(--ds-muted-soft)] mb-4 flex-wrap">
                 {album.series && (
                   <span className="px-3 py-1.5 bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] rounded-full ring-1 ring-[color:var(--ds-accent-20)] font-medium">
                     {album.series.title}
@@ -227,7 +272,7 @@ export default function AlbumsManagementPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+                <label className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
                   简介（可选）
                 </label>
                 <textarea
@@ -235,12 +280,12 @@ export default function AlbumsManagementPage() {
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="输入相册简介"
                   rows={3}
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label htmlFor="album-series" className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+                <label htmlFor="album-series" className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
                   所属系列（可选）
                 </label>
                 <select

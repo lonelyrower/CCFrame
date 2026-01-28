@@ -13,8 +13,8 @@ export function Footer() {
             <span className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 tracking-tighter transition-colors duration-300 group-hover:text-[color:var(--ds-accent)]">
               CCFrame
             </span>
-            <span className="text-xs uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400 font-medium">
-              Photo Gallery
+            <span className="text-xs tracking-[0.3em] text-[color:var(--ds-muted-soft)] font-medium">
+              摄影作品集
             </span>
           </div>
 
@@ -27,10 +27,10 @@ export function Footer() {
 
           {/* Copyright with subtle styling */}
           <div className="text-center">
-            <p className="text-sm text-stone-500 dark:text-stone-400 tracking-wide mb-2">
+            <p className="text-sm text-[color:var(--ds-muted-soft)] tracking-wide mb-2">
               © {currentYear} CCFrame
             </p>
-            <p className="text-xs text-stone-400 dark:text-stone-500">
+            <p className="text-xs text-[color:var(--ds-muted-soft)]">
               Built with <span className="text-[color:var(--ds-accent)]">♥</span> using Next.js
             </p>
           </div>

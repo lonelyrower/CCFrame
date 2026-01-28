@@ -91,7 +91,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
             </h2>
             <button
               onClick={onClose}
-              className="text-stone-400 hover:text-[color:var(--ds-accent)] transition-colors p-2 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-full"
+              className="text-[color:var(--ds-muted-soft)] hover:text-[color:var(--ds-accent)] transition-colors p-2 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-full"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -154,7 +154,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="输入标签后按回车"
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                 />
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
@@ -172,7 +172,7 @@ export function BulkEditDialog({ selectedCount, onClose, onSave }: BulkEditDialo
                     </span>
                   ))}
                 </div>
-                <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                <p className="text-xs text-[color:var(--ds-muted-soft)] leading-relaxed">
                   注意：这将替换所选照片的现有标签
                 </p>
               </>

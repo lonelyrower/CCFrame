@@ -17,7 +17,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary: 'bg-[color:var(--ds-accent)] text-white hover:bg-[color:var(--ds-accent-strong)] focus-visible:ring-[color:var(--ds-accent-50)] shadow-md hover:shadow-lg hover:shadow-[var(--ds-accent-20)] before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/0 before:via-white/20 before:to-white/0 before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700',
       secondary:
         'bg-stone-200 text-stone-900 hover:bg-stone-300 focus-visible:ring-stone-500 dark:bg-neutral-700 dark:text-stone-100 dark:hover:bg-neutral-600 hover:shadow-md',
-      ghost: 'bg-transparent hover:bg-stone-100 dark:hover:bg-neutral-800 focus-visible:ring-stone-500 text-stone-700 dark:text-stone-300',
+      ghost: 'bg-transparent hover:bg-stone-100 dark:hover:bg-neutral-800 focus-visible:ring-stone-500 text-[color:var(--ds-muted)]',
       glass: 'btn-glass focus-visible:ring-white/40 backdrop-blur-md',
       outline:
         'border-2 border-stone-300 text-stone-900 bg-transparent hover:bg-stone-100 hover:border-[color:var(--ds-accent-30)] focus-visible:ring-stone-400 dark:text-stone-100 dark:border-neutral-700 dark:hover:bg-white/5 dark:hover:border-[color:var(--ds-accent-30)]',

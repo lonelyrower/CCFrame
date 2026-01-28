@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { DEFAULT_HOME_COPY } from '@/lib/constants';
 import { DEFAULT_THEME_ID, THEME_PRESETS, ThemeId, resolveThemeId, themeToCssVars } from '@/lib/themes';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function SettingsPage() {
   const [homeCopy, setHomeCopy] = useState('');
@@ -90,19 +91,30 @@ export default function SettingsPage() {
           </span>
         </div>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">网站设置</h1>
-        <p className="text-stone-600 dark:text-stone-400 font-light">
+        <p className="text-[color:var(--ds-muted)] font-light">
           配置网站显示内容
         </p>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20">
-          <div className="inline-flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-300 dark:border-neutral-700 border-t-[color:var(--ds-accent)]" />
-            <span className="text-sm tracking-widest text-stone-600 dark:text-stone-400 font-light">
-              加载中
-            </span>
-          </div>
+        <div className="space-y-8">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8"
+            >
+              <Skeleton className="h-6 w-40 rounded-lg mb-6" />
+              <div className="space-y-4">
+                <Skeleton className="h-4 w-full rounded-lg" />
+                <Skeleton className="h-4 w-5/6 rounded-lg" />
+                <Skeleton className="h-4 w-2/3 rounded-lg" />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <Skeleton className="h-10 w-28 rounded-full" />
+                <Skeleton className="h-10 w-24 rounded-full" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-8">
@@ -111,14 +123,14 @@ export default function SettingsPage() {
             <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">首页文案</h2>
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-2">
+                <label className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
                   当前文案
                 </label>
                 <textarea
                   value={homeCopy}
                   onChange={(e) => setHomeCopy(e.target.value)}
                   rows={4}
-                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
+                  className="w-full px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300"
                   placeholder="输入首页显示的文案..."
                 />
               </div>
@@ -150,10 +162,10 @@ export default function SettingsPage() {
                 >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="font-medium text-stone-700 dark:text-stone-300 mb-1">
+                      <p className="font-medium text-[color:var(--ds-muted)] mb-1">
                         选项 {key}
                       </p>
-                      <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+                      <p className="text-sm text-[color:var(--ds-muted)] leading-relaxed">
                         {value}
                       </p>
                     </div>
@@ -169,7 +181,7 @@ export default function SettingsPage() {
           {/* Theme Settings */}
           <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ring-1 ring-stone-200/50 dark:ring-neutral-800/50 p-8">
             <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-2 tracking-tight">主题设置</h2>
-            <p className="text-sm text-stone-600 dark:text-stone-400 mb-6">选择一个主题，更改将实时预览</p>
+            <p className="text-sm text-[color:var(--ds-muted)] mb-6">选择一个主题，更改将实时预览</p>
             
             <div className="space-y-6">
               {/* Theme Preview Card */}
@@ -186,7 +198,7 @@ export default function SettingsPage() {
                     <p className="font-serif font-semibold text-stone-900 dark:text-stone-50">
                       {THEME_PRESETS.find(p => p.id === themePreset)?.label || 'Custom'}
                     </p>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                    <p className="text-xs text-[color:var(--ds-muted-soft)]">
                       {THEME_PRESETS.find(p => p.id === themePreset)?.description || '自定义主题色'}
                     </p>
                   </div>
@@ -198,8 +210,8 @@ export default function SettingsPage() {
 
               {/* Theme Grid */}
               <div>
-                <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-3">
-                  主题选择 <span className="text-stone-400 font-normal">({THEME_PRESETS.length} 个预设)</span>
+                <label className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-3">
+                  主题选择 <span className="text-[color:var(--ds-muted-soft)] font-normal">({THEME_PRESETS.length} 个预设)</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {THEME_PRESETS.map((preset) => {
@@ -233,7 +245,7 @@ export default function SettingsPage() {
                         <p className="text-sm font-semibold text-stone-900 dark:text-stone-50 mb-0.5">
                           {preset.label}
                         </p>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[color:var(--ds-muted-soft)] line-clamp-2 leading-relaxed">
                           {preset.description}
                         </p>
                         {/* Selected Indicator */}
@@ -260,13 +272,13 @@ export default function SettingsPage() {
                     <div className="flex gap-1.5 mb-3">
                       <span className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500" />
                       <span className="h-6 w-6 rounded-full ring-1 ring-black/10 dark:ring-white/10 flex items-center justify-center bg-stone-100 dark:bg-neutral-700">
-                        <svg className="h-3 w-3 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="h-3 w-3 text-[color:var(--ds-muted-soft)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       </span>
                     </div>
                     <p className="text-sm font-semibold text-stone-900 dark:text-stone-50 mb-0.5">自定义</p>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed">自定义专属颜色</p>
+                    <p className="text-xs text-[color:var(--ds-muted-soft)] line-clamp-2 leading-relaxed">自定义专属颜色</p>
                     {themePreset === 'custom' && (
                       <div className="absolute top-2 right-2">
                         <svg className="h-5 w-5 text-[color:var(--ds-accent)]" fill="currentColor" viewBox="0 0 20 20">
@@ -281,7 +293,7 @@ export default function SettingsPage() {
               {/* Custom Color Picker */}
               {themePreset === 'custom' && (
                 <div className="p-5 rounded-2xl bg-stone-50 dark:bg-neutral-800/50 ring-1 ring-stone-200/50 dark:ring-neutral-700/50 animate-fade-in-200">
-                  <label className="block text-sm font-medium tracking-wide text-stone-700 dark:text-stone-300 mb-3">
+                  <label className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-3">
                     自定义主色
                   </label>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -301,7 +313,7 @@ export default function SettingsPage() {
                       value={themeColor || '#e63946'}
                       onChange={(e) => setThemeColor(e.target.value)}
                       placeholder="#e63946"
-                      className="flex-1 px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300 font-mono"
+                      className="flex-1 px-5 py-3 rounded-xl border-2 border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ds-accent-20)] focus:border-[color:var(--ds-accent)] transition-all duration-300 font-mono"
                     />
                     {themeColor && (
                       <Button

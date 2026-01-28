@@ -7,6 +7,10 @@ export function AdminNav() {
   const pathname = usePathname();
   const router = useRouter();
 
+  if (pathname?.startsWith('/admin/login')) {
+    return null;
+  }
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/admin/login');
@@ -47,7 +51,7 @@ export function AdminNav() {
                   className={`px-4 py-2 rounded-xl text-sm font-medium tracking-wide transition-all duration-300 ${
                     pathname === item.href
                       ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-[color:var(--ds-accent-20)]'
-                      : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-neutral-800'
+                      : 'text-[color:var(--ds-muted)] hover:bg-stone-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   {item.label}
