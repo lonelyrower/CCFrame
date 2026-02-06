@@ -13,7 +13,8 @@ COPY package.json package-lock.json ./
 # Tailwind v4 uses platform-specific optional native bindings (oxide). In
 # multi-arch Docker builds, `npm ci` can fail to install the correct optional
 # deps (npm optionalDependencies issue), causing `next build` to crash.
-RUN npm install --no-audit --no-fund
+# Force musl optional deps resolution for Alpine builds (e.g. Tailwind oxide bindings).
+RUN npm install --no-audit --no-fund --libc=musl
 
 # Rebuild the source code only when needed
 FROM base AS builder
