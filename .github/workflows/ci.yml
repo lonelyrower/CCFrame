@@ -78,5 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: .next/
+          # Directory paths can be finicky depending on how the action/glob resolves trailing slashes.
+          # Upload the whole Next.js build output.
+          path: .next
           retention-days: 7
