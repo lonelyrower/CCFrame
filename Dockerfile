@@ -7,14 +7,12 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# Copy package files for reproducible installs
-COPY package.json package-lock.json ./
-# NOTE: We intentionally use `npm install` instead of `npm ci` here.
+# Copy package.json (exclude lock file for cross-platform native bindings).
 # Tailwind v4 uses platform-specific optional native bindings (oxide). In
-# multi-arch Docker builds, `npm ci` can fail to install the correct optional
-# deps (npm optionalDependencies issue), causing `next build` to crash.
-# Force musl optional deps resolution for Alpine builds (e.g. Tailwind oxide bindings).
-RUN npm install --no-audit --no-fund --libc=musl
+# multi-arch Docker builds, using `npm ci`/lockfiles can miss the correct
+# optional deps and break `next build` (npm optionalDependencies issue).
+COPY package.json ./
+RUN npm install --no-audit --no-fund
 
 # Rebuild the source code only when needed
 FROM base AS builder
