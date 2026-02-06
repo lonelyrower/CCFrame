@@ -29,9 +29,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        # `npm ci` can miss platform-specific optional deps (e.g. Rollup native),
-        # causing CI failures when the lockfile was produced on another OS.
-        run: npm install --no-audit --no-fund
+        # `npm ci`/lockfiles can miss platform-specific optional deps (e.g. Rollup native)
+        # when the lockfile was produced on another OS. Removing the lockfile forces npm to
+        # resolve the correct platform packages for the runner.
+        run: rm -f package-lock.json && npm install --no-audit --no-fund
 
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -60,8 +61,8 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        # See note above about `npm ci` + platform-specific optional deps.
-        run: npm install --no-audit --no-fund
+        # See note above about lockfiles + platform-specific optional deps.
+        run: rm -f package-lock.json && npm install --no-audit --no-fund
 
       - name: Generate Prisma Client
         run: npx prisma generate
