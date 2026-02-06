@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 // GET all series
 export async function GET() {
@@ -68,6 +69,11 @@ export async function GET() {
 // POST create series (admin only)
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { slug, title, summary, brand, coverId } = await request.json();
 
     const series = await prisma.series.create({

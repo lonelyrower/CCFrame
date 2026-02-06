@@ -8,7 +8,7 @@ import { getClientIp, rateLimit } from '@/lib/rate-limit';
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const limit = rateLimit(`auth:login:${ip}`, RATE_LIMIT_AUTH.max, RATE_LIMIT_AUTH.windowMs);
+    const limit = await rateLimit(`auth:login:${ip}`, RATE_LIMIT_AUTH.max, RATE_LIMIT_AUTH.windowMs);
     if (!limit.allowed) {
       const retryAfter = Math.max(1, Math.ceil((limit.resetAt - Date.now()) / 1000));
       return NextResponse.json(

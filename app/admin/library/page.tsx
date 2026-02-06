@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { BulkEditDialog } from '@/components/admin/BulkEditDialog';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { getImageUrl } from '@/lib/image/utils';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -30,6 +31,8 @@ export default function LibraryPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState<Photo | null>(null);
+  const [isDeletingPhoto, setIsDeletingPhoto] = useState(false);
 
   useEffect(() => {
     loadPhotos();
@@ -50,7 +53,7 @@ export default function LibraryPage() {
       setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
-      setTimeout(() => setIsPageLoaded(true), 100);
+      requestAnimationFrame(() => setIsPageLoaded(true));
     }
   };
 
@@ -88,22 +91,25 @@ export default function LibraryPage() {
     }
   };
 
-  const deletePhoto = async (photoId: string) => {
-    if (!confirm('确定要删除这张照片吗？')) return;
-
+  const confirmDeletePhoto = async () => {
+    if (!photoToDelete) return;
+    setIsDeletingPhoto(true);
     try {
-      await fetch(`/api/photos/${photoId}`, {
+      await fetch(`/api/photos/${photoToDelete.id}`, {
         method: 'DELETE',
       });
 
-      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+      setPhotos((prev) => prev.filter((p) => p.id !== photoToDelete.id));
       setSelectedPhotos((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(photoId);
+        newSet.delete(photoToDelete.id);
         return newSet;
       });
+      setPhotoToDelete(null);
     } catch (error) {
       console.error('Error deleting photo:', error);
+    } finally {
+      setIsDeletingPhoto(false);
     }
   };
 
@@ -309,7 +315,7 @@ export default function LibraryPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      deletePhoto(photo.id);
+                      setPhotoToDelete(photo);
                     }}
                     className="px-3 py-1.5 bg-[color:var(--ds-accent-90)] text-white rounded-lg text-xs font-medium hover:bg-[color:var(--ds-accent-strong)] transition-all backdrop-blur-sm"
                   >
@@ -373,6 +379,17 @@ export default function LibraryPage() {
             onSave={handleBulkEdit}
           />
         )}
+
+        <ConfirmDialog
+          open={Boolean(photoToDelete)}
+          title="删除照片"
+          description={photoToDelete ? `确定删除「${photoToDelete.title || '未命名照片'}」吗？该操作不可恢复。` : ''}
+          confirmText="确认删除"
+          cancelText="取消"
+          isLoading={isDeletingPhoto}
+          onConfirm={confirmDeletePhoto}
+          onCancel={() => setPhotoToDelete(null)}
+        />
       </div>
     </div>
   );

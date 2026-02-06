@@ -5,6 +5,7 @@ import { saveUploadedFile, validateImageFile } from '@/lib/image/upload';
 import { getStorageProvider } from '@/lib/storage';
 import { RATE_LIMIT_UPLOAD } from '@/lib/constants';
 import { getClientIp, rateLimit } from '@/lib/rate-limit';
+import { getSession } from '@/lib/session';
 
 // Configure route segment for file uploads
 export const dynamic = 'force-dynamic';
@@ -12,8 +13,13 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const ip = getClientIp(request);
-    const limit = rateLimit(`upload:${ip}`, RATE_LIMIT_UPLOAD.max, RATE_LIMIT_UPLOAD.windowMs);
+    const limit = await rateLimit(`upload:${ip}`, RATE_LIMIT_UPLOAD.max, RATE_LIMIT_UPLOAD.windowMs);
     if (!limit.allowed) {
       const retryAfter = Math.max(1, Math.ceil((limit.resetAt - Date.now()) / 1000));
       return NextResponse.json(
@@ -122,7 +128,7 @@ export async function POST(request: NextRequest) {
         isPublic,
         checksum,
         fileSize: uploadResult.size,
-        // ����ʹ���ⲿ���루��ǰ���Ѽ��㣩������ʹ�÷�������ȡ�� dominantColor
+        // Prefer client-provided dominantColor, fallback to server extraction result.
         dominantColor: dominantColor || uploadResult.dominantColor || null,
         albumId: albumId || undefined,
         tags: {
@@ -160,10 +166,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Upload error:', error);
+    const isProd = process.env.NODE_ENV === 'production';
     return NextResponse.json(
       {
         error: 'Upload failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        ...(isProd ? {} : { details: error instanceof Error ? error.message : 'Unknown error' }),
       },
       { status: 500 }
     );

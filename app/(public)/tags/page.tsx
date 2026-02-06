@@ -41,7 +41,7 @@ export default function TagsPage() {
       setError(error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
-      setTimeout(() => setIsPageLoaded(true), 100);
+      requestAnimationFrame(() => setIsPageLoaded(true));
     }
   };
 

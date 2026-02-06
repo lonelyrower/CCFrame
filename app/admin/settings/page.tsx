@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DEFAULT_HOME_COPY } from '@/lib/constants';
 import { DEFAULT_THEME_ID, THEME_PRESETS, ThemeId, resolveThemeId, themeToCssVars } from '@/lib/themes';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -12,6 +13,8 @@ export default function SettingsPage() {
   const [themePreset, setThemePreset] = useState<ThemeId>(DEFAULT_THEME_ID);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // 实时预览主题
   const applyThemePreview = useCallback((preset: ThemeId, color: string) => {
@@ -50,6 +53,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setMessage(null);
     try {
       await fetch('/api/site-copy', {
         method: 'PUT',
@@ -60,25 +64,23 @@ export default function SettingsPage() {
           themeColor: themePreset === 'custom' ? themeColor || null : null,
         }),
       });
-      alert('保存成功！');
+      setMessage({ type: 'success', text: '保存成功' });
     } catch (error) {
       console.error('Error saving:', error);
-      alert('保存失败');
+      setMessage({ type: 'error', text: '保存失败，请稍后重试' });
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!confirm('确定恢复默认文案？')) return;
-
     try {
       await fetch('/api/site-copy/reset', { method: 'POST' });
       await loadSettings();
-      alert('已恢复默认文案');
+      setMessage({ type: 'success', text: '已恢复默认设置' });
     } catch (error) {
       console.error('Error resetting:', error);
-      alert('操作失败');
+      setMessage({ type: 'error', text: '操作失败，请稍后重试' });
     }
   };
 
@@ -95,6 +97,18 @@ export default function SettingsPage() {
           配置网站显示内容
         </p>
       </div>
+
+      {message && (
+        <div
+          className={`mb-6 p-4 rounded-2xl ${
+            message.type === 'success'
+              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 ring-1 ring-green-200 dark:ring-green-800'
+              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 ring-1 ring-red-200 dark:ring-red-800'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-8">
@@ -143,7 +157,7 @@ export default function SettingsPage() {
                 >
                   保存文案
                 </Button>
-                <Button onClick={handleReset} variant="secondary">
+                <Button onClick={() => setShowResetConfirm(true)} variant="secondary">
                   恢复默认
                 </Button>
               </div>
@@ -342,6 +356,19 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        title="恢复默认设置"
+        description="确定恢复首页文案与主题设置为默认值吗？"
+        confirmText="确认恢复"
+        cancelText="取消"
+        onConfirm={async () => {
+          await handleReset();
+          setShowResetConfirm(false);
+        }}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 }

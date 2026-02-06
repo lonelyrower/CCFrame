@@ -39,10 +39,10 @@ test.describe('Public Pages', () => {
     await expect(page).toHaveURL('/series');
   });
 
-  test('albums page should redirect or load properly', async ({ page }) => {
+  test('albums index route should be unavailable (only detail route exists)', async ({ page }) => {
     const response = await page.goto('/albums');
 
-    // Should get a successful response (2xx or redirect)
-    expect(response?.status()).toBeLessThan(400);
+    // Current routing only exposes /albums/[id], not /albums.
+    expect(response?.status()).toBe(404);
   });
 });

@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const albumId = searchParams.get('albumId');
     const seriesId = searchParams.get('seriesId');
     const isPublic = searchParams.get('isPublic');
+    const q = searchParams.get('q')?.trim();
 
     // Determine authentication state
     const session = await getSession();
@@ -57,8 +58,57 @@ export async function GET(request: NextRequest) {
 
     if (seriesId) {
       where.album = {
-        seriesId,
+        is: {
+          seriesId,
+        },
       };
+    }
+
+    if (q) {
+      where.OR = [
+        {
+          title: {
+            contains: q,
+            mode: 'insensitive',
+          },
+        },
+        {
+          tags: {
+            some: {
+              tag: {
+                name: {
+                  contains: q,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        },
+        {
+          album: {
+            is: {
+              title: {
+                contains: q,
+                mode: 'insensitive',
+              },
+            },
+          },
+        },
+        {
+          album: {
+            is: {
+              series: {
+                is: {
+                  title: {
+                    contains: q,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          },
+        },
+      ];
     }
 
     // 使用游标分页（O(1) 性能）或偏移分页（向后兼容）

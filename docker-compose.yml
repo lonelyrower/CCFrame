@@ -9,7 +9,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-ccframe}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ccframe_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-ccframe}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -29,12 +29,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ccframe}:${POSTGRES_PASSWORD:-ccframe_password}@postgres:5432/${POSTGRES_DB:-ccframe}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-this-nextauth-secret-to-something-secure}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@ccframe.local}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123456}
-      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ccframe}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-ccframe}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?NEXTAUTH_URL is required}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL is required}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
+      BASE_URL: ${BASE_URL:?BASE_URL is required}
       NODE_ENV: production
       NEXT_PUBLIC_DISABLE_CF: true
     volumes:
@@ -46,7 +46,8 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        npx prisma migrate deploy &&
+        node scripts/preflight.mjs &&
+        node node_modules/prisma/build/index.js migrate deploy &&
         node scripts/seed-admin.js &&
         node server.js
       "

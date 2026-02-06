@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { PwaRegister } from '@/components/PwaRegister';
-import { prisma } from '@/lib/db';
 import { resolveThemeId, themeToCssVars } from '@/lib/themes';
+import { getCachedSiteCopy } from '@/lib/site-copy-cache';
 
 export const viewport: Viewport = {
   themeColor: '#e63946',
@@ -35,26 +35,16 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let themePreset: string | null = null;
-  let themeColor: string | null = null;
-  try {
-    const siteCopy = await prisma.siteCopy.findUnique({
-      where: { id: 1 },
-      select: { themePreset: true, themeColor: true },
-    });
-    themePreset = siteCopy?.themePreset ?? null;
-    themeColor = siteCopy?.themeColor ?? null;
-  } catch {
-    themePreset = null;
-    themeColor = null;
-  }
+  const siteCopy = await getCachedSiteCopy();
+  const themePreset = siteCopy.themePreset;
+  const themeColor = siteCopy.themeColor;
   const themeId = resolveThemeId(themePreset, themeColor);
   const themeVars = themeToCssVars(themePreset, themeColor);
 

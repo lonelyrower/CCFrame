@@ -4,11 +4,16 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const email = process.env.ADMIN_EMAIL?.trim();
+  const password = process.env.ADMIN_PASSWORD;
 
   if (!email || !password) {
     console.error('Error: ADMIN_EMAIL and ADMIN_PASSWORD must be set');
+    process.exit(1);
+  }
+
+  if (password.length < 8) {
+    console.error('Error: ADMIN_PASSWORD must be at least 8 characters');
     process.exit(1);
   }
 

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
@@ -27,6 +29,8 @@ export default function AlbumsManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState<Album | null>(null);
+  const [albumToDelete, setAlbumToDelete] = useState<Album | null>(null);
+  const [isDeletingAlbum, setIsDeletingAlbum] = useState(false);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -107,14 +111,21 @@ export default function AlbumsManagementPage() {
     }
   };
 
-  const handleDelete = async (albumId: string) => {
-    if (!confirm('确定删除此相册？')) return;
+  const handleDelete = (album: Album) => {
+    setAlbumToDelete(album);
+  };
 
+  const confirmDelete = async () => {
+    if (!albumToDelete) return;
+    setIsDeletingAlbum(true);
     try {
-      await fetch(`/api/albums/${albumId}`, { method: 'DELETE' });
+      await fetch(`/api/albums/${albumToDelete.id}`, { method: 'DELETE' });
       await loadData();
+      setAlbumToDelete(null);
     } catch (error) {
       console.error('Error deleting album:', error);
+    } finally {
+      setIsDeletingAlbum(false);
     }
   };
 
@@ -241,7 +252,7 @@ export default function AlbumsManagementPage() {
                   编辑
                 </Button>
                 <Button
-                  onClick={() => handleDelete(album.id)}
+                  onClick={() => handleDelete(album)}
                   variant="ghost"
                   size="sm"
                   className="text-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent-10)]"
@@ -256,10 +267,18 @@ export default function AlbumsManagementPage() {
 
       {/* Create/Edit Modal */}
       {(showCreateModal || editingAlbum) && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 max-w-lg w-full p-8">
+        <Modal
+          open={showCreateModal || Boolean(editingAlbum)}
+          onClose={() => {
+            setShowCreateModal(false);
+            setEditingAlbum(null);
+            resetForm();
+          }}
+          labelledBy="album-modal-title"
+        >
+          <div className="max-w-lg w-full">
             <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">
-              {editingAlbum ? '编辑相册' : '创建相册'}
+              <span id="album-modal-title">{editingAlbum ? '编辑相册' : '创建相册'}</span>
             </h2>
 
             <div className="space-y-5">
@@ -326,8 +345,19 @@ export default function AlbumsManagementPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
+
+      <ConfirmDialog
+        open={Boolean(albumToDelete)}
+        title="删除相册"
+        description={albumToDelete ? `确定删除相册「${albumToDelete.title}」吗？该操作不可恢复。` : ''}
+        confirmText="确认删除"
+        cancelText="取消"
+        isLoading={isDeletingAlbum}
+        onConfirm={confirmDelete}
+        onCancel={() => setAlbumToDelete(null)}
+      />
     </div>
   );
 }

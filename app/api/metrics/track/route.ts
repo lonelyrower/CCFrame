@@ -1,14 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { RATE_LIMIT_METRICS } from '@/lib/constants';
+import { getClientIp, rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const limit = await rateLimit(
+      `metrics:track:${ip}`,
+      RATE_LIMIT_METRICS.max,
+      RATE_LIMIT_METRICS.windowMs
+    );
+    if (!limit.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((limit.resetAt - Date.now()) / 1000));
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: { 'Retry-After': retryAfter.toString() },
+        }
+      );
+    }
+
     // Get today's date (UTC midnight)
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
     // Get or create today's metrics
-    const _metrics = await prisma.metricsDaily.upsert({
+    await prisma.metricsDaily.upsert({
       where: { day: today },
       update: {
         pv: { increment: 1 },
@@ -26,12 +45,13 @@ export async function POST(request: NextRequest) {
 
     if (!visitorCookie) {
       // Generate a unique visitor ID and set cookie
-      const visitorId = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+      const visitorId = crypto.randomUUID();
       response.cookies.set('visitor_id', visitorId, {
         maxAge: 60 * 60 * 24 * 365, // 1 year
         path: '/',
         httpOnly: true,
         sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
       });
 
       // Increment UV count

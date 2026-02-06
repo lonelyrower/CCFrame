@@ -37,6 +37,11 @@ export const RATE_LIMIT_AUTH = {
   windowMs: 60 * 1000, // 1 minute
 };
 
+export const RATE_LIMIT_METRICS = {
+  max: 30,
+  windowMs: 60 * 1000, // 1 minute
+};
+
 /**
  * Cache control headers
  */

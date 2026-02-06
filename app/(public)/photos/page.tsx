@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Masonry } from '@/components/gallery/Masonry';
 import { Lightbox } from '@/components/gallery/Lightbox';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
@@ -21,7 +22,11 @@ interface Photo {
   tags: string[];
 }
 
-export default function PhotosPage() {
+function PhotosPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q')?.trim() || '';
+
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -48,6 +53,9 @@ export default function PhotosPage() {
       if (cursor) {
         params.set('cursor', cursor);
       }
+      if (query) {
+        params.set('q', query);
+      }
 
       const response = await fetchWithTimeout(`/api/photos?${params}`);
 
@@ -71,7 +79,7 @@ export default function PhotosPage() {
       
       // Trigger page loaded animation after first load
       if (isRefresh || cursor === null) {
-        setTimeout(() => setIsPageLoaded(true), 100);
+        requestAnimationFrame(() => setIsPageLoaded(true));
       }
     } catch (error) {
       console.error('Error loading photos:', error);
@@ -80,13 +88,17 @@ export default function PhotosPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, query]);
 
-  // 初始加载
+  // 初始加载/搜索变更时刷新
   useEffect(() => {
+    setIsPageLoaded(false);
+    setNextCursor(null);
+    setHasMore(true);
+    setPhotos([]);
     loadPhotos(null, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [query]);
 
   // 无限滚动观察器
   useEffect(() => {
@@ -153,7 +165,7 @@ export default function PhotosPage() {
               画廊
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
-              全部作品
+              {query ? `搜索：${query}` : '全部作品'}
             </h1>
             <div className="flex items-center gap-4">
               <div className="w-12 h-0.5 bg-[color:var(--ds-accent)]" />
@@ -192,11 +204,25 @@ export default function PhotosPage() {
           </div>
         ) : (
           <EmptyState
-            title="暂无公开作品"
-            description={<>这里还没有上传任何照片，请稍后再来查看精彩内容</>}
+            title={query ? '未找到匹配作品' : '暂无公开作品'}
+            description={
+              query ? <>请尝试更换关键词，或返回浏览全部作品</> : <>这里还没有上传任何照片，请稍后再来查看精彩内容</>
+            }
             icon={<EmptyPhotosIcon size={72} className="opacity-70" />}
             tone="accent"
             size="lg"
+            action={
+              query ? (
+                <Button
+                  onClick={() => {
+                    router.push('/photos');
+                  }}
+                  variant="primary"
+                >
+                  浏览全部作品
+                </Button>
+              ) : undefined
+            }
           />
         )}
 
@@ -247,5 +273,38 @@ export default function PhotosPage() {
         />
       )}
     </PullToRefresh>
+  );
+}
+
+function PhotosPageFallback() {
+  return (
+    <div className="min-h-[100dvh] bg-stone-50 dark:bg-neutral-950 py-12 md:py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 md:mb-16">
+          <span className="inline-block text-xs uppercase tracking-[0.2em] font-medium text-[color:var(--ds-accent)] mb-3">
+            画廊
+          </span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4 tracking-tight leading-tight">
+            全部作品
+          </h1>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <Skeleton
+              key={index}
+              className={`rounded-2xl ${index % 3 === 0 ? 'aspect-[4/5]' : 'aspect-square'}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PhotosPage() {
+  return (
+    <Suspense fallback={<PhotosPageFallback />}>
+      <PhotosPageContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   SearchIcon,
@@ -55,6 +55,19 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === '/';
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+  const filteredTags = useMemo(() => {
+    if (!normalizedSearchQuery) return hotTags;
+    return hotTags.filter((tag) => tag.name.toLowerCase().includes(normalizedSearchQuery));
+  }, [hotTags, normalizedSearchQuery]);
+
+  const filteredSeries = useMemo(() => {
+    if (!normalizedSearchQuery) return topSeries;
+    return topSeries.filter((series) =>
+      series.title.toLowerCase().includes(normalizedSearchQuery)
+    );
+  }, [topSeries, normalizedSearchQuery]);
 
   useEffect(() => {
     const applyTheme = (darkMode: boolean) => {
@@ -126,6 +139,17 @@ export function Header() {
   };
 
   const isActive = (path: string) => pathname === path;
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    router.push(`/photos?q=${encodeURIComponent(query)}`);
+    setShowSearch(false);
+    setShowMobileNav(false);
+    setShowUserMenu(false);
+  };
 
   useEffect(() => {
     setShowMobileNav(false);
@@ -363,16 +387,25 @@ export function Header() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="relative rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-2xl ring-1 ring-inset ring-stone-200/50 dark:ring-neutral-700/50 shadow-xl overflow-hidden">
               <div className="p-4 sm:p-5 md:p-6">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="搜索照片、标签、相册..."
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-neutral-800 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:ring-2 focus:ring-[color:var(--ds-accent-30)] focus:border-[color:var(--ds-accent)] transition-all duration-200"
-                  autoFocus
-                />
+                <form onSubmit={handleSearchSubmit} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="搜索照片、标签、相册..."
+                    className="flex-1 px-4 py-3 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-neutral-800 text-stone-900 dark:text-stone-100 placeholder-[color:var(--ds-muted-soft)] focus:ring-2 focus:ring-[color:var(--ds-accent-30)] focus:border-[color:var(--ds-accent)] transition-all duration-200"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    disabled={!searchQuery.trim()}
+                    className="px-4 py-3 rounded-xl bg-[color:var(--ds-accent)] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[color:var(--ds-accent-strong)] transition-colors"
+                  >
+                    搜索
+                  </button>
+                </form>
                 <p className="mt-2 text-xs sm:text-sm text-[color:var(--ds-muted-soft)]">
-                  提示：输入标签名、照片标题或相册名称进行搜索
+                  提示：回车或点击“搜索”查看匹配照片
                 </p>
               </div>
 
@@ -399,7 +432,7 @@ export function Header() {
                   <div>
                     <h4 className="text-sm font-medium text-stone-900 dark:text-stone-100 mb-3">热门标签</h4>
                     <div className="flex flex-wrap gap-2 min-h-[44px]" aria-busy={loadingSuggest}>
-                      {hotTags.length === 0 ? (
+                      {filteredTags.length === 0 ? (
                         <>
                           <span className="sr-only">{loadingSuggest ? '加载中…' : '暂无数据'}</span>
                           <div className="flex flex-wrap gap-2 w-full animate-pulse">
@@ -412,7 +445,7 @@ export function Header() {
                           </div>
                         </>
                       ) : (
-                        hotTags.map((tag) => (
+                        filteredTags.map((tag) => (
                           <Link
                             key={tag.id}
                             href={`/tags/${encodeURIComponent(tag.name)}`}
@@ -430,7 +463,7 @@ export function Header() {
                   <div>
                     <h4 className="text-sm font-medium text-stone-900 dark:text-stone-100 mb-3">系列推荐</h4>
                     <div className="grid grid-cols-1 gap-2 min-h-[116px]" aria-busy={loadingSuggest}>
-                      {topSeries.length === 0 ? (
+                      {filteredSeries.length === 0 ? (
                         <div className="grid grid-cols-1 gap-2 animate-pulse">
                           {Array.from({ length: 3 }).map((_, i) => (
                             <div
@@ -441,7 +474,7 @@ export function Header() {
                           <span className="sr-only">{loadingSuggest ? '加载中…' : '暂无数据'}</span>
                         </div>
                       ) : (
-                        topSeries.map((s) => (
+                        filteredSeries.map((s) => (
                           <Link
                             key={s.id}
                             href={`/series/${s.slug || s.id}`}
@@ -455,6 +488,17 @@ export function Header() {
                     </div>
                   </div>
                 </div>
+                {searchQuery.trim() && (
+                  <div className="px-4 sm:px-5 md:px-6 pb-5">
+                    <Link
+                      href={`/photos?q=${encodeURIComponent(searchQuery.trim())}`}
+                      className="inline-flex items-center text-sm font-medium text-[color:var(--ds-accent)] hover:text-[color:var(--ds-accent-strong)] transition-colors"
+                      onClick={() => setShowSearch(false)}
+                    >
+                      查看 “{searchQuery.trim()}” 的全部匹配照片
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>

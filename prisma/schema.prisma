@@ -91,6 +91,16 @@ model SiteCopy {
   updatedAt        DateTime @updatedAt
 }
 
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+}
+
 model MetricsDaily {
   day       DateTime @id
   pv        Int      @default(0)

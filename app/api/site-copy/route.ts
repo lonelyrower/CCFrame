@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
-import { DEFAULT_HOME_COPY_SELECTED } from '@/lib/constants';
-import { DEFAULT_THEME_ID, resolveThemeId } from '@/lib/themes';
+import { getSession } from '@/lib/session';
+import { getCachedSiteCopy } from '@/lib/site-copy-cache';
 
 // GET site copy
 export async function GET() {
   try {
-    const siteCopy = await prisma.siteCopy.findUnique({
-      where: { id: 1 },
-    });
+    const siteCopy = await getCachedSiteCopy();
 
-    return NextResponse.json({
-      homeCopy: siteCopy?.homeCopy || DEFAULT_HOME_COPY_SELECTED,
-      themeColor: siteCopy?.themeColor || null,
-      themePreset: resolveThemeId(siteCopy?.themePreset, siteCopy?.themeColor) || DEFAULT_THEME_ID,
-    });
+    return NextResponse.json(siteCopy);
   } catch (error) {
     console.error('Error fetching site copy:', error);
     return NextResponse.json(
@@ -27,6 +22,11 @@ export async function GET() {
 // PUT update site copy (admin only)
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { homeCopy, themeColor, themePreset } = await request.json();
 
     const updateData: { homeCopy?: string; themeColor?: string | null; themePreset?: string | null } = {};
@@ -44,6 +44,7 @@ export async function PUT(request: NextRequest) {
         themePreset: themePreset || null,
       },
     });
+    revalidateTag('site-copy', 'max');
 
     return NextResponse.json({
       message: 'Site copy updated successfully',

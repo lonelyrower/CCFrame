@@ -17,8 +17,6 @@ const defaultValues = {
   ],
   ADMIN_EMAIL: ['admin@example.com', 'admin@ccframe.local'],
   ADMIN_PASSWORD: ['change-this-password', 'admin123', 'admin123456'],
-  BASE_URL: ['http://localhost:3000'],
-  NEXTAUTH_URL: ['http://localhost:3000'],
 };
 
 const localStorageDirs = [
@@ -36,6 +34,19 @@ function logWarn(message) {
 
 function logError(message) {
   console.error(`ERROR: ${message}`);
+}
+
+function isLocalhostUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return (
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.hostname === '::1'
+    );
+  } catch {
+    return false;
+  }
 }
 
 async function main() {
@@ -65,13 +76,35 @@ async function main() {
   if (isProd) {
     const baseUrl = process.env.BASE_URL || '';
     const nextAuthUrl = process.env.NEXTAUTH_URL || '';
-    if (baseUrl && !baseUrl.startsWith('https://')) {
-      logError('BASE_URL should be https:// in production');
+    if (baseUrl && !baseUrl.startsWith('https://') && !isLocalhostUrl(baseUrl)) {
+      logError('BASE_URL should be https:// in production (localhost is the only exception)');
       hasError = true;
     }
-    if (nextAuthUrl && !nextAuthUrl.startsWith('https://')) {
-      logError('NEXTAUTH_URL should be https:// in production');
+    if (nextAuthUrl && !nextAuthUrl.startsWith('https://') && !isLocalhostUrl(nextAuthUrl)) {
+      logError('NEXTAUTH_URL should be https:// in production (localhost is the only exception)');
       hasError = true;
+    }
+  }
+
+  const nextAuthSecret = process.env.NEXTAUTH_SECRET || '';
+  if (nextAuthSecret && nextAuthSecret.length < 32) {
+    const message = 'NEXTAUTH_SECRET should be at least 32 characters';
+    if (isProd) {
+      logError(message);
+      hasError = true;
+    } else {
+      logWarn(message);
+    }
+  }
+
+  const adminPassword = process.env.ADMIN_PASSWORD || '';
+  if (adminPassword && adminPassword.length < 8) {
+    const message = 'ADMIN_PASSWORD should be at least 8 characters';
+    if (isProd) {
+      logError(message);
+      hasError = true;
+    } else {
+      logWarn(message);
     }
   }
 

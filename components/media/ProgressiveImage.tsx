@@ -1,6 +1,6 @@
 'use client';
 
-import { KeyboardEvent, useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { KeyboardEvent, useEffect, useMemo, useState, useRef } from 'react';
 import { getImageSrcSet, getImageUrl } from '@/lib/image/utils';
 
 export interface ProgressiveImageProps {

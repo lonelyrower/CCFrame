@@ -71,28 +71,6 @@ export function ImageViewer({
   const lastPosRef = useRef({ x: 0, y: 0 });
   const velocityRef = useRef({ x: 0, y: 0 });
 
-  // Calculate constrained bounds
-  const getBounds = useCallback(() => {
-    const container = containerRef.current;
-    const image = imageRef.current;
-    if (!container || !image || !imageDimensions) return null;
-
-    const containerRect = container.getBoundingClientRect();
-    const displayedWidth = imageDimensions.width * transform.scale;
-    const displayedHeight = imageDimensions.height * transform.scale;
-
-    // Calculate how much the image exceeds the container
-    const excessX = Math.max(0, (displayedWidth - containerRect.width) / 2);
-    const excessY = Math.max(0, (displayedHeight - containerRect.height) / 2);
-
-    return {
-      minX: -excessX,
-      maxX: excessX,
-      minY: -excessY,
-      maxY: excessY,
-    };
-  }, [imageDimensions, transform.scale]);
-
   // Constrain translation within bounds
   const constrainTranslation = useCallback(
     (x: number, y: number, scale: number) => {

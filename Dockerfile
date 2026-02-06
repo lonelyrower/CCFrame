@@ -7,9 +7,9 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# Copy package files (exclude lock file for cross-platform native bindings)
-COPY package.json ./
-RUN npm install
+# Copy package files for reproducible installs
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -46,9 +46,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
-# Copy Prisma client (generated)
+# Copy Prisma runtime dependencies (generated client + CLI + engines)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
 # Copy seed script dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
@@ -58,10 +59,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
 # Install runtime dependencies needed by Prisma on Alpine
 RUN apk add --no-cache openssl libc6-compat
-
-# Install Prisma CLI with all dependencies (needed for migrations at runtime)
-RUN npm install prisma@6.17.0 --save-dev --ignore-scripts && \
-    chown -R nextjs:nodejs ./node_modules
 
 # Create uploads directory structure for public/private separation
 RUN mkdir -p ./uploads/original ./public/uploads ./private/uploads && \

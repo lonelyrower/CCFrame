@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
@@ -19,6 +20,7 @@ export default function TagsManagementPage() {
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [fromTag, setFromTag] = useState('');
   const [toTag, setToTag] = useState('');
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     loadTags();
@@ -44,7 +46,7 @@ export default function TagsManagementPage() {
 
   const handleMergeTags = async () => {
     if (!fromTag || !toTag) {
-      alert('请选择要合并的标签');
+      setMessage({ type: 'error', text: '请选择要合并的标签' });
       return;
     }
 
@@ -56,18 +58,18 @@ export default function TagsManagementPage() {
       });
 
       if (response.ok) {
-        alert('标签合并成功');
+        setMessage({ type: 'success', text: '标签合并成功' });
         setShowMergeModal(false);
         setFromTag('');
         setToTag('');
         await loadTags();
       } else {
         const data = await response.json();
-        alert(`合并失败: ${data.error}`);
+        setMessage({ type: 'error', text: `合并失败：${data.error}` });
       }
     } catch (error) {
       console.error('Error merging tags:', error);
-      alert('合并失败');
+      setMessage({ type: 'error', text: '合并失败，请稍后重试' });
     }
   };
 
@@ -91,6 +93,18 @@ export default function TagsManagementPage() {
           合并标签
         </Button>
       </div>
+
+      {message && (
+        <div
+          className={`mb-6 p-4 rounded-2xl ${
+            message.type === 'success'
+              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 ring-1 ring-green-200 dark:ring-green-800'
+              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 ring-1 ring-red-200 dark:ring-red-800'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="bg-white dark:bg-neutral-900 rounded-3xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 overflow-hidden">
@@ -168,9 +182,17 @@ export default function TagsManagementPage() {
 
       {/* Merge Modal */}
       {showMergeModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 max-w-md w-full p-8">
-            <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">合并标签</h2>
+        <Modal
+          open={showMergeModal}
+          onClose={() => {
+            setShowMergeModal(false);
+            setFromTag('');
+            setToTag('');
+          }}
+          labelledBy="merge-tags-title"
+        >
+          <div className="max-w-md w-full">
+            <h2 id="merge-tags-title" className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">合并标签</h2>
             <div className="space-y-5">
               <div>
                 <label htmlFor="from-tag-select" className="block text-sm font-medium tracking-wide text-[color:var(--ds-muted)] mb-2">
@@ -234,7 +256,7 @@ export default function TagsManagementPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

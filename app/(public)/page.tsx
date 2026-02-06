@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { getImageSrcSet, getImageUrl } from '@/lib/image/utils';
 import { cfImage } from '@/lib/cf-image';
-import { extractDominantColor, rgbToHsl } from '@/lib/theme-color';
+import { extractDominantColor } from '@/lib/theme-color';
 import { DEFAULT_HOME_COPY_SELECTED } from '@/lib/constants';
 import { ProgressiveImage } from '@/components/media/ProgressiveImage';
 
@@ -48,15 +48,44 @@ interface TagItem {
 }
 
 export default function HomePage() {
-  const isLightHex = (hex?: string | null) => {
-    if (!hex) return false;
-    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
-    if (!m) return false;
-    const r = parseInt(m[1], 16);
-    const g = parseInt(m[2], 16);
-    const b = parseInt(m[3], 16);
-    const [, , l] = rgbToHsl(r, g, b);
-    return l >= 70;
+  const parseHexColor = (hex?: string | null) => {
+    if (!hex) return null;
+    const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+    if (!match) return null;
+    return {
+      r: parseInt(match[1], 16),
+      g: parseInt(match[2], 16),
+      b: parseInt(match[3], 16),
+    };
+  };
+
+  const toLinearChannel = (channel: number) => {
+    const normalized = channel / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+
+  const getLuminance = (r: number, g: number, b: number) => {
+    const rl = toLinearChannel(r);
+    const gl = toLinearChannel(g);
+    const bl = toLinearChannel(b);
+    return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
+  };
+
+  const contrastRatio = (l1: number, l2: number) => {
+    const lighter = Math.max(l1, l2);
+    const darker = Math.min(l1, l2);
+    return (lighter + 0.05) / (darker + 0.05);
+  };
+
+  const chooseTextTone = (hex?: string | null) => {
+    const rgb = parseHexColor(hex);
+    if (!rgb) return 'light';
+    const bgLuminance = getLuminance(rgb.r, rgb.g, rgb.b);
+    const contrastWithDark = contrastRatio(bgLuminance, 0);
+    const contrastWithLight = contrastRatio(bgLuminance, 1);
+    return contrastWithDark >= contrastWithLight ? 'dark' : 'light';
   };
 
   const [heroPhoto, setHeroPhoto] = useState<HeroPhoto | null>(null);
@@ -80,14 +109,14 @@ export default function HomePage() {
   const heroSrcSet = heroPhoto
     ? getImageSrcSet(heroPhoto.fileKey, heroPhoto.isPublic, undefined, { quality: 90 })
     : undefined;
-  const heroIsLight = heroPhoto ? isLightHex(themeColor) : false;
+  const heroTextTone = heroPhoto ? chooseTextTone(themeColor) : 'light';
   const heroContrast = heroPhoto
-    ? heroIsLight
+    ? heroTextTone === 'dark'
       ? 'var(--ds-ink-strong)'
       : 'var(--ds-ink-inverse)'
     : undefined;
   const heroContrastMuted = heroPhoto
-    ? heroIsLight
+    ? heroTextTone === 'dark'
       ? 'rgb(var(--ds-ink-strong-rgb) / 0.9)'
       : 'rgb(var(--ds-ink-inverse-rgb) / 0.95)'
     : undefined;

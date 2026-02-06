@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
@@ -23,6 +25,8 @@ export default function SeriesManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingSeries, setEditingSeries] = useState<Series | null>(null);
+  const [seriesToDelete, setSeriesToDelete] = useState<Series | null>(null);
+  const [isDeletingSeries, setIsDeletingSeries] = useState(false);
 
   const [slug, setSlug] = useState('');
   const [title, setTitle] = useState('');
@@ -89,14 +93,21 @@ export default function SeriesManagementPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('确定删除此系列？')) return;
+  const handleDelete = (series: Series) => {
+    setSeriesToDelete(series);
+  };
 
+  const confirmDelete = async () => {
+    if (!seriesToDelete) return;
+    setIsDeletingSeries(true);
     try {
-      await fetch(`/api/series/${id}`, { method: 'DELETE' });
+      await fetch(`/api/series/${seriesToDelete.id}`, { method: 'DELETE' });
       await loadSeries();
+      setSeriesToDelete(null);
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setIsDeletingSeries(false);
     }
   };
 
@@ -223,7 +234,7 @@ export default function SeriesManagementPage() {
                   编辑
                 </Button>
                 <Button
-                  onClick={() => handleDelete(series.id)}
+                  onClick={() => handleDelete(series)}
                   variant="ghost"
                   size="sm"
                   className="text-[color:var(--ds-accent)] hover:bg-[color:var(--ds-accent-10)]"
@@ -237,10 +248,18 @@ export default function SeriesManagementPage() {
       )}
 
       {(showCreateModal || editingSeries) && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl ring-1 ring-stone-200/50 dark:ring-neutral-800/50 max-w-lg w-full p-8">
+        <Modal
+          open={showCreateModal || Boolean(editingSeries)}
+          onClose={() => {
+            setShowCreateModal(false);
+            setEditingSeries(null);
+            resetForm();
+          }}
+          labelledBy="series-modal-title"
+        >
+          <div className="max-w-lg w-full">
             <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-6 tracking-tight">
-              {editingSeries ? '编辑系列' : '创建系列'}
+              <span id="series-modal-title">{editingSeries ? '编辑系列' : '创建系列'}</span>
             </h2>
             <div className="space-y-5">
               <Input
@@ -296,8 +315,19 @@ export default function SeriesManagementPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
+
+      <ConfirmDialog
+        open={Boolean(seriesToDelete)}
+        title="删除系列"
+        description={seriesToDelete ? `确定删除系列「${seriesToDelete.title}」吗？该操作不可恢复。` : ''}
+        confirmText="确认删除"
+        cancelText="取消"
+        isLoading={isDeletingSeries}
+        onConfirm={confirmDelete}
+        onCancel={() => setSeriesToDelete(null)}
+      />
     </div>
   );
 }

@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/session';
+
+const ALLOWED_RANGES = new Set([7, 30, 90]);
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const range = parseInt(searchParams.get('range') || '7');
+    const rawRange = Number.parseInt(searchParams.get('range') || '7', 10);
+    const range = ALLOWED_RANGES.has(rawRange) ? rawRange : 7;
 
     // Calculate date range
     const endDate = new Date();
@@ -102,6 +111,7 @@ export async function GET(request: NextRequest) {
         totalPV,
         totalUV,
         avgPVperDay: Math.round(totalPV / range),
+        range,
         metrics,
       },
       library: {

@@ -17,7 +17,8 @@ test.describe('API Endpoints', () => {
     expect(response.status()).toBe(200);
 
     const data = await response.json();
-    expect(Array.isArray(data)).toBe(true);
+    expect(data).toHaveProperty('tags');
+    expect(Array.isArray(data.tags)).toBe(true);
   });
 
   test('GET /api/albums should return albums', async ({ request }) => {
@@ -26,7 +27,8 @@ test.describe('API Endpoints', () => {
     expect(response.status()).toBe(200);
 
     const data = await response.json();
-    expect(Array.isArray(data)).toBe(true);
+    expect(data).toHaveProperty('albums');
+    expect(Array.isArray(data.albums)).toBe(true);
   });
 
   test('GET /api/series should return series', async ({ request }) => {
@@ -35,7 +37,8 @@ test.describe('API Endpoints', () => {
     expect(response.status()).toBe(200);
 
     const data = await response.json();
-    expect(Array.isArray(data)).toBe(true);
+    expect(data).toHaveProperty('series');
+    expect(Array.isArray(data.series)).toBe(true);
   });
 
   test('GET /api/site-copy should return site copy', async ({ request }) => {
@@ -44,7 +47,8 @@ test.describe('API Endpoints', () => {
     expect(response.status()).toBe(200);
 
     const data = await response.json();
-    expect(data).toBeDefined();
+    expect(data).toHaveProperty('homeCopy');
+    expect(data).toHaveProperty('themePreset');
   });
 
   test('GET /api/photos without auth should only return public photos', async ({ request }) => {
@@ -69,6 +73,16 @@ test.describe('API Endpoints', () => {
     // DELETE should require auth
     const deleteResponse = await request.delete('/api/photos/test-id');
     expect(deleteResponse.status()).toBe(401);
+
+    const updateSiteCopyResponse = await request.put('/api/site-copy', {
+      data: { homeCopy: 'unauthorized change' },
+    });
+    expect(updateSiteCopyResponse.status()).toBe(401);
+
+    const mergeTagsResponse = await request.post('/api/tags/merge', {
+      data: { from: 'old-tag', to: 'new-tag' },
+    });
+    expect(mergeTagsResponse.status()).toBe(401);
   });
 
   test('POST /api/auth/login with invalid credentials should return error', async ({ request }) => {
