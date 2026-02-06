@@ -78,7 +78,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          # Directory paths can be finicky depending on how the action/glob resolves trailing slashes.
-          # Upload the whole Next.js build output.
-          path: .next
+          # `.next` is a hidden directory on Linux. upload-artifact v4 ignores hidden
+          # paths unless explicitly enabled.
+          path: .next/**
+          include-hidden-files: true
           retention-days: 7
