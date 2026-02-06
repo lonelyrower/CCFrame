@@ -9,7 +9,11 @@ WORKDIR /app
 
 # Copy package files for reproducible installs
 COPY package.json package-lock.json ./
-RUN npm ci
+# NOTE: We intentionally use `npm install` instead of `npm ci` here.
+# Tailwind v4 uses platform-specific optional native bindings (oxide). In
+# multi-arch Docker builds, `npm ci` can fail to install the correct optional
+# deps (npm optionalDependencies issue), causing `next build` to crash.
+RUN npm install --no-audit --no-fund
 
 # Rebuild the source code only when needed
 FROM base AS builder
