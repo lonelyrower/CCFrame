@@ -22,7 +22,17 @@ COPY . .
 
 # Generate Prisma Client with a dummy DATABASE_URL (not used during build)
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
-RUN npx prisma generate
+# `prisma generate` can occasionally hit transient network resets when downloading
+# engines in buildx/QEMU (arm64). Retry a few times to make CI less flaky.
+RUN set -e; \
+    ok=0; \
+    for i in 1 2 3; do \
+      echo "prisma generate attempt ${i}/3"; \
+      if npx prisma generate; then ok=1; break; fi; \
+      echo "prisma generate failed (attempt ${i}/3), retrying..." >&2; \
+      sleep 5; \
+    done; \
+    test "$ok" -eq 1
 
 # Build Next.js application
 # Use dummy DATABASE_URL to avoid hardcoding localhost during build
