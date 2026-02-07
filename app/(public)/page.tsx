@@ -6,6 +6,7 @@ import { getImageSrcSet, getImageUrl } from '@/lib/image/utils';
 import { cfImage } from '@/lib/cf-image';
 import { extractDominantColor } from '@/lib/theme-color';
 import { DEFAULT_HOME_COPY_SELECTED } from '@/lib/constants';
+import { fetchJsonCached } from '@/lib/utils/fetchJsonCached';
 import { ProgressiveImage } from '@/components/media/ProgressiveImage';
 
 interface HeroPhoto {
@@ -46,6 +47,24 @@ interface TagItem {
   name: string;
   count: number;
 }
+
+type HomePhotosResponse = {
+  photos?: HeroPhoto[];
+  pagination?: { total?: number };
+};
+
+type HomeSeriesResponse = {
+  series?: SeriesItem[];
+};
+
+type HomeTagsResponse = {
+  tags?: TagItem[];
+};
+
+type HomeCopyResponse = {
+  homeCopy?: string;
+  themeColor?: string | null;
+};
 
 export default function HomePage() {
   const parseHexColor = (hex?: string | null) => {
@@ -147,23 +166,37 @@ export default function HomePage() {
 
   const loadHomePage = async () => {
     try {
-      // Load all data in parallel
-      const [photosRes, seriesRes, tagsRes, copyRes] = await Promise.all([
-        fetch('/api/photos?isPublic=true&limit=7'),
-        fetch('/api/series'),
-        fetch('/api/tags'),
-        fetch('/api/site-copy'),
+      const [photosRes, seriesRes, tagsRes, copyRes] = await Promise.allSettled([
+        fetchJsonCached<HomePhotosResponse>('/api/photos?isPublic=true&limit=7', {
+          cacheKey: 'home:photos:v1',
+          ttlMs: 2 * 60 * 1000,
+        }),
+        fetchJsonCached<HomeSeriesResponse>('/api/series', {
+          cacheKey: 'home:series:v1',
+          ttlMs: 10 * 60 * 1000,
+        }),
+        fetchJsonCached<HomeTagsResponse>('/api/tags', {
+          cacheKey: 'home:tags:v1',
+          ttlMs: 10 * 60 * 1000,
+        }),
+        fetchJsonCached<HomeCopyResponse>('/api/site-copy', {
+          cacheKey: 'home:site-copy:v1',
+          ttlMs: 10 * 60 * 1000,
+        }),
       ]);
 
       let currentPhoto: HeroPhoto | null = null;
 
-      if (photosRes.ok) {
-        const photosData = await photosRes.json();
+      if (photosRes.status === 'fulfilled') {
+        const photosData = photosRes.value.data;
         if (photosData.photos && photosData.photos.length > 0) {
-          currentPhoto = photosData.photos[0];
+          currentPhoto = photosData.photos[0] ?? null;
           setHeroPhoto(currentPhoto);
-          setFeaturedPhotos(photosData.photos.slice(1, 7));
-          setStats((prev) => ({ ...prev, photos: photosData.total || photosData.photos.length }));
+          setFeaturedPhotos(photosData.photos.slice(1, 7) as FeaturedPhoto[]);
+          setStats((prev) => ({
+            ...prev,
+            photos: photosData.pagination?.total ?? photosData.photos?.length ?? 0,
+          }));
 
           // Extract dominant color if needed
           if (currentPhoto && !currentPhoto.dominantColor) {
@@ -178,20 +211,20 @@ export default function HomePage() {
         }
       }
 
-      if (seriesRes.ok) {
-        const seriesData = await seriesRes.json();
+      if (seriesRes.status === 'fulfilled') {
+        const seriesData = seriesRes.value.data;
         setSeries(seriesData.series?.slice(0, 4) || []);
         setStats((prev) => ({ ...prev, series: seriesData.series?.length || 0 }));
       }
 
-      if (tagsRes.ok) {
-        const tagsData = await tagsRes.json();
+      if (tagsRes.status === 'fulfilled') {
+        const tagsData = tagsRes.value.data;
         setTags(tagsData.tags?.slice(0, 12) || []);
         setStats((prev) => ({ ...prev, tags: tagsData.tags?.length || 0 }));
       }
 
-      if (copyRes.ok) {
-        const copyData = await copyRes.json();
+      if (copyRes.status === 'fulfilled') {
+        const copyData = copyRes.value.data;
         if (copyData.homeCopy) setHomeCopy(copyData.homeCopy);
         if (copyData.themeColor) {
           setThemeColor(copyData.themeColor);

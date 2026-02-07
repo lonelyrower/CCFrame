@@ -52,6 +52,11 @@ test.describe('PWA Features', () => {
     const manifest = await response.json();
     expect(manifest).toHaveProperty('name');
     expect(manifest).toHaveProperty('icons');
+
+    // Prefer PNG icons for broad OS/browser compatibility (especially iOS A2HS).
+    const icons = Array.isArray(manifest.icons) ? manifest.icons : [];
+    expect(icons.some((icon: any) => icon?.type === 'image/png' && icon?.sizes === '192x192')).toBe(true);
+    expect(icons.some((icon: any) => icon?.type === 'image/png' && String(icon?.purpose ?? '').includes('maskable'))).toBe(true);
   });
 
   test('service worker should be accessible', async ({ request }) => {

@@ -6,7 +6,7 @@ import { ProgressiveImage } from '@/components/media/ProgressiveImage';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
-import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
+import { fetchJsonCached } from '@/lib/utils/fetchJsonCached';
 
 interface Series {
   id: string;
@@ -31,6 +31,7 @@ export default function SeriesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dataHint, setDataHint] = useState<string | null>(null);
 
   useEffect(() => {
     loadSeries();
@@ -39,19 +40,16 @@ export default function SeriesPage() {
   const loadSeries = async () => {
     try {
       setError(null);
-      const response = await fetchWithTimeout('/api/series');
-
-      if (!response.ok) {
-        console.error('Failed to fetch series:', response.status);
-        setError('加载失败');
-        return;
-      }
-
-      const data = await response.json();
-      setSeriesList(data.series || []);
+      const result = await fetchJsonCached<{ series?: Series[] }>('/api/series', {
+        cacheKey: 'series:list:v1',
+        ttlMs: 10 * 60 * 1000,
+      });
+      setSeriesList(result.data.series || []);
+      setDataHint(result.source === 'cache' ? '离线模式：显示最近缓存内容' : null);
     } catch (error) {
       console.error('Error loading series:', error);
-      setError(error instanceof DOMException ? '请求超时' : '加载失败');
+      const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      setError(offline ? '离线模式' : error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
       requestAnimationFrame(() => setIsPageLoaded(true));
@@ -72,6 +70,12 @@ export default function SeriesPage() {
           <p className="text-base md:text-lg font-light text-[color:var(--ds-muted)] max-w-xl mx-auto">
             精心策划的主题作品集，探索不同的视觉故事
           </p>
+          {dataHint && (
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-xs font-medium tracking-wide text-[color:var(--ds-muted)] ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10">
+              <span className="h-2 w-2 rounded-full bg-[color:var(--ds-accent)]" aria-hidden="true" />
+              {dataHint}
+            </p>
+          )}
         </div>
 
         {/* Series Grid */}
@@ -97,8 +101,12 @@ export default function SeriesPage() {
           </div>
         ) : error ? (
           <EmptyState
-            title="加载失败"
-            description={<>暂时无法获取系列，请稍后重试</>}
+            title={error === '离线模式' ? '离线模式' : '加载失败'}
+            description={
+              error === '离线模式'
+                ? <>当前网络不可用，恢复连接后可继续浏览系列内容</>
+                : <>暂时无法获取系列，请稍后重试</>
+            }
             icon={
               <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />

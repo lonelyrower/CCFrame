@@ -142,7 +142,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-30 rounded-full bg-black/50 p-3 text-white/90 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:text-white active:scale-95 backdrop-blur-sm ring-1 ring-white/10 md:top-6 md:right-6"
+        className="absolute top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-30 rounded-full bg-black/50 p-3 text-white/90 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:text-white active:scale-95 backdrop-blur-sm ring-1 ring-white/10 md:top-[max(1.5rem,env(safe-area-inset-top))] md:right-[max(1.5rem,env(safe-area-inset-right))]"
         aria-label="关闭"
       >
         <CloseIcon size={22} />
@@ -152,7 +152,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
       {onPrevious && (
         <button
           onClick={onPrevious}
-          className="hidden md:flex absolute left-4 z-20 rounded-full bg-black/50 p-4 text-white/90 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
+          className="hidden md:flex absolute left-[max(1.5rem,env(safe-area-inset-left))] z-20 rounded-full bg-black/50 p-4 text-white/90 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
           aria-label="上一张"
         >
           <ChevronLeftIcon size={24} />
@@ -162,7 +162,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
       {onNext && (
         <button
           onClick={onNext}
-          className="hidden md:flex absolute right-4 z-20 rounded-full bg-black/50 p-4 text-white/90 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
+          className="hidden md:flex absolute right-[max(1.5rem,env(safe-area-inset-right))] z-20 rounded-full bg-black/50 p-4 text-white/90 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 active:scale-95 backdrop-blur-sm ring-1 ring-white/10"
           aria-label="下一张"
         >
           <ChevronRightIcon size={24} />
@@ -196,7 +196,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
           <>
             {swipeOffset > 0 && onPrevious && (
               <div 
-                className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-md text-white transition-all duration-150"
+                className="md:hidden absolute left-[max(1rem,env(safe-area-inset-left))] top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-md text-white transition-all duration-150"
                 style={{ 
                   opacity: Math.min(1, Math.abs(swipeOffset) / SWIPE_THRESHOLD),
                   transform: `translateY(-50%) scale(${0.8 + Math.min(0.2, Math.abs(swipeOffset) / SWIPE_THRESHOLD * 0.2)})`,
@@ -208,7 +208,7 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
             )}
             {swipeOffset < 0 && onNext && (
               <div 
-                className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-md text-white transition-all duration-150"
+                className="md:hidden absolute right-[max(1rem,env(safe-area-inset-right))] top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-md text-white transition-all duration-150"
                 style={{ 
                   opacity: Math.min(1, Math.abs(swipeOffset) / SWIPE_THRESHOLD),
                   transform: `translateY(-50%) scale(${0.8 + Math.min(0.2, Math.abs(swipeOffset) / SWIPE_THRESHOLD * 0.2)})`,
@@ -287,8 +287,8 @@ export function Lightbox({ photo, onClose, onPrevious, onNext }: LightboxProps) 
         onClick={() => setShowInfo((value: boolean) => !value)}
         className={`absolute z-30 rounded-full bg-black/50 p-3.5 text-white/80 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:text-white active:scale-95 backdrop-blur-sm ring-1 ring-white/10 touch-manipulation ${
           showInfo 
-            ? 'bottom-4 right-4 md:bottom-6 md:right-6' 
-            : 'bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6'
+            ? 'bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:right-[max(1.5rem,env(safe-area-inset-right))]' 
+            : 'bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:right-[max(1.5rem,env(safe-area-inset-right))]'
         }`}
         aria-label="切换信息面板"
       >

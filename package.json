@@ -25,7 +25,8 @@
     "seed": "node scripts/seed-admin.js",
     "reset-password": "node scripts/reset-password.js",
     "preflight": "node scripts/preflight.mjs",
-    "smoke": "node scripts/smoke-test.mjs"
+    "smoke": "node scripts/smoke-test.mjs",
+    "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "^5.2.8",

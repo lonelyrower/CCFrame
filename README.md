@@ -12,7 +12,7 @@ photos are available to visitors; private photos require login.
   API with `Cache-Control: no-store`
 - Theme system: `SiteCopy.themeColor` override > `Photo.dominantColor` auto extraction > default
 - Ops: backup/restore scripts, Docker deployment, CI pipelines
-- PWA: manifest + service worker for installable app and offline fallback
+- PWA: manifest + service worker for installable app, offline fallback, and cached public data
 
 ## Tech Stack
 - Next.js 15 (App Router), React 19, TypeScript
@@ -78,6 +78,7 @@ Optional:
 - `STORAGE_LOCAL_PUBLIC_ROOT`, `STORAGE_LOCAL_PRIVATE_ROOT`
 - `STORAGE_PUBLIC_URL_PREFIX`
 - `NEXT_PUBLIC_IMAGE_HOSTS` (comma-separated, default: `imagedelivery.net`)
+- `NEXT_PUBLIC_SW_DEV` (set to `true` to register the service worker in dev; use with care)
 
 ## Common Commands
 
@@ -95,6 +96,7 @@ make smoke
 make docker-up
 make docker-down
 make docker-logs
+npm run icons:generate
 ```
 
 ## Admin Routes

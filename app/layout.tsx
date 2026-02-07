@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { PwaRegister } from '@/components/PwaRegister';
+import { NetworkStatusBanner } from '@/components/pwa/NetworkStatusBanner';
 import { resolveThemeId, themeToCssVars } from '@/lib/themes';
 import { getCachedSiteCopy } from '@/lib/site-copy-cache';
 
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
       { url: '/logo.svg', sizes: 'any', type: 'image/svg+xml' }
     ],
     apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
       { url: '/apple-touch-icon.svg', type: 'image/svg+xml' },
     ],
     other: [
@@ -57,6 +59,7 @@ export default async function RootLayout({
     >
       <body className="antialiased">
         <PwaRegister />
+        <NetworkStatusBanner />
         {children}
       </body>
     </html>

@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 
 export function PwaRegister() {
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') return;
+    const enableInDev = process.env.NEXT_PUBLIC_SW_DEV === 'true';
+    if (process.env.NODE_ENV !== 'production' && !enableInDev) return;
     if (!('serviceWorker' in navigator)) return;
 
     const registerServiceWorker = () => {

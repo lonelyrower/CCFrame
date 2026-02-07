@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
-import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
+import { fetchJsonCached } from '@/lib/utils/fetchJsonCached';
 
 interface Tag {
   id: string;
@@ -18,6 +18,7 @@ export default function TagsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dataHint, setDataHint] = useState<string | null>(null);
 
   useEffect(() => {
     loadTags();
@@ -26,19 +27,16 @@ export default function TagsPage() {
   const loadTags = async () => {
     try {
       setError(null);
-      const response = await fetchWithTimeout('/api/tags');
-
-      if (!response.ok) {
-        console.error('Failed to fetch tags:', response.status);
-        setError('加载失败');
-        return;
-      }
-
-      const data = await response.json();
-      setTags(data.tags || []);
+      const result = await fetchJsonCached<{ tags?: Tag[] }>('/api/tags', {
+        cacheKey: 'tags:list:v1',
+        ttlMs: 10 * 60 * 1000,
+      });
+      setTags(result.data.tags || []);
+      setDataHint(result.source === 'cache' ? '离线模式：显示最近缓存内容' : null);
     } catch (error) {
       console.error('Error loading tags:', error);
-      setError(error instanceof DOMException ? '请求超时' : '加载失败');
+      const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      setError(offline ? '离线模式' : error instanceof DOMException ? '请求超时' : '加载失败');
     } finally {
       setIsLoading(false);
       requestAnimationFrame(() => setIsPageLoaded(true));
@@ -70,6 +68,12 @@ export default function TagsPage() {
           <p className="text-base md:text-lg font-light text-[color:var(--ds-muted)] max-w-xl mx-auto">
             按主题分类探索照片，发现感兴趣的内容
           </p>
+          {dataHint && (
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-xs font-medium tracking-wide text-[color:var(--ds-muted)] ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10">
+              <span className="h-2 w-2 rounded-full bg-[color:var(--ds-accent)]" aria-hidden="true" />
+              {dataHint}
+            </p>
+          )}
         </div>
 
         {isLoading ? (
@@ -99,8 +103,12 @@ export default function TagsPage() {
           </div>
         ) : error ? (
           <EmptyState
-            title="加载失败"
-            description={<>暂时无法获取标签，请稍后重试</>}
+            title={error === '离线模式' ? '离线模式' : '加载失败'}
+            description={
+              error === '离线模式'
+                ? <>当前网络不可用，恢复连接后可继续浏览标签内容</>
+                : <>暂时无法获取标签，请稍后重试</>
+            }
             icon={
               <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M6 20.25h12a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v12a2.25 2.25 0 002.25 2.25z" />

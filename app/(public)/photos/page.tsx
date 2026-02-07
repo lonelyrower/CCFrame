@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
 import { fetchWithTimeout } from '@/lib/utils/fetchWithTimeout';
+import { fetchJsonCached } from '@/lib/utils/fetchJsonCached';
 
 interface Photo {
   id: string;
@@ -21,6 +22,14 @@ interface Photo {
   isPublic: boolean;
   tags: string[];
 }
+
+type PhotosApiResponse = {
+  photos?: Photo[];
+  pagination?: {
+    nextCursor?: string | null;
+    hasMore?: boolean;
+  };
+};
 
 function PhotosPageContent() {
   const router = useRouter();
@@ -33,6 +42,7 @@ function PhotosPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dataHint, setDataHint] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
@@ -57,23 +67,37 @@ function PhotosPageContent() {
         params.set('q', query);
       }
 
-      const response = await fetchWithTimeout(`/api/photos?${params}`);
+      const url = `/api/photos?${params}`;
+      const isFirstPage = !cursor;
 
-      if (!response.ok) {
-        console.error('Failed to fetch photos:', response.status);
-        setError('加载失败');
+      let data: PhotosApiResponse;
+      if (isFirstPage) {
+        const result = await fetchJsonCached<PhotosApiResponse>(url, {
+          cacheKey: `photos:first:${encodeURIComponent(query || '__all__')}:v1`,
+          ttlMs: 5 * 60 * 1000,
+        });
+        data = result.data;
+        setDataHint(result.source === 'cache' ? '离线模式：展示最近缓存的作品' : null);
+      } else {
+        const response = await fetchWithTimeout(url);
+
+        if (!response.ok) {
+          console.error('Failed to fetch photos:', response.status);
+          setError('加载失败');
+          setHasMore(false);
+          return;
+        }
+
+        data = await response.json();
+      }
+
+      const newPhotos = data.photos ?? [];
+      if (newPhotos.length === 0) {
         setHasMore(false);
         return;
       }
 
-      const data = await response.json();
-
-      if (!data.photos || data.photos.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      setPhotos((prev) => (isRefresh ? data.photos : [...prev, ...data.photos]));
+      setPhotos((prev) => (isRefresh ? newPhotos : [...prev, ...newPhotos]));
       setNextCursor(data.pagination?.nextCursor || null);
       setHasMore(data.pagination?.hasMore ?? false);
       
@@ -83,7 +107,8 @@ function PhotosPageContent() {
       }
     } catch (error) {
       console.error('Error loading photos:', error);
-      setError(error instanceof DOMException ? '请求超时' : '加载失败');
+      const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      setError(offline ? '离线模式' : error instanceof DOMException ? '请求超时' : '加载失败');
       setHasMore(false);
     } finally {
       setIsLoading(false);
@@ -96,6 +121,7 @@ function PhotosPageContent() {
     setNextCursor(null);
     setHasMore(true);
     setPhotos([]);
+    setDataHint(null);
     loadPhotos(null, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
@@ -173,6 +199,12 @@ function PhotosPageContent() {
                 {isLoading && photos.length === 0 ? '加载中...' : `${photos.length} 张作品`}
               </p>
             </div>
+            {dataHint && (
+              <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-xs font-medium tracking-wide text-[color:var(--ds-muted)] ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10">
+                <span className="h-2 w-2 rounded-full bg-[color:var(--ds-accent)]" aria-hidden="true" />
+                {dataHint}
+              </p>
+            )}
           </div>
 
         {/* Initial Loading State */}
@@ -187,8 +219,12 @@ function PhotosPageContent() {
           </div>
         ) : error && photos.length === 0 ? (
           <EmptyState
-            title="加载失败"
-            description={<>暂时无法获取照片，请稍后重试</>}
+            title={error === '离线模式' ? '离线模式' : '加载失败'}
+            description={
+              error === '离线模式'
+                ? <>当前网络不可用，恢复连接后可继续浏览作品内容</>
+                : <>暂时无法获取照片，请稍后重试</>
+            }
             icon={<EmptyPhotosIcon size={64} className="opacity-70" />}
             tone="neutral"
             size="md"
