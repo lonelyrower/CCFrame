@@ -31,7 +31,7 @@ export function Footer() {
               © {currentYear} CCFrame
             </p>
             <p className="text-xs text-[color:var(--ds-muted-soft)]">
-              Built with <span className="text-[color:var(--ds-accent)]">♥</span> using Next.js
+              基于 Next.js 构建
             </p>
           </div>
         </div>

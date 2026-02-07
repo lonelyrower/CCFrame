@@ -281,8 +281,8 @@ export default function HomePage() {
               <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-gradient-to-tl from-[var(--ds-luxury-10)] to-transparent dark:from-[var(--ds-luxury-15)] blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
             </div>
             {/* Decorative frame */}
-            <div className="absolute top-8 left-8 w-32 h-32 border-l-2 border-t-2 border-stone-200 dark:border-neutral-800 opacity-50" />
-            <div className="absolute bottom-8 right-8 w-32 h-32 border-r-2 border-b-2 border-stone-200 dark:border-neutral-800 opacity-50" />
+            <div className="hidden sm:block absolute top-8 left-8 w-32 h-32 border-l-2 border-t-2 border-stone-200 dark:border-neutral-800 opacity-50" />
+            <div className="hidden sm:block absolute bottom-8 right-8 w-32 h-32 border-r-2 border-b-2 border-stone-200 dark:border-neutral-800 opacity-50" />
           </div>
         )}
 

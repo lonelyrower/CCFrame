@@ -8,6 +8,7 @@ coverage/
 test-results/
 playwright-report/
 playwright/.cache/
+design-snapshots/
 test-*.log
 test-result.txt
 

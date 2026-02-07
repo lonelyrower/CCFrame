@@ -69,7 +69,7 @@ export function MobileNav() {
               }`}
             >
               {/* 触摸反馈背景 */}
-              <div className={`absolute inset-x-2 inset-y-1 rounded-2xl transition-all duration-200 ${
+              <div className={`absolute inset-x-3 inset-y-2 rounded-2xl transition-all duration-200 ${
                 isActive 
                   ? 'bg-[color:var(--ds-accent-10)]' 
                   : 'bg-transparent group-active:bg-stone-200/60 dark:group-active:bg-neutral-800/60'
@@ -84,11 +84,6 @@ export function MobileNav() {
               }`}>
                 {item.label}
               </span>
-              
-              {/* 活跃指示器 */}
-              {isActive && (
-                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-[color:var(--ds-accent)] shadow-[0_0_8px_var(--ds-accent-50)]" />
-              )}
             </Link>
           );
         })}

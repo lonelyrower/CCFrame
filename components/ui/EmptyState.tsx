@@ -43,23 +43,23 @@ const toneStyles: Record<EmptyTone, { panel: string; ring: string; iconBg: strin
 
 const sizeStyles: Record<EmptySize, { wrapper: string; panel: string; icon: string; title: string; desc: string }> = {
   sm: {
-    wrapper: 'py-12',
-    panel: 'px-6 py-8',
+    wrapper: 'py-10 md:py-12',
+    panel: 'px-5 py-6 md:px-6 md:py-8',
     icon: 'w-12 h-12',
     title: 'text-xl md:text-2xl',
     desc: 'text-sm md:text-base',
   },
   md: {
-    wrapper: 'py-20',
-    panel: 'px-8 py-10',
-    icon: 'w-16 h-16',
+    wrapper: 'py-14 md:py-20',
+    panel: 'px-6 py-8 md:px-8 md:py-10',
+    icon: 'w-14 h-14 md:w-16 md:h-16',
     title: 'text-2xl md:text-3xl',
     desc: 'text-base md:text-lg',
   },
   lg: {
-    wrapper: 'py-28',
-    panel: 'px-10 py-12',
-    icon: 'w-20 h-20',
+    wrapper: 'py-16 md:py-28',
+    panel: 'px-8 py-10 md:px-10 md:py-12',
+    icon: 'w-16 h-16 md:w-20 md:h-20',
     title: 'text-3xl md:text-4xl',
     desc: 'text-lg md:text-xl',
   },

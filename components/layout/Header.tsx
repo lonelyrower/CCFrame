@@ -9,8 +9,6 @@ import {
   MoonIcon,
   UserIcon,
   LoginIcon,
-  MenuIcon,
-  CloseIcon,
   LogoIcon,
 } from '@/components/ui/Icons';
 
@@ -46,7 +44,6 @@ export function Header() {
   const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [showMobileNav, setShowMobileNav] = useState(false);
   const [hotTags, setHotTags] = useState<TagSummary[]>([]);
   const [topSeries, setTopSeries] = useState<SeriesSuggestion[]>([]);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
@@ -128,13 +125,6 @@ export function Header() {
 
   const toggleSearch = () => {
     setShowSearch((value) => !value);
-    setShowMobileNav(false);
-    setShowUserMenu(false);
-  };
-
-  const toggleMobileNav = () => {
-    setShowMobileNav((value) => !value);
-    setShowSearch(false);
     setShowUserMenu(false);
   };
 
@@ -147,12 +137,10 @@ export function Header() {
 
     router.push(`/photos?q=${encodeURIComponent(query)}`);
     setShowSearch(false);
-    setShowMobileNav(false);
     setShowUserMenu(false);
   };
 
   useEffect(() => {
-    setShowMobileNav(false);
     setShowSearch(false);
     setShowUserMenu(false);
   }, [pathname]);
@@ -289,7 +277,6 @@ export function Header() {
                 <button
                   onClick={() => {
                     setShowUserMenu((value) => !value);
-                    setShowMobileNav(false);
                     setShowSearch(false);
                   }}
                   className="p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation"
@@ -325,61 +312,10 @@ export function Header() {
                 <LoginIcon size={20} />
               </Link>
             )}
-            <button
-              onClick={toggleMobileNav}
-              className="md:hidden p-2.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-neutral-800/60 transition-all duration-200 ease-out hover:scale-105 active:scale-95 text-[color:var(--ds-muted)] touch-manipulation"
-              aria-label={showMobileNav ? '关闭菜单' : '打开菜单'}
-              aria-expanded={showMobileNav}
-              aria-controls="mobile-nav"
-            >
-              {showMobileNav ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
-            </button>
           </div>
 
         </div>
       </nav>
-
-      {showMobileNav && (
-        <div id="mobile-nav" className="md:hidden border-t border-stone-200/50 dark:border-neutral-800/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
-            <div className="pt-3 space-y-2">
-              <Link
-                href="/photos"
-                className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
-                  isActive('/photos')
-                    ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
-                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
-                }`}
-                onClick={() => setShowMobileNav(false)}
-              >
-                照片
-              </Link>
-              <Link
-                href="/tags"
-                className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
-                  isActive('/tags')
-                    ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
-                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
-                }`}
-                onClick={() => setShowMobileNav(false)}
-              >
-                标签
-              </Link>
-              <Link
-                href="/series"
-                className={`block px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
-                  isActive('/series')
-                    ? 'bg-[color:var(--ds-accent-10)] text-[color:var(--ds-accent)] ring-1 ring-inset ring-[color:var(--ds-accent-20)]'
-                    : 'text-[color:var(--ds-muted)] hover:bg-stone-100/80 dark:hover:bg-neutral-900/60 hover:ring-1 hover:ring-inset hover:ring-stone-200/70 dark:hover:ring-neutral-800'
-                }`}
-                onClick={() => setShowMobileNav(false)}
-              >
-                系列
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Search Panel */}
       {showSearch && (
